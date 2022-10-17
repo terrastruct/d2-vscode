@@ -1,6 +1,6 @@
 <div align="center">
   <h1 align="center">
-    <img src="./docs/assets/logo.png" alt="D2" />
+    <img src="https://github.com/terrastruct/d2-vscode/blob/master/docs/assets/logo.png" alt="D2" />
   </h1>
 
 VSCode extension for [D2](https://d2-lang.com) files.
