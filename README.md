@@ -1,11 +1,12 @@
 <div align="center">
   <h1 align="center">
-    <img src="./docs/assets/logo.svg" alt="D2" />
+    <img src="https://github.com/terrastruct/d2-vscode/blob/master/docs/assets/logo.png" alt="D2" />
   </h1>
 
 VSCode extension for [D2](https://d2-lang.com) files.
 <br />
 <br />
+
 </div>
 
 Currently only supports syntax highlighting of `.d2` files.
@@ -107,6 +108,7 @@ Syntax file used for markdown embedded within d2 block strings.
 5. Now delete the `list` from `#block`. Lists for some reason eat the block string
    terminator. e.g. with them enabled the following syntax after the terminating `|`
    will remain markdown:
+
    ```d2
    my shape: |md
      1. first
@@ -114,5 +116,6 @@ Syntax file used for markdown embedded within d2 block strings.
 
    should be d2 but VS Code highlights as markdown.
    ```
+
 6. Add `fenced_code_block_d2` based on `fenced_code_block_css` to allow embedding markdown
    with d2 within d2.
