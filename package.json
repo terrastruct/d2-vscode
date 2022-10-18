@@ -1,7 +1,7 @@
 {
   "name": "d2",
   "version": "0.0.1",
-  "publisher": "terrastruct",
+  "publisher": "Terrastruct",
   "engines": {
     "vscode": "^1.0.0"
   },
@@ -30,8 +30,8 @@
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "d2-icon.png",
-          "dark": "d2-icon.png"
+          "light": "d2-icon-small.png",
+          "dark": "d2-icon-small.png"
         }
       },
       {

@@ -1,13 +1,12 @@
 <div align="center">
-  <h1 align="center">
-    <img src="https://github.com/terrastruct/d2-vscode/blob/master/docs/assets/logo.png" alt="D2" />
-  </h1>
-
-VSCode extension for [D2](https://d2-lang.com) files.
-<br />
-<br />
-
+  <br />
+  <div align="center">
+    <img src="https://raw.githubusercontent.com/terrastruct/d2-vscode/master/docs/assets/header.png" alt="D2" />
+  </div>
+  <br />
 </div>
+
+# VSCode extension for [D2](https://d2-lang.com) files.
 
 Currently only supports syntax highlighting of `.d2` files.
 
