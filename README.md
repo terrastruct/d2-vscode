@@ -1,9 +1,7 @@
 <div align="center">
-  <h1 align="center" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:68px;position:relative">
-    <img src="https://raw.githubusercontent.com/terrastruct/d2-vscode/master/docs/assets/logo.png" alt="D2" />
-      D2
-    <div style="height:50px;width:1px;background:#676C7E;margin:8px;margin-left:12px"></div>
-    <img src="https://raw.githubusercontent.com/terrastruct/d2-vscode/master/docs/assets/vscode.png" alt="VSCode" style="margin-left:0.5rem" />
+  <h1 align="center">
+    <!-- <img src="https://raw.githubusercontent.com/terrastruct/d2-vscode/master/docs/assets/header.png" alt="D2" /> -->
+    <img src="./docs/assets/header.png" alt="D2" />
   </h1>
 
 VSCode extension for [D2](https://d2-lang.com) files.
