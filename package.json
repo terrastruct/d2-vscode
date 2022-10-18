@@ -30,8 +30,8 @@
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "d2-icon.png",
-          "dark": "d2-icon.png"
+          "light": "./d2-icon.png",
+          "dark": "./d2-icon.png"
         }
       },
       {
