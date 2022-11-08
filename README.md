@@ -6,7 +6,7 @@
   <br />
 </div>
 
-# VSCode extension for [D2](https://d2-lang.com) files.
+# VSCode extension for [D2](https://d2lang.com) files.
 
 Currently only supports syntax highlighting of `.d2` files.
 
@@ -16,7 +16,7 @@ x -> y
 # d2-vscode can syntax highlight nested markdown correctly.
 y: |`md
   # d2-vscode
-  VSCode extension for [D2](https://d2-lang.com) files.
+  VSCode extension for [D2](https://d2lang.com) files.
 `|
 ```
 

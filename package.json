@@ -71,7 +71,7 @@
     "type": "git",
     "url": "https://github.com/terrastruct/d2-vscode"
   },
-  "homepage": "https://d2-lang.com",
+  "homepage": "https://d2lang.com",
   "icon": "d2-icon.png",
   "preview": true,
   "scripts": {
