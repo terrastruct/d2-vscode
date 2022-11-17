@@ -1,6 +1,6 @@
 {
   "name": "d2",
-  "version": "0.0.1",
+  "version": "0.3.0",
   "publisher": "Terrastruct",
   "engines": {
     "vscode": "^1.0.0"
@@ -73,7 +73,6 @@
   },
   "homepage": "https://d2lang.com",
   "icon": "d2-icon.png",
-  "preview": true,
   "scripts": {
     "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
     "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
