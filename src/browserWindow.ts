@@ -52,3 +52,7 @@ export class BrowserWindow {
         this.webViewPanel.dispose();
     }
 }
+    dispose(): void {
+        this.webViewPanel.dispose();
+    }
+}
