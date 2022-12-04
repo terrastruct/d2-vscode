@@ -8,7 +8,6 @@ import {
 
 import { D2P } from './docToPreviewGenerator';
 
-const postText = String.raw`<body><html>`;
 /**
  * BrowserWindow - Wraps the browser window and
  *  adds functionality to update the HTML/SVG
