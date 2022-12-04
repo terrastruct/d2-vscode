@@ -7,8 +7,8 @@ import {
     window} from 'vscode';
 
 import { D2P } from './docToPreviewGenerator';
-import { extContext } from './extension';
 
+const postText = String.raw`<body><html>`;
 /**
  * BrowserWindow - Wraps the browser window and
  *  adds functionality to update the HTML/SVG
