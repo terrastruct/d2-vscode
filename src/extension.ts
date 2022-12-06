@@ -83,4 +83,6 @@ export function activate(context: ExtensionContext): void {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate(): void { }
+export function deactivate(): void {
+	previewGenerator.dispose();
+}

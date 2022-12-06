@@ -1,3 +1,5 @@
+import { TextDocument } from 'vscode';
+import { readFileSync, unlink, writeFileSync } from 'fs';
 import { ExecException, spawnSync } from 'child_process';
 import { readFileSync, unlink, writeFileSync } from 'fs';
 import { TextDocument, window } from 'vscode';
@@ -10,6 +12,7 @@ import temp = require('temp');
  * D2P - Document to Preview.  This tracks the connection
  *  between the D2 document and to the preview window.
  * 
+ * Stores the temp file string.
  * Stores the temp file string.
  **/
 export class D2P {
@@ -30,6 +33,7 @@ export class DocToPreviewGenerator {
     mapOfConnection: Map<TextDocument, D2P> = new Map<TextDocument, D2P>();
 
     constructor() { }
+
 
     createObjectToTrack(inDoc: TextDocument): D2P {
         const trk = new D2P();
@@ -97,15 +101,15 @@ export class DocToPreviewGenerator {
                 }
 
                 // No longer need our temp files, get rid of them.
-                // The existence of these files should not escape this function.
+                // The existance of these files should not escape this function.
                 unlink(trkObj.inFile, (err) => {
                     if (err) {
-                        window.showInformationMessage(`Temp File Error: ${err?.message}`);
+                        console.log(`Temp File Error: ${err?.message}`);
                     }
                 });
                 unlink(trkObj.outFile, (err) => {
                     if (err) {
-                        window.showInformationMessage(`Temp File Error: ${err?.message}`);
+                        console.log(`Temp File Error: ${err?.message}`);
                     }
                 });
             }
