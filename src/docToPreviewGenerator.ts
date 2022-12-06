@@ -1,5 +1,5 @@
 import { TextDocument } from 'vscode';
-import { fstat, readFileSync, unlink, writeFileSync } from 'fs';
+import { readFileSync, unlink, writeFileSync } from 'fs';
 import { ExecException, spawnSync } from 'child_process';
 import { BrowserWindow } from './browserWindow';
 import { RefreshTimer } from './refreshTimer';
@@ -9,8 +9,7 @@ var temp = require('temp');
  * D2P - Document to Preview.  This tracks the connection
  *  between the D2 document and to the preview window.
  * 
- * Stores the temp file string and responsible for deleting
- * the temp files when disposed.
+ * Stores the temp file string.
  **/
 export class D2P {
     inFile: string = '';
@@ -18,11 +17,6 @@ export class D2P {
     inputDoc?: TextDocument;
     outputDoc?: BrowserWindow;
     timer?: RefreshTimer;
-
-    dispose(): void {
-        unlink(this.inFile, (err) => {console.log(`Temp File Error: ${err?.message}`)});
-        unlink(this.outFile, (err) => {console.log(`Temp File Error: ${err?.message}`)});
-    }
 }
 
 /**
@@ -35,11 +29,7 @@ export class DocToPreviewGenerator {
     mapOfConnection: Map<TextDocument, D2P> = new Map<TextDocument, D2P>();
 
     constructor() { }
-    dispose(): void {
-        this.mapOfConnection.forEach((d2p: D2P) => {
-            d2p.dispose();
-        });
-    }
+
     createObjectToTrack(inDoc: TextDocument): D2P {
         let trk = new D2P();
 
@@ -103,6 +93,19 @@ export class DocToPreviewGenerator {
 
                     console.log(ex.message);
                 }
+
+                // No longer need our temp files, get rid of them.
+                // The existance of these files should not escape this function.
+                unlink(trkObj.inFile, (err) => {
+                    if (err) {
+                        console.log(`Temp File Error: ${err?.message}`);
+                    }
+                });
+                unlink(trkObj.outFile, (err) => {
+                    if (err) {
+                        console.log(`Temp File Error: ${err?.message}`);
+                    }
+                });
             }
         }
     }

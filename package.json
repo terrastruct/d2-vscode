@@ -61,7 +61,7 @@
     "commands": [
       {
         "command": "d2-viewer.ShowPreviewWindow",
-        "title": "Show Preview Window",
+        "title": "Show d2 Preview Window",
         "category": "d2"
       }
     ],
@@ -97,7 +97,36 @@
       "commandPalette": [
         {
           "command": "d2-viewer.ShowPreviewWindow",
-          "when": "editorLangId == d2"
+          "when": "editorLangId == d2",
+          "group": "d2"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "d2-viewer.ShowPreviewWindow",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "d2-viewer.ShowPreviewWindow",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "d2-viewer.ShowPreviewWindow",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "d2-viewer.ShowPreviewWindow",
+          "when": "resourceLangId == d2",
+          "group": "d2"
         }
       ]
     }
