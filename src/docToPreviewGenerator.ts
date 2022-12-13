@@ -1,9 +1,7 @@
-import { TextDocument } from 'vscode';
-import { readFileSync, unlink, writeFileSync } from 'fs';
-import { ExecException, spawnSync } from 'child_process';
+import { OutputChannel, TextDocument } from 'vscode';
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { BrowserWindow } from './browserWindow';
-import { RefreshTimer } from './refreshTimer';
-var temp = require('temp');
+import path = require('node:path');
 
 /**
  * D2P - Document to Preview.  This tracks the connection
@@ -12,11 +10,16 @@ var temp = require('temp');
  * Stores the temp file string.
  **/
 export class D2P {
-    inFile: string = '';
-    outFile: string = '';
     inputDoc?: TextDocument;
     outputDoc?: BrowserWindow;
-    timer?: RefreshTimer;
+    host: string = '';
+    port: string = '';
+    childProc?: ChildProcessWithoutNullStreams;
+
+    endProc(): void {
+        this.childProc?.kill();
+        this.childProc = undefined;
+    }
 }
 
 /**
@@ -27,29 +30,29 @@ export class D2P {
 export class DocToPreviewGenerator {
 
     mapOfConnection: Map<TextDocument, D2P> = new Map<TextDocument, D2P>();
+    outputChannel: OutputChannel;
 
-    constructor() { }
+    constructor(oc: OutputChannel) {
+        this.outputChannel = oc;
+    }
 
     createObjectToTrack(inDoc: TextDocument): D2P {
         let trk = new D2P();
 
         trk.inputDoc = inDoc;
 
-        trk.inFile = temp.path({ suffix: 'in.d2.temp' });
-        trk.outFile = temp.path({ suffix: 'out.d2.temp' });
-
         this.mapOfConnection.set(inDoc, trk);
-
-        trk.timer = new RefreshTimer(() => {
-            this.generate(inDoc);
-        });
-
-        trk.timer?.start(false);
 
         return trk;
     }
 
     deleteObjectToTrack(inDoc: TextDocument): void {
+        let trkObj = this.getTrackObject(inDoc);
+
+        if (trkObj) {
+            trkObj.childProc?.kill();
+        }
+
         this.mapOfConnection.delete(inDoc);
     }
 
@@ -57,57 +60,41 @@ export class DocToPreviewGenerator {
         return this.mapOfConnection.get(inDoc);
     }
 
-    generate(inDoc: TextDocument): void {
+
+    generateWatch(inDoc: TextDocument) {
         let trkObj = this.getTrackObject(inDoc);
 
-        if (trkObj) {
+        if (!trkObj || trkObj.childProc) return;
 
-            let fileText = trkObj.inputDoc?.getText();
-            if (typeof fileText === 'string') {
+        trkObj.host = 'localhost';
+        trkObj.port = this.getRandomIntInclusive(4000, 60000).toString();
 
-                writeFileSync(trkObj.inFile, fileText);
+        process.env.BROWSER = '0';
 
-                try {
-                    var proc = spawnSync('d2', [trkObj.inFile, trkObj.outFile]);
-                    console.log('D2 -> ' + proc.output);
-                    console.log('D2 Ret -> ' + proc.status);
+        var inFile = trkObj.inputDoc?.fileName ?? '';
+        var fName = path.basename(inFile);
 
-                    let errorString: String = '';
-                    if (proc.status !== 0) {
-                        errorString = proc.stderr.toString();
-                    }
+        trkObj.childProc = spawn('D2', ['--host', trkObj.host, '--port', trkObj.port, '--watch', inFile ?? '']);
 
-                    let data: Buffer = Buffer.alloc(1);
-                    if (proc.status === 0) {
-                        data = readFileSync(trkObj.outFile);
-                    }
+        trkObj.childProc.stdout.on('data', (s) => {
+            this.outputChannel.append(fName + ': ' + s.toString());
+        });
 
-                    if (!trkObj.outputDoc) {
-                        trkObj.outputDoc = new BrowserWindow(trkObj);
-                    }
+        trkObj.childProc.stderr.on('data', (s) => {
+            this.outputChannel.append(fName + ': ' + s.toString());
+        });
 
-                    trkObj.outputDoc.setSvg(errorString + data.toString());
-
-                } catch (error) {
-                    let ex: ExecException = error as ExecException;
-
-                    console.log(ex.message);
-                }
-
-                // No longer need our temp files, get rid of them.
-                // The existance of these files should not escape this function.
-                unlink(trkObj.inFile, (err) => {
-                    if (err) {
-                        console.log(`Temp File Error: ${err?.message}`);
-                    }
-                });
-                unlink(trkObj.outFile, (err) => {
-                    if (err) {
-                        console.log(`Temp File Error: ${err?.message}`);
-                    }
-                });
-            }
+        if (!trkObj.outputDoc) {
+            trkObj.outputDoc = new BrowserWindow(trkObj);
+            trkObj.outputDoc.setWs(`ws:${trkObj.host}:${trkObj.port}/watch`);
         }
+
+    }
+
+    private getRandomIntInclusive(min: number, max: number): number {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1) + min);
     }
 }
 

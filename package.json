@@ -72,27 +72,6 @@
         "mac": "shift+cmd+d"
       }
     ],
-    "configuration": {
-      "type": "object",
-      "title": "d2 Viewer Configuration",
-      "properties": {
-        "d2-viewer.autoUpdate": {
-          "type": "boolean",
-          "default": true,
-          "description": "Automatically update the preview."
-        },
-        "d2-viewer.updateTimer": {
-          "type": "number",
-          "default": 1500,
-          "description": "Specifies the amount of time to wait between keystrokes before automatically updating the preview. (1000 = 1000ms = 1s)"
-        },
-        "d2-viewer.updateOnSave": {
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically update on saving the d2 file.  Turn off to avoid excess updates when Auto Save is enabled."
-        }
-      }
-    },
     "menus": {
       "commandPalette": [
         {

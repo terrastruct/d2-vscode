@@ -9,42 +9,24 @@ import {
 	ExtensionContext,
 	commands,
 	window,
-	WorkspaceConfiguration
+	WorkspaceConfiguration,
+	OutputChannel
 } from 'vscode';
 
 import { DocToPreviewGenerator } from './docToPreviewGenerator';
 
 const d2Ext = 'd2';
 
-let previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
-let ws: WorkspaceConfiguration = workspace.getConfiguration('d2-viewer');
+let outputChannel: OutputChannel = window.createOutputChannel('D2-Output');
+let previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator(outputChannel);
 
 export function activate(context: ExtensionContext): void {
-
-	context.subscriptions.push(workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
-		if (e.document.languageId === d2Ext) {
-			let autoUp = ws.get('autoUpdate', false);
-
-			if (autoUp) {
-				let trk = previewGenerator.getTrackObject(e.document);
-				trk?.timer?.reset();
-			}
-		}
-	}));
-
-	context.subscriptions.push(workspace.onDidSaveTextDocument((doc: TextDocument) => {
-		if (doc.languageId === d2Ext) {
-			let updateOnSave = ws.get('updateOnSave', false);
-
-			if (updateOnSave) {
-				previewGenerator.generate(doc);
-			}
-		}
-	}));
 
 	context.subscriptions.push(workspace.onDidOpenTextDocument((doc: TextDocument) => {
 		if (doc.languageId === d2Ext) {
 			previewGenerator.createObjectToTrack(doc);
+
+			outputChannel.appendLine(`Tracking File: ${doc.fileName}`);
 		}
 	}));
 
@@ -58,7 +40,7 @@ export function activate(context: ExtensionContext): void {
 		let activeEditor = window.activeTextEditor;
 
 		if (activeEditor?.document.languageId === d2Ext) {
-			previewGenerator.generate(activeEditor.document);
+			previewGenerator.generateWatch(activeEditor.document);
 		}
 
 	}));
@@ -67,9 +49,13 @@ export function activate(context: ExtensionContext): void {
 	workspace.textDocuments.forEach((td: TextDocument, idx: number) => {
 		if (td.languageId === d2Ext) {
 			previewGenerator.createObjectToTrack(td);
+
+			outputChannel.appendLine(`Tracking File: ${td.fileName}`);
 		}
 	});
 }
 
 // This method is called when your extension is deactivated
-export function deactivate(): void {}
+export function deactivate(): void { }
+
+
