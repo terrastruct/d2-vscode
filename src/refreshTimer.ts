@@ -4,7 +4,7 @@ import { workspace } from "vscode";
  * RefreshTimer - Allow for auto updates when the
  *  document changes.
  * 
- *  Basic Usange:
+ *  Basic Usage:
  *      Create Timer
  *      Start Timer
  *      Reset on each key stroke
