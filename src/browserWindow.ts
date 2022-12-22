@@ -144,7 +144,7 @@ const preText = String.raw`
 
 const postText = String.raw`<body><html>`;
 /**
- * BrowswerWindow - Wraps the browser window and
+ * BrowserWindow - Wraps the browser window and
  *  adds functionality to update the HTML/SVG
  **/
 export class BrowserWindow {
