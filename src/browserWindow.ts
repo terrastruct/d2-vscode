@@ -137,11 +137,6 @@ const preText = String.raw`
 <body onload="onLoad();">
 `;
 
-//const svgText = String.raw`
-//<svg width="500" height="350">
-//<rect x="100" y="100" width="300" height="150" fill="yellow" stroke="black" stroke-width="5" />
-//</svg>`;
-
 const postText = String.raw`<body><html>`;
 /**
  * BrowserWindow - Wraps the browser window and
