@@ -95,7 +95,7 @@ export class DocToPreviewGenerator {
                 }
 
                 // No longer need our temp files, get rid of them.
-                // The existance of these files should not escape this function.
+                // The existence of these files should not escape this function.
                 unlink(trkObj.inFile, (err) => {
                     if (err) {
                         console.log(`Temp File Error: ${err?.message}`);
