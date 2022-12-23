@@ -32,8 +32,10 @@ export function activate(context: ExtensionContext): void {
 	context.subscriptions.push(workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
 		if (e.document.languageId === d2Ext) {
 			const autoUp = ws.get('autoUpdate', false);
+			const autoUp = ws.get('autoUpdate', false);
 
 			if (autoUp) {
+				const trk = previewGenerator.getTrackObject(e.document);
 				const trk = previewGenerator.getTrackObject(e.document);
 				trk?.timer?.reset();
 			}
@@ -75,6 +77,7 @@ export function activate(context: ExtensionContext): void {
 	}));
 
 	// * Find all open d2 files and add to tracker
+	workspace.textDocuments.forEach((td: TextDocument) => {
 	workspace.textDocuments.forEach((td: TextDocument) => {
 		if (td.languageId === d2Ext) {
 			previewGenerator.createObjectToTrack(td);

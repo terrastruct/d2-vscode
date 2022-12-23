@@ -1,5 +1,3 @@
-import { TextDocument } from 'vscode';
-import { readFileSync, unlink, writeFileSync } from 'fs';
 import { ExecException, spawnSync } from 'child_process';
 import { readFileSync, unlink, writeFileSync } from 'fs';
 import { TextDocument, window } from 'vscode';
@@ -104,12 +102,12 @@ export class DocToPreviewGenerator {
                 // The existance of these files should not escape this function.
                 unlink(trkObj.inFile, (err) => {
                     if (err) {
-                        console.log(`Temp File Error: ${err?.message}`);
+                        window.showInformationMessage(`Temp File Error: ${err?.message}`);
                     }
                 });
                 unlink(trkObj.outFile, (err) => {
                     if (err) {
-                        console.log(`Temp File Error: ${err?.message}`);
+                        window.showInformationMessage(`Temp File Error: ${err?.message}`);
                     }
                 });
             }

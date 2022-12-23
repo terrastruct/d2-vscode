@@ -1,13 +1,21 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
+import { readFileSync } from 'fs';
+import * as path from 'path';
 import {
+    Uri,
     Uri,
     ViewColumn,
     WebviewPanel,
     window} from 'vscode';
 
-import { D2P } from './docToPreviewGenerator';
+    WebviewPanel,
+    window} from 'vscode';
 
+import { D2P } from './docToPreviewGenerator';
+import { extContext } from './extension';
+
+<<<<<<< HEAD
 const preText = String.raw`
 <!DOCTYPE html>
 <html lang="en" title="d2 Diagram">
@@ -146,6 +154,8 @@ const preText = String.raw`
 //</svg>`;
 
 const postText = String.raw`<body><html>`;
+=======
+>>>>>>> 73a7175 (Changes from Review)
 /**
  * BrowserWindow - Wraps the browser window and
  *  adds functionality to update the HTML/SVG
@@ -161,10 +171,21 @@ export class BrowserWindow {
 
         this.webViewPanel = window.createWebviewPanel('d2Preview', 'D2 Preview', 
             ViewColumn.Beside, {
+        this.webViewPanel = window.createWebviewPanel('d2Preview', 'D2 Preview', 
+            ViewColumn.Beside, {
             enableFindWidget: true,
             enableScripts: true,
             localResourceRoots: [Uri.file(path.join(extContext.extensionPath, 'pages'))]
             });
+            enableScripts: true,
+            localResourceRoots: [Uri.file(path.join(extContext.extensionPath, 'pages'))]
+            });
+
+        const onDiskPath = path.join(extContext.extensionPath, 'pages/previewPage.html');
+        let data: Buffer = Buffer.alloc(1);
+        data = readFileSync(onDiskPath);
+
+        this.webViewPanel.webview.html = data.toString();
 
         const onDiskPath = path.join(extContext.extensionPath, 'pages/previewPage.html');
         let data: Buffer = Buffer.alloc(1);
@@ -181,6 +202,8 @@ export class BrowserWindow {
     }
 
     setSvg(svg: string): void {
+
+        this.webViewPanel.webview.postMessage({command: 'render', data: svg});
 
         this.webViewPanel.webview.postMessage({command: 'render', data: svg});
     }

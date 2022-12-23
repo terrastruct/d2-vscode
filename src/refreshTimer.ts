@@ -12,6 +12,8 @@ import { workspace } from "vscode";
  **/
 type TimerCallback = () => void;
 
+type TimerCallback = () => void;
+
 export class RefreshTimer {
 
     timerId?: NodeJS.Timer ;
@@ -20,11 +22,13 @@ export class RefreshTimer {
     ws = workspace.getConfiguration('D2');
 
     constructor(callback: TimerCallback) {
+    constructor(callback: TimerCallback) {
         this.callback = callback;
     }
 
     start(start: boolean) {
         this.interval = this.ws.get('updateTimer', 1500);
+        this.timerId = setTimeout(() => {
         this.timerId = setTimeout(() => {
             this.stop();
             this.callback();
@@ -36,6 +40,7 @@ export class RefreshTimer {
     }
 
     stop() {
+        clearTimeout(this.timerId);
         clearTimeout(this.timerId);
     }
 
