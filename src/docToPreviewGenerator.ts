@@ -42,7 +42,10 @@ export class DocToPreviewGenerator {
         this.mapOfConnection.set(inDoc, trk);
 
         trk.timer = new RefreshTimer(() => {
-            this.generate(inDoc);
+            // If there is a document to update, update it.
+            if (trk.outputDoc) {
+                this.generate(inDoc);
+            }
         });
 
         trk.timer?.start(false);
@@ -70,7 +73,7 @@ export class DocToPreviewGenerator {
 
                 try {
                     const proc = spawnSync('d2', [trkObj.inFile, trkObj.outFile]);
-                    
+
                     let errorString = '';
                     if (proc.status !== 0) {
                         errorString = proc.stderr.toString();

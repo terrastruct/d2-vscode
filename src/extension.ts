@@ -7,16 +7,21 @@ import {
 	ExtensionContext,
 	TextDocument,
 	TextDocumentChangeEvent,
+	TextDocumentChangeReason,
+	TextDocumentSaveReason,
+	TextDocumentWillSaveEvent,
 	window,
 	workspace,
 	WorkspaceConfiguration
 } from 'vscode';
 
 import { DocToPreviewGenerator } from './docToPreviewGenerator';
+import { DocumentFormatter } from './documentFormatter';
 
 const d2Ext = 'd2';
 
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
+const documentFormatter: DocumentFormatter = new DocumentFormatter();
 const ws: WorkspaceConfiguration = workspace.getConfiguration('d2-viewer');
 export let extContext: ExtensionContext;
 
@@ -35,11 +40,29 @@ export function activate(context: ExtensionContext): void {
 		}
 	}));
 
+	context.subscriptions.push(workspace.onWillSaveTextDocument((env: TextDocumentWillSaveEvent) => {
+		if (env.document.languageId === d2Ext) {
+			const formatOnSave = ws.get('formatOnSave', false);
+
+			const editor = window.visibleTextEditors.find(
+				(editor) => editor.document === env.document
+			 );
+
+			if (formatOnSave && 
+				env.reason === TextDocumentSaveReason.Manual &&
+				editor) {
+				documentFormatter.format(editor);
+			}
+		}
+	}));
+
 	context.subscriptions.push(workspace.onDidSaveTextDocument((doc: TextDocument) => {
 		if (doc.languageId === d2Ext) {
 			const updateOnSave = ws.get('updateOnSave', false);
 
-			if (updateOnSave) {
+			const trk = previewGenerator.getTrackObject(doc);
+
+			if (updateOnSave && trk?.outputDoc) {
 				previewGenerator.generate(doc);
 			}
 		}
@@ -62,6 +85,15 @@ export function activate(context: ExtensionContext): void {
 
 		if (activeEditor?.document.languageId === d2Ext) {
 			previewGenerator.generate(activeEditor.document);
+		}
+
+	}));
+
+	context.subscriptions.push(commands.registerCommand('d2-viewer.FormatD2Document', () => {
+		const activeEditor = window.activeTextEditor;
+
+		if (activeEditor?.document.languageId === d2Ext) {
+			documentFormatter.format(activeEditor);
 		}
 
 	}));
