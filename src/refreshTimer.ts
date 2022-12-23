@@ -10,20 +10,22 @@ import { workspace } from "vscode";
  *      Reset on each key stroke
  *      If timeout occurs, callback is called
  **/
+type TimerCallback = () => void;
+
 export class RefreshTimer {
 
-    timerId: any;
-    callback: any;
-    interval: any;
+    timerId?: NodeJS.Timer ;
+    callback: TimerCallback;
+    interval = 0;
     ws = workspace.getConfiguration('d2-viewer');
 
-    constructor(callback: any) {
+    constructor(callback: TimerCallback) {
         this.callback = callback;
     }
 
     start(start: boolean) {
         this.interval = this.ws.get('updateTimer', 1500);
-        this.timerId = setInterval(() => {
+        this.timerId = setTimeout(() => {
             this.stop();
             this.callback();
         }, this.interval);
@@ -34,7 +36,7 @@ export class RefreshTimer {
     }
 
     stop() {
-        clearInterval(this.timerId);
+        clearTimeout(this.timerId);
     }
 
     reset() {

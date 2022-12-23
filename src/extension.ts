@@ -3,12 +3,12 @@
  **/
 
 import {
-	workspace,
-	TextDocumentChangeEvent,
-	TextDocument,
-	ExtensionContext,
 	commands,
+	ExtensionContext,
+	TextDocument,
+	TextDocumentChangeEvent,
 	window,
+	workspace,
 	WorkspaceConfiguration
 } from 'vscode';
 
@@ -16,17 +16,20 @@ import { DocToPreviewGenerator } from './docToPreviewGenerator';
 
 const d2Ext = 'd2';
 
-let previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
-let ws: WorkspaceConfiguration = workspace.getConfiguration('d2-viewer');
+const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
+const ws: WorkspaceConfiguration = workspace.getConfiguration('d2-viewer');
+export let extContext: ExtensionContext;
 
 export function activate(context: ExtensionContext): void {
 
+	extContext = context;
+
 	context.subscriptions.push(workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
 		if (e.document.languageId === d2Ext) {
-			let autoUp = ws.get('autoUpdate', false);
+			const autoUp = ws.get('autoUpdate', false);
 
 			if (autoUp) {
-				let trk = previewGenerator.getTrackObject(e.document);
+				const trk = previewGenerator.getTrackObject(e.document);
 				trk?.timer?.reset();
 			}
 		}
@@ -34,7 +37,7 @@ export function activate(context: ExtensionContext): void {
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument((doc: TextDocument) => {
 		if (doc.languageId === d2Ext) {
-			let updateOnSave = ws.get('updateOnSave', false);
+			const updateOnSave = ws.get('updateOnSave', false);
 
 			if (updateOnSave) {
 				previewGenerator.generate(doc);
@@ -55,7 +58,7 @@ export function activate(context: ExtensionContext): void {
 	}));
 
 	context.subscriptions.push(commands.registerCommand('d2-viewer.ShowPreviewWindow', () => {
-		let activeEditor = window.activeTextEditor;
+		const activeEditor = window.activeTextEditor;
 
 		if (activeEditor?.document.languageId === d2Ext) {
 			previewGenerator.generate(activeEditor.document);
@@ -64,7 +67,7 @@ export function activate(context: ExtensionContext): void {
 	}));
 
 	// * Find all open d2 files and add to tracker
-	workspace.textDocuments.forEach((td: TextDocument, idx: number) => {
+	workspace.textDocuments.forEach((td: TextDocument) => {
 		if (td.languageId === d2Ext) {
 			previewGenerator.createObjectToTrack(td);
 		}

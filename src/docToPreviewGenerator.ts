@@ -1,9 +1,10 @@
-import { TextDocument } from 'vscode';
-import { readFileSync, unlink, writeFileSync } from 'fs';
 import { ExecException, spawnSync } from 'child_process';
+import { readFileSync, unlink, writeFileSync } from 'fs';
+import { TextDocument, window } from 'vscode';
+
 import { BrowserWindow } from './browserWindow';
 import { RefreshTimer } from './refreshTimer';
-var temp = require('temp');
+import temp = require('temp');
 
 /**
  * D2P - Document to Preview.  This tracks the connection
@@ -12,8 +13,8 @@ var temp = require('temp');
  * Stores the temp file string.
  **/
 export class D2P {
-    inFile: string = '';
-    outFile: string = '';
+    inFile = '';
+    outFile = '';
     inputDoc?: TextDocument;
     outputDoc?: BrowserWindow;
     timer?: RefreshTimer;
@@ -31,7 +32,7 @@ export class DocToPreviewGenerator {
     constructor() { }
 
     createObjectToTrack(inDoc: TextDocument): D2P {
-        let trk = new D2P();
+        const trk = new D2P();
 
         trk.inputDoc = inDoc;
 
@@ -58,52 +59,51 @@ export class DocToPreviewGenerator {
     }
 
     generate(inDoc: TextDocument): void {
-        let trkObj = this.getTrackObject(inDoc);
+        const trkObj = this.getTrackObject(inDoc);
 
         if (trkObj) {
 
-            let fileText = trkObj.inputDoc?.getText();
+            const fileText = trkObj.inputDoc?.getText();
             if (typeof fileText === 'string') {
 
                 writeFileSync(trkObj.inFile, fileText);
 
                 try {
-                    var proc = spawnSync('d2', [trkObj.inFile, trkObj.outFile]);
-                    console.log('D2 -> ' + proc.output);
-                    console.log('D2 Ret -> ' + proc.status);
-
-                    let errorString: String = '';
+                    const proc = spawnSync('d2', [trkObj.inFile, trkObj.outFile]);
+                    
+                    let errorString = '';
                     if (proc.status !== 0) {
                         errorString = proc.stderr.toString();
+                        window.showErrorMessage(errorString);
+                        return;
                     }
 
                     let data: Buffer = Buffer.alloc(1);
-                    if (proc.status === 0) {
-                        data = readFileSync(trkObj.outFile);
-                    }
+                    data = readFileSync(trkObj.outFile);
 
+                    // If we don't have a preview window already, create one
                     if (!trkObj.outputDoc) {
                         trkObj.outputDoc = new BrowserWindow(trkObj);
                     }
 
-                    trkObj.outputDoc.setSvg(errorString + data.toString());
+                    trkObj.outputDoc.setSvg(data.toString());
 
                 } catch (error) {
-                    let ex: ExecException = error as ExecException;
+                    const ex: ExecException = error as ExecException;
 
-                    console.log(ex.message);
+                    window.showErrorMessage(ex.message);
                 }
 
                 // No longer need our temp files, get rid of them.
                 // The existence of these files should not escape this function.
                 unlink(trkObj.inFile, (err) => {
                     if (err) {
-                        console.log(`Temp File Error: ${err?.message}`);
+                        window.showInformationMessage(`Temp File Error: ${err?.message}`);
                     }
                 });
                 unlink(trkObj.outFile, (err) => {
                     if (err) {
-                        console.log(`Temp File Error: ${err?.message}`);
+                        window.showInformationMessage(`Temp File Error: ${err?.message}`);
                     }
                 });
             }
