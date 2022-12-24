@@ -4,7 +4,8 @@ import {
     Uri,
     ViewColumn,
     WebviewPanel,
-    window} from 'vscode';
+    window
+} from 'vscode';
 
 import { D2P } from './docToPreviewGenerator';
 import { extContext } from './extension';
@@ -22,12 +23,19 @@ export class BrowserWindow {
 
         this.trackerObject = trkObj;
 
-        this.webViewPanel = window.createWebviewPanel('d2Preview', 'D2 Preview', 
+        let fileName = '';
+        if (trkObj.inputDoc?.fileName) {
+            const p = path.parse(trkObj.inputDoc.fileName);
+
+            fileName = p.base;
+        }
+
+        this.webViewPanel = window.createWebviewPanel('d2Preview', `${fileName} - Preview`,
             ViewColumn.Beside, {
             enableFindWidget: true,
             enableScripts: true,
             localResourceRoots: [Uri.file(path.join(extContext.extensionPath, 'pages'))]
-            });
+        });
 
         const onDiskPath = path.join(extContext.extensionPath, 'pages/previewPage.html');
         let data: Buffer = Buffer.alloc(1);
@@ -44,8 +52,7 @@ export class BrowserWindow {
     }
 
     setSvg(svg: string): void {
-
-        this.webViewPanel.webview.postMessage({command: 'render', data: svg});
+        this.webViewPanel.webview.postMessage({ command: 'render', data: svg });
     }
 
     dispose(): void {

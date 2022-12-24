@@ -1,10 +1,12 @@
 import { ExecException, spawnSync } from 'child_process';
 import { readFileSync, unlink, writeFileSync } from 'fs';
-import { TextDocument, window } from 'vscode';
+import * as path from 'path';
+import * as temp from 'temp';
+import { TextDocument } from 'vscode';
 
 import { BrowserWindow } from './browserWindow';
+import { outputChannel } from './extension';
 import { RefreshTimer } from './refreshTimer';
-import temp = require('temp');
 
 /**
  * D2P - Document to Preview.  This tracks the connection
@@ -77,7 +79,7 @@ export class DocToPreviewGenerator {
                     let errorString = '';
                     if (proc.status !== 0) {
                         errorString = proc.stderr.toString();
-                        window.showErrorMessage(errorString);
+                        outputChannel.appendError(errorString);
                         return;
                     }
 
@@ -91,22 +93,27 @@ export class DocToPreviewGenerator {
 
                     trkObj.outputDoc.setSvg(data.toString());
 
+                    const p = path.parse(trkObj.inputDoc?.fileName || '');
+
+                    outputChannel.appendInfo(`Preview for ${p.base} updated.`);
+
+
                 } catch (error) {
                     const ex: ExecException = error as ExecException;
 
-                    window.showErrorMessage(ex.message);
+                    outputChannel.appendError(ex.message);
                 }
 
                 // No longer need our temp files, get rid of them.
                 // The existence of these files should not escape this function.
                 unlink(trkObj.inFile, (err) => {
                     if (err) {
-                        window.showInformationMessage(`Temp File Error: ${err?.message}`);
+                        outputChannel.appendWarning(`Temp File ${err?.message} could not be deleted.`);
                     }
                 });
                 unlink(trkObj.outFile, (err) => {
                     if (err) {
-                        window.showInformationMessage(`Temp File Error: ${err?.message}`);
+                        outputChannel.appendWarning(`Temp File ${err?.message} could not be deleted.`);
                     }
                 });
             }

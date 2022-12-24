@@ -14,7 +14,7 @@ type TimerCallback = () => void;
 
 export class RefreshTimer {
 
-    timerId?: NodeJS.Timer ;
+    timerId?: NodeJS.Timer;
     callback: TimerCallback;
     interval = 0;
     ws = workspace.getConfiguration('d2-viewer');

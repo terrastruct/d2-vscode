@@ -7,7 +7,6 @@ import {
 	ExtensionContext,
 	TextDocument,
 	TextDocumentChangeEvent,
-	TextDocumentChangeReason,
 	TextDocumentSaveReason,
 	TextDocumentWillSaveEvent,
 	window,
@@ -17,17 +16,21 @@ import {
 
 import { DocToPreviewGenerator } from './docToPreviewGenerator';
 import { DocumentFormatter } from './documentFormatter';
+import { D2OutputChannel } from './outputChannel';
 
 const d2Ext = 'd2';
 
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 const documentFormatter: DocumentFormatter = new DocumentFormatter();
 const ws: WorkspaceConfiguration = workspace.getConfiguration('d2-viewer');
+
+export let outputChannel: D2OutputChannel;
 export let extContext: ExtensionContext;
 
 export function activate(context: ExtensionContext): void {
 
 	extContext = context;
+	outputChannel = new D2OutputChannel();
 
 	context.subscriptions.push(workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
 		if (e.document.languageId === d2Ext) {
@@ -46,9 +49,9 @@ export function activate(context: ExtensionContext): void {
 
 			const editor = window.visibleTextEditors.find(
 				(editor) => editor.document === env.document
-			 );
+			);
 
-			if (formatOnSave && 
+			if (formatOnSave &&
 				env.reason === TextDocumentSaveReason.Manual &&
 				editor) {
 				documentFormatter.format(editor);
@@ -107,4 +110,4 @@ export function activate(context: ExtensionContext): void {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate(): void {}
+export function deactivate(): void { }
