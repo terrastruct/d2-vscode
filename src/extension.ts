@@ -5,10 +5,10 @@
 import {
 	commands,
 	ExtensionContext,
+	languages,
 	TextDocument,
 	TextDocumentChangeEvent,
-	TextDocumentSaveReason,
-	TextDocumentWillSaveEvent,
+	TextEdit,
 	window,
 	workspace,
 	WorkspaceConfiguration
@@ -39,22 +39,6 @@ export function activate(context: ExtensionContext): void {
 			if (autoUp) {
 				const trk = previewGenerator.getTrackObject(e.document);
 				trk?.timer?.reset();
-			}
-		}
-	}));
-
-	context.subscriptions.push(workspace.onWillSaveTextDocument((env: TextDocumentWillSaveEvent) => {
-		if (env.document.languageId === d2Ext) {
-			const formatOnSave = ws.get('formatOnSave', false);
-
-			const editor = window.visibleTextEditors.find(
-				(editor) => editor.document === env.document
-			);
-
-			if (formatOnSave &&
-				env.reason === TextDocumentSaveReason.Manual &&
-				editor) {
-				documentFormatter.format(editor);
 			}
 		}
 	}));
@@ -92,14 +76,20 @@ export function activate(context: ExtensionContext): void {
 
 	}));
 
-	context.subscriptions.push(commands.registerCommand('d2-viewer.FormatD2Document', () => {
-		const activeEditor = window.activeTextEditor;
+	languages.registerDocumentFormattingEditProvider({ language: 'd2', scheme: "file" }, {
+		provideDocumentFormattingEdits(document: TextDocument): TextEdit[] {
 
-		if (activeEditor?.document.languageId === d2Ext) {
-			documentFormatter.format(activeEditor);
+			const editor = window.visibleTextEditors.find(
+				(editor) => editor.document === document
+			);
+
+			if (editor) {
+				documentFormatter.format(editor);
+			}
+
+			return [];
 		}
-
-	}));
+	});
 
 	// * Find all open d2 files and add to tracker
 	workspace.textDocuments.forEach((td: TextDocument) => {

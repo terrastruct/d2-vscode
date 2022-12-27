@@ -25,7 +25,7 @@
     "mindmap"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onLanguage:d2"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -62,11 +62,6 @@
         "command": "d2-viewer.ShowPreviewWindow",
         "title": "Show d2 Preview Window",
         "category": "d2"
-      },
-      {
-        "command": "d2-viewer.FormatD2Document",
-        "title": "Format D2 Source File",
-        "category": "d2"
       }
     ],
     "keybindings": [
@@ -78,7 +73,7 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "d2 Viewer Configuration",
+      "title": "d2 Viewer",
       "properties": {
         "d2-viewer.autoUpdate": {
           "type": "boolean",
@@ -94,23 +89,68 @@
           "type": "boolean",
           "default": false,
           "description": "Automatically update on saving the d2 file.  Turn off to avoid excess updates when Auto Save is enabled."
-        },
-        "d2-viewer.formatOnSave": {
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically format before saving the d2 file."
         }
+      }
+    },
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": "source.d2",
+            "settings": {
+              "foreground": "#ff0000"
+            }
+          },
+          {
+            "scope": [
+              "string.unquoted.d2",
+              "string.quoted.double.d2",
+              "string.quoted.single.d2"
+            ],
+            "settings": {
+              "foreground": "#00ff00",
+              "fontStyle": "italic"
+            }
+          },
+          {
+            "scope": "constant.numeric.decimal.d2",
+            "settings": {
+              "foreground": "#ff8400",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "comment.line.number-sign.d2",
+            "settings": {
+              "foreground": "#00ff0088"
+            }
+          },
+          {
+            "scope": [
+              "punctuation.quote.double.d2",
+              "punctuation.quote.single.d2"
+            ],
+            "settings": {
+              "foreground": "#ffff00"
+            }
+          },
+          {
+            "scope": [
+              "punctuation.map.d2",
+              "punctuation.period.d2",
+              "punctuation.colon.d2"
+            ],
+            "settings": {
+              "foreground": "#eeee00ff"
+            }
+          }
+        ]
       }
     },
     "menus": {
       "commandPalette": [
         {
           "command": "d2-viewer.ShowPreviewWindow",
-          "when": "editorLangId == d2",
-          "group": "d2"
-        },
-        {
-          "command": "d2-viewer.FormatD2Document",
           "when": "editorLangId == d2",
           "group": "d2"
         }
@@ -120,22 +160,12 @@
           "command": "d2-viewer.ShowPreviewWindow",
           "when": "resourceLangId == d2",
           "group": "d2"
-        },
-        {
-          "command": "d2-viewer.FormatD2Document",
-          "when": "editorLangId == d2",
-          "group": "d2"
         }
       ],
       "editor/title": [
         {
           "command": "d2-viewer.ShowPreviewWindow",
           "when": "resourceLangId == d2",
-          "group": "d2"
-        },
-        {
-          "command": "d2-viewer.FormatD2Document",
-          "when": "editorLangId == d2",
           "group": "d2"
         }
       ],
@@ -144,11 +174,6 @@
           "command": "d2-viewer.ShowPreviewWindow",
           "when": "resourceLangId == d2",
           "group": "d2"
-        },
-        {
-          "command": "d2-viewer.FormatD2Document",
-          "when": "editorLangId == d2",
-          "group": "d2"
         }
       ],
       "explorer/context": [
@@ -156,63 +181,58 @@
           "command": "d2-viewer.ShowPreviewWindow",
           "when": "resourceLangId == d2",
           "group": "d2"
-        },
-        {
-          "command": "d2-viewer.FormatD2Document",
-          "when": "editorLangId == d2",
-          "group": "d2"
         }
       ]
+    },
+    "scripts": {
+      "vscode:prepublish": "yarn run package",
+      "compile": "webpack",
+      "watch": "webpack --watch",
+      "package": "webpack --mode production --devtool hidden-source-map",
+      "compile-tests": "tsc -p . --outDir out",
+      "watch-tests": "tsc -p . -w --outDir out",
+      "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+      "lint": "eslint src --ext ts",
+      "test": "node ./out/test/runTest.js",
+      "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
+      "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
+      "pkg": "vsce package --out d2.vsix"
+    },
+    "devDependencies": {
+      "@types/glob": "^8.0.0",
+      "@types/mocha": "^10.0.0",
+      "@types/node": "16.x",
+      "@types/temp": "^0.9.1",
+      "@types/vscode": "^1.73.0",
+      "@typescript-eslint/eslint-plugin": "^5.42.0",
+      "@typescript-eslint/parser": "^5.42.0",
+      "@vscode/test-electron": "^2.2.0",
+      "eslint": "^8.26.0",
+      "eslint-config-next": "^13.0.7",
+      "eslint-config-prettier": "^8.5.0",
+      "glob": "^8.0.3",
+      "mocha": "^10.1.0",
+      "ts-loader": "^9.4.1",
+      "typescript": "^4.8.4",
+      "webpack": "^5.74.0",
+      "webpack-cli": "^4.10.0"
+    },
+    "dependencies": {
+      "child_process": "^1.0.2",
+      "eslint-plugin-simple-import-sort": "^8.0.0",
+      "eslint-plugin-unused-imports": "^2.0.0",
+      "next": "^13.0.7",
+      "temp": "^0.9.4"
+    },
+    "homepage": "https://d2lang.com",
+    "icon": "d2-icon.png",
+    "bugs": {
+      "url": "https://github.com/terrastruct/d2-vscode/issues",
+      "email": "info@terrastruct.com"
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/terrastruct/d2-vscode"
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "yarn run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
-    "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
-    "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
-    "pkg": "vsce package --out d2.vsix"
-  },
-  "devDependencies": {
-    "@types/glob": "^8.0.0",
-    "@types/mocha": "^10.0.0",
-    "@types/node": "16.x",
-    "@types/temp": "^0.9.1",
-    "@types/vscode": "^1.73.0",
-    "@typescript-eslint/eslint-plugin": "^5.42.0",
-    "@typescript-eslint/parser": "^5.42.0",
-    "@vscode/test-electron": "^2.2.0",
-    "eslint": "^8.26.0",
-    "eslint-config-next": "^13.0.7",
-    "eslint-config-prettier": "^8.5.0",
-    "glob": "^8.0.3",
-    "mocha": "^10.1.0",
-    "ts-loader": "^9.4.1",
-    "typescript": "^4.8.4",
-    "webpack": "^5.74.0",
-    "webpack-cli": "^4.10.0"
-  },
-  "dependencies": {
-    "child_process": "^1.0.2",
-    "eslint-plugin-simple-import-sort": "^8.0.0",
-    "eslint-plugin-unused-imports": "^2.0.0",
-    "next": "^13.0.7",
-    "temp": "^0.9.4"
-  },
-  "homepage": "https://d2lang.com",
-  "icon": "d2-icon.png",
-  "bugs": {
-    "url": "https://github.com/terrastruct/d2-vscode/issues",
-    "email": "info@terrastruct.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/terrastruct/d2-vscode"
   }
 }

@@ -11,60 +11,58 @@
             position: fixed;
             left: 0px;
             top: 0px;
-            background-color: #909090;
+            background-color: var(--vscode-sideBar-background);
             padding-left: 15px;
             padding-right: 200px;
             padding-bottom: 5px;
             width: 100%;
-            color: #0D32B2;
+            color: var(--vscode-sideBar-forground);
         }
 
         #zoomSlider {
             appearance: none;
             border-radius: 3px;
-            background: #0D32B2;
+            background: var(--vscode-scrollbarSlider-background);
             height: 5px;
         }
 
         #zoomSlider::-webkit-slider-thumb {
             appearance: none;
-            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
-            border: 1px solid darkblue;
+            border: 1px solid var(--vscode-button-border);
             height: 20px;
             width: 8px;
             margin-bottom: 5px;
             border-radius: 3px;
-            background: lightblue;
+            color: var(--vscode-button-background);
+            background: var(--vscode-button-background);
             cursor: pointer;
         }
 
         #percent {
             display: inline-block;
-            font-family: monospace;
+            line-height: 30px;
+            height: 30px;
+            text-align: center;
+            padding-top: 2px;
             font-size: 18px;
             font-weight: 600;
-            width: 55px;
+            width: 60px;
         }
 
         button {
             margin-top: 3px;
-            color: #0D32B2;
-            border-color: #0D32B2;
-            background-color: #F7F8FE;
-            border-radius: 6px;
-            border: 3 3 3 3;
-            box-shadow: 1px 1px 1px black, 0px 0px 1px 0d0d0d;
+            color: white;
+            border-color: 1px solid var(--vscode-button-border);
+            background-color: var(--vscode-button-background);
             padding: 5px;
+            border: 0px;
             min-width: 50px;
-            font-size: 14px;
-            font-weight: 600;
         }
 
         svg {
             position: absolute;
             left: 0px;
             top: 0px;
-            transform-origin: 0px 0px;
         }
 
         body {
@@ -109,9 +107,9 @@
         }
         function setZoomLevel(zl) {
             var svg = getSvgElement();
+            svg.style.marginTop = 30 * 100.0 / zl;
             svg.style.height = "";
             svg.style.width = "";
-            //svg.style.marginTop = "35px";
             svg.style.zoom = zl / 100.0;
             setZoomText(true);
 
@@ -164,7 +162,7 @@
         <span id="percent"></span>
         <button id="zoomFit" onclick="zoomFit()" title="Fit to window">Fit to window</button>
     </div>
-    <div id="previewWrapper">
+   <div id="previewWrapper">
         <svg>
             <text font-size="x-large" x="20" y="50">Loading...</text>
         </svg>
