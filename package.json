@@ -79,7 +79,7 @@
         "d2-viewer.autoUpdate": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically update the preview."
+          "description": "Automatically update the preview as you edit the d2 file."
         },
         "d2-viewer.updateTimer": {
           "type": "number",
