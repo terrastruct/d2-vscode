@@ -84,7 +84,7 @@
         "d2-viewer.updateTimer": {
           "type": "number",
           "default": 1500,
-          "description": "Specifies the amount of time to wait between keystrokes before automatically updating the preview. (1000 = 1000ms = 1s)"
+          "description": "Specifies the amount of time (in ms) to wait between keystrokes before updating the preview."
         },
         "d2-viewer.updateOnSave": {
           "type": "boolean",
