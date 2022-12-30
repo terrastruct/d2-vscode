@@ -34,6 +34,7 @@ export class BrowserWindow {
             ViewColumn.Beside, {
             enableFindWidget: true,
             enableScripts: true,
+            retainContextWhenHidden: true,
             localResourceRoots: [Uri.file(path.join(extContext.extensionPath, 'pages'))]
         });
 

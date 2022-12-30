@@ -75,6 +75,7 @@
     </style>
     <script>
         var zoomLevel = 100;
+        var zoomStep = 5;
         var percent;
         var zoomSlider;
         var fitMode = true;
@@ -89,11 +90,11 @@
             zoomFit();
         }
         function zoomPlus() {
-            zoomLevel = Math.min(150, zoomLevel + 5);
+            zoomLevel = Math.min(150, zoomLevel + zoomStep);
             setZoomLevel(zoomLevel);
         }
         function zoomMinus() {
-            zoomLevel = Math.max(10, zoomLevel - 5);
+            zoomLevel = Math.max(10, zoomLevel - zoomStep);
             setZoomLevel(zoomLevel);
         }
         function zoomFit() {
@@ -102,6 +103,8 @@
             svg.style.height = "100%";
             svg.style.width = "100%";
             setZoomText(false)
+
+            zoomLevel = roundToZoomLevel((svg.clientHeight / svg.height.baseVal.value) * 100);
 
             fitMode = true;
         }
@@ -114,6 +117,7 @@
             setZoomText(true);
 
             zoomSlider.value = zl;
+            zoomLevel = zl;
 
             fitMode = false;
         }
@@ -128,7 +132,10 @@
                 percent.innerText = "Fit";
             }
         }
-
+        function roundToZoomLevel(zl) {
+            var newZl = Math.round(zl + zoomStep) - Math.round(zl % zoomStep);
+            return Math.max(10, newZl);
+        }
         window.addEventListener("DOMContentLoaded", () => {
             init();
         });

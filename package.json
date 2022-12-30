@@ -40,55 +40,52 @@
           "light": "d2-icon-small.png",
           "dark": "d2-icon-small.png"
         }
-      },
-      {
-        "id": "markdown.d2"
       }
     ],
     "grammars": [
       {
         "language": "d2",
         "scopeName": "source.d2",
-        "path": "./syntaxes/d2.tmLanguage.json"
-      },
-      {
-        "language": "markdown.d2",
-        "scopeName": "text.html.markdown.d2",
-        "path": "./syntaxes/markdown.tmLanguage.json"
+        "path": "./syntaxes/d2.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.markdown": "markdown",
+          "meta.embedded.block.latex": "latex"
+        }
       }
     ],
+    "markdown.markdownItPlugins": true,
     "commands": [
       {
-        "command": "d2-viewer.ShowPreviewWindow",
-        "title": "Show d2 Preview Window",
+        "command": "D2.ShowPreviewWindow",
+        "title": "Show D2 Preview",
         "category": "d2"
       }
     ],
     "keybindings": [
       {
-        "command": "d2-viewer.ShowPreviewWindow",
+        "command": "D2.ShowPreviewWindow",
         "key": "ctrl+shift+d",
         "mac": "shift+cmd+d"
       }
     ],
     "configuration": {
       "type": "object",
-      "title": "d2 Viewer",
+      "title": "D2 Viewer",
       "properties": {
-        "d2-viewer.autoUpdate": {
+        "D2.autoUpdate": {
           "type": "boolean",
           "default": true,
           "description": "Automatically update the preview."
         },
-        "d2-viewer.updateTimer": {
+        "D2.updateTimer": {
           "type": "number",
           "default": 1500,
           "description": "Specifies the amount of time to wait between keystrokes before automatically updating the preview. (1000 = 1000ms = 1s)"
         },
-        "d2-viewer.updateOnSave": {
+        "D2.updateOnSave": {
           "type": "boolean",
           "default": false,
-          "description": "Automatically update on saving the d2 file.  Turn off to avoid excess updates when Auto Save is enabled."
+          "description": "Automatically update on saving the D2 file."
         }
       }
     },
@@ -98,7 +95,16 @@
           {
             "scope": "source.d2",
             "settings": {
-              "foreground": "#ff0000"
+              "foreground": "#777777"
+            }
+          },
+          {
+            "scope": [
+              "keyword.reserved.d2"
+            ],
+            "settings": {
+              "foreground": "#2200ff"
+        
             }
           },
           {
@@ -150,89 +156,86 @@
     "menus": {
       "commandPalette": [
         {
-          "command": "d2-viewer.ShowPreviewWindow",
+          "command": "D2.ShowPreviewWindow",
           "when": "editorLangId == d2",
           "group": "d2"
         }
       ],
       "editor/context": [
         {
-          "command": "d2-viewer.ShowPreviewWindow",
+          "command": "D2.ShowPreviewWindow",
           "when": "resourceLangId == d2",
           "group": "d2"
         }
       ],
       "editor/title": [
         {
-          "command": "d2-viewer.ShowPreviewWindow",
+          "command": "D2.ShowPreviewWindow",
           "when": "resourceLangId == d2",
           "group": "d2"
         }
       ],
       "editor/title/context": [
         {
-          "command": "d2-viewer.ShowPreviewWindow",
+          "command": "D2.ShowPreviewWindow",
           "when": "resourceLangId == d2",
           "group": "d2"
         }
       ],
       "explorer/context": [
         {
-          "command": "d2-viewer.ShowPreviewWindow",
+          "command": "D2.ShowPreviewWindow",
           "when": "resourceLangId == d2",
           "group": "d2"
         }
       ]
-    },
-    "scripts": {
-      "vscode:prepublish": "yarn run package",
-      "compile": "webpack",
-      "watch": "webpack --watch",
-      "package": "webpack --mode production --devtool hidden-source-map",
-      "compile-tests": "tsc -p . --outDir out",
-      "watch-tests": "tsc -p . -w --outDir out",
-      "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
-      "lint": "eslint src --ext ts",
-      "test": "node ./out/test/runTest.js",
-      "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
-      "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
-      "pkg": "vsce package --out d2.vsix"
-    },
-    "devDependencies": {
-      "@types/glob": "^8.0.0",
-      "@types/mocha": "^10.0.0",
-      "@types/node": "16.x",
-      "@types/temp": "^0.9.1",
-      "@types/vscode": "^1.73.0",
-      "@typescript-eslint/eslint-plugin": "^5.42.0",
-      "@typescript-eslint/parser": "^5.42.0",
-      "@vscode/test-electron": "^2.2.0",
-      "eslint": "^8.26.0",
-      "eslint-config-next": "^13.0.7",
-      "eslint-config-prettier": "^8.5.0",
-      "glob": "^8.0.3",
-      "mocha": "^10.1.0",
-      "ts-loader": "^9.4.1",
-      "typescript": "^4.8.4",
-      "webpack": "^5.74.0",
-      "webpack-cli": "^4.10.0"
-    },
-    "dependencies": {
-      "child_process": "^1.0.2",
-      "eslint-plugin-simple-import-sort": "^8.0.0",
-      "eslint-plugin-unused-imports": "^2.0.0",
-      "next": "^13.0.7",
-      "temp": "^0.9.4"
-    },
-    "homepage": "https://d2lang.com",
-    "icon": "d2-icon.png",
-    "bugs": {
-      "url": "https://github.com/terrastruct/d2-vscode/issues",
-      "email": "info@terrastruct.com"
-    },
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/terrastruct/d2-vscode"
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "lint": "eslint src --ext ts",
+    "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
+    "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
+    "pkg": "vsce package --out d2.vsix"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.0",
+    "@types/markdown-it-container": "^2.0.5",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "16.x",
+    "@types/temp": "^0.9.1",
+    "@types/vscode": "^1.73.0",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "@vscode/test-electron": "^2.2.0",
+    "eslint": "^8.26.0",
+    "eslint-config-next": "^13.0.7",
+    "eslint-config-prettier": "^8.5.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.1.0",
+    "ts-loader": "^9.4.1",
+    "typescript": "^4.8.4",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "eslint-plugin-simple-import-sort": "^8.0.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "next": "^13.0.7",
+    "temp": "^0.9.4"
+  },
+  "homepage": "https://d2lang.com",
+  "icon": "d2-icon.png",
+  "bugs": {
+    "url": "https://github.com/terrastruct/d2-vscode/issues",
+    "email": "info@terrastruct.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/terrastruct/d2-vscode"
   }
 }

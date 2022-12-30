@@ -1,4 +1,5 @@
 import { workspace } from "vscode";
+import { d2ConfigSection } from "./extension";
 
 /**
  * RefreshTimer - Allow for auto updates when the
@@ -17,7 +18,7 @@ export class RefreshTimer {
     timerId?: NodeJS.Timer;
     callback: TimerCallback;
     interval = 0;
-    ws = workspace.getConfiguration('d2-viewer');
+    ws = workspace.getConfiguration(d2ConfigSection);
 
     constructor(callback: TimerCallback) {
         this.callback = callback;
