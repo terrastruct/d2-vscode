@@ -17,7 +17,7 @@ export class RefreshTimer {
     timerId?: NodeJS.Timer ;
     callback: TimerCallback;
     interval = 0;
-    ws = workspace.getConfiguration('d2-viewer');
+    ws = workspace.getConfiguration('D2');
 
     constructor(callback: TimerCallback) {
         this.callback = callback;
