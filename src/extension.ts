@@ -4,6 +4,7 @@
 
 import {
 	commands,
+	ConfigurationChangeEvent,
 	ExtensionContext,
 	TextDocument,
 	TextDocumentChangeEvent,
@@ -17,12 +18,16 @@ import { DocToPreviewGenerator } from './docToPreviewGenerator';
 const d2Ext = 'd2';
 
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
-const ws: WorkspaceConfiguration = workspace.getConfiguration('d2-viewer');
+let ws: WorkspaceConfiguration = workspace.getConfiguration('D2');
 export let extContext: ExtensionContext;
 
 export function activate(context: ExtensionContext): void {
 
 	extContext = context;
+
+	context.subscriptions.push(workspace.onDidChangeConfiguration((e: ConfigurationChangeEvent) => {
+		ws = workspace.getConfiguration('D2');
+	}));
 
 	context.subscriptions.push(workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
 		if (e.document.languageId === d2Ext) {
@@ -39,7 +44,10 @@ export function activate(context: ExtensionContext): void {
 		if (doc.languageId === d2Ext) {
 			const updateOnSave = ws.get('updateOnSave', false);
 
-			if (updateOnSave) {
+			const trk = previewGenerator.getTrackObject(doc);
+
+			// If we don't have preview window open, then no need to update it
+			if (updateOnSave && trk?.outputDoc) {
 				previewGenerator.generate(doc);
 			}
 		}
@@ -57,7 +65,7 @@ export function activate(context: ExtensionContext): void {
 		}
 	}));
 
-	context.subscriptions.push(commands.registerCommand('d2-viewer.ShowPreviewWindow', () => {
+	context.subscriptions.push(commands.registerCommand('D2.ShowPreviewWindow', () => {
 		const activeEditor = window.activeTextEditor;
 
 		if (activeEditor?.document.languageId === d2Ext) {
@@ -75,4 +83,4 @@ export function activate(context: ExtensionContext): void {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate(): void {}
+export function deactivate(): void { }

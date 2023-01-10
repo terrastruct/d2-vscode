@@ -42,7 +42,9 @@ export class DocToPreviewGenerator {
         this.mapOfConnection.set(inDoc, trk);
 
         trk.timer = new RefreshTimer(() => {
-            this.generate(inDoc);
+            if (trk.outputDoc) {
+                this.generate(inDoc);
+            }
         });
 
         trk.timer?.start(false);
