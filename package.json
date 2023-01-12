@@ -1,16 +1,19 @@
 {
   "name": "d2",
-  "version": "0.3.0",
+  "displayName": "D2",
   "publisher": "Terrastruct",
-  "engines": {
-    "vscode": "^1.0.0"
-  },
-  "license": "BSD-3-Clause",
-  "displayName": "d2",
   "description": "Support for .d2 files.",
+  "version": "0.4.0",
+  "license": "BSD-3-Clause",
+  "contributors": [
+    "Barry Nolte <barry@barrynolte.com>"
+  ],
+  "engines": {
+    "vscode": "^1.73.0"
+  },
   "categories": [
     "Programming Languages",
-    "Themes"
+    "Visualization"
   ],
   "keywords": [
     "diagram",
@@ -21,6 +24,10 @@
     "uml",
     "mindmap"
   ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
   "contributes": {
     "languages": [
       {
@@ -50,19 +57,117 @@
         "path": "./syntaxes/markdown.tmLanguage.json"
       }
     ],
-    "themes": [
+    "commands": [
       {
-        "label": "D2 Light",
-        "uiTheme": "vs",
-        "path": "./themes/light-color-theme.json"
-      },
-      {
-        "label": "D2 Dark",
-        "uiTheme": "vs-dark",
-        "path": "./themes/dark-color-theme.json"
+        "command": "D2.ShowPreviewWindow",
+        "title": "Show d2 Preview Window",
+        "category": "d2"
       }
-    ]
+    ],
+    "keybindings": [
+      {
+        "command": "D2.ShowPreviewWindow",
+        "key": "ctrl+shift+d",
+        "mac": "shift+cmd+d"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "d2 Viewer Configuration",
+      "properties": {
+        "D2.autoUpdate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically update the preview as you edit the d2 file."
+        },
+        "D2.updateTimer": {
+          "type": "number",
+          "default": 1500,
+          "description": "Specifies the amount of time (in ms) to wait between keystrokes before updating the preview."
+        },
+        "D2.updateOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically update on saving the d2 file."
+        }
+      }
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "D2.ShowPreviewWindow",
+          "when": "editorLangId == d2",
+          "group": "d2"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "D2.ShowPreviewWindow",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "D2.ShowPreviewWindow",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "D2.ShowPreviewWindow",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "D2.ShowPreviewWindow",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        }
+      ]
+    }
   },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "lint": "eslint src --ext ts",
+    "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
+    "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
+    "pkg": "vsce package --out d2.vsix"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "16.x",
+    "@types/temp": "^0.9.1",
+    "@types/vscode": "^1.73.0",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "@vscode/test-electron": "^2.2.0",
+    "eslint": "^8.26.0",
+    "eslint-config-next": "^13.0.7",
+    "eslint-config-prettier": "^8.5.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.1.0",
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.8.4",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  },
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "eslint-plugin-simple-import-sort": "^8.0.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "next": "^13.0.7",
+    "temp": "^0.9.4"
+  },
+  "homepage": "https://d2lang.com",
+  "icon": "d2-icon.png",
   "bugs": {
     "url": "https://github.com/terrastruct/d2-vscode/issues",
     "email": "info@terrastruct.com"
@@ -70,12 +175,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/terrastruct/d2-vscode"
-  },
-  "homepage": "https://d2lang.com",
-  "icon": "d2-icon.png",
-  "scripts": {
-    "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
-    "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
-    "pkg": "vsce package --out d2.vsix"
   }
 }
