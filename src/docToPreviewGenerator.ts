@@ -9,7 +9,6 @@ import { outputChannel } from './extension';
 import { RefreshTimer } from './refreshTimer';
 
 /**
- * @foo
  *  D2P - Document to Preview.  This tracks the connection
  *  between the D2 document and to the preview window.
  * 

@@ -4,6 +4,7 @@
 
 import {
 	commands,
+	ConfigurationChangeEvent,
 	ExtensionContext,
 	languages,
 	TextDocument,
@@ -22,11 +23,12 @@ import { D2OutputChannel } from './outputChannel';
 const mdItContainer = require('markdown-it-container');
 
 const d2Ext = 'd2';
+const d2Lang = 'd2';
 export let d2ConfigSection = 'D2';
 
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 const documentFormatter: DocumentFormatter = new DocumentFormatter();
-const ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
+export let ws: WorkspaceConfiguration = workspace.getConfiguration('D2');
 
 export let outputChannel: D2OutputChannel;
 export let extContext: ExtensionContext;
@@ -35,7 +37,12 @@ export function activate(context: ExtensionContext) {
 
 	extContext = context;
 	outputChannel = new D2OutputChannel();
+	
+	context.subscriptions.push(workspace.onDidChangeConfiguration((e: ConfigurationChangeEvent) => {
+		ws = workspace.getConfiguration(d2ConfigSection);
+	}));
 
+	
 	context.subscriptions.push(workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
 		if (e.document.languageId === d2Ext) {
 			const autoUp = ws.get('autoUpdate', false);
@@ -90,7 +97,7 @@ export function activate(context: ExtensionContext) {
 
 	}));
 
-	languages.registerDocumentFormattingEditProvider({ language: 'd2', scheme: "file" }, {
+	languages.registerDocumentFormattingEditProvider({ language: d2Lang, scheme: "file" }, {
 		provideDocumentFormattingEdits(document: TextDocument): TextEdit[] {
 
 			const editor = window.visibleTextEditors.find(
@@ -129,7 +136,7 @@ export function extendMarkdownItWithD2(md: any) {
 
 	const highlight = md.options.highlight;
 	md.options.highlight = (code: string, lang: string) => {
-		if (lang === 'd2') {
+		if (lang === d2Lang) {
 			return previewGenerator.generateFromText(code);
 		}
 		return highlight(code, lang);

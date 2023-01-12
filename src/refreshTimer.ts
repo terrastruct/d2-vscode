@@ -1,5 +1,4 @@
-import { workspace } from "vscode";
-import { d2ConfigSection } from "./extension";
+import { d2ConfigSection, ws } from "./extension";
 
 /**
  * RefreshTimer - Allow for auto updates when the
@@ -18,14 +17,13 @@ export class RefreshTimer {
     timerId?: NodeJS.Timer;
     callback: TimerCallback;
     interval = 0;
-    ws = workspace.getConfiguration(d2ConfigSection);
 
     constructor(callback: TimerCallback) {
         this.callback = callback;
     }
 
     start(start: boolean) {
-        this.interval = this.ws.get('updateTimer', 1500);
+        this.interval = ws.get('updateTimer', 1500);
         this.timerId = setTimeout(() => {
             this.stop();
             this.callback();
