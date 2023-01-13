@@ -9,6 +9,7 @@ import {
 
 import { D2P } from './docToPreviewGenerator';
 import { extContext } from './extension';
+
 /**
  * BrowserWindow - Wraps the browser window and
  *  adds functionality to update the HTML/SVG
@@ -22,10 +23,18 @@ export class BrowserWindow {
 
         this.trackerObject = trkObj;
 
-        this.webViewPanel = window.createWebviewPanel('d2Preview', 'D2 Preview',
+        let fileName = '';
+        if (trkObj.inputDoc?.fileName) {
+            const p = path.parse(trkObj.inputDoc.fileName);
+
+            fileName = p.base;
+        }
+
+        this.webViewPanel = window.createWebviewPanel('d2Preview', `${fileName} - Preview`,
             ViewColumn.Beside, {
             enableFindWidget: true,
             enableScripts: true,
+            retainContextWhenHidden: true,
             localResourceRoots: [Uri.file(path.join(extContext.extensionPath, 'pages'))]
         });
 
