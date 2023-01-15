@@ -24,7 +24,7 @@ import mdItContainer = require('markdown-it-container');
 
 const d2Ext = 'd2';
 const d2Lang = 'd2';
-export let d2ConfigSection = 'D2';
+export const d2ConfigSection = 'D2';
 
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 const documentFormatter: DocumentFormatter = new DocumentFormatter();
@@ -94,20 +94,22 @@ export function activate(context: ExtensionContext) {
 
 		if (activeEditor?.document.languageId === d2Ext) {
 			previewGenerator.generate(activeEditor.document);
-		}
 
+			const trk = previewGenerator.getTrackObject(activeEditor.document);
+			trk?.outputDoc?.show();
+		}
 	}));
 
 	languages.registerDocumentFormattingEditProvider({ language: d2Lang, scheme: "file" }, {
 		provideDocumentFormattingEdits(document: TextDocument): TextEdit[] {
 
-			const editor = window.visibleTextEditors.find(
-				(editor) => editor.document === document
-			);
+				const editor = window.visibleTextEditors.find(
+					(editor) => editor.document === document
+				);
 
-			if (editor) {
-				documentFormatter.format(editor);
-			}
+				if (editor) {
+					documentFormatter.format(editor);
+				}
 
 			return [];
 		}

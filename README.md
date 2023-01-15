@@ -9,10 +9,10 @@
 # VSCode extension for [D2](https://d2lang.com) files.
 
 ## Currently Supports
-* Open preview to the right (right-click or (ctrl+shift+d) (mac -> shift+cmd+d))
-* Zoom the preview
-* Format Document
-* Render D2 in markdown documents
+* Syntax highlighting `.d2` files
+* Open preview window on the side (right-click or (ctrl+shift+d) (mac -> shift+cmd+d))
+* Format Document for `.d2` files
+* View rendered D2 code snippets in markdown document preview
 
 ```d2
 x -> y

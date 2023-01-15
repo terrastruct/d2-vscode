@@ -1,6 +1,6 @@
 {
   "name": "d2",
-  "displayName": "d2",
+  "displayName": "D2",
   "publisher": "Terrastruct",
   "description": "Support for .d2 files.",
   "version": "0.4.0",
@@ -86,11 +86,6 @@
           "type": "boolean",
           "default": false,
           "description": "Automatically update on saving the D2 file."
-        },
-        "D2.formatOnSave": {
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically format on saving the D2 file."
         }
       }
     },

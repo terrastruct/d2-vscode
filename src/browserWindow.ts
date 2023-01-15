@@ -39,8 +39,7 @@ export class BrowserWindow {
         });
 
         const onDiskPath = path.join(extContext.extensionPath, 'pages/previewPage.html');
-        let data: Buffer = Buffer.alloc(1);
-        data = readFileSync(onDiskPath);
+        let data: string = readFileSync(onDiskPath, 'utf-8');
 
         this.webViewPanel.webview.html = data.toString();
 
@@ -50,6 +49,10 @@ export class BrowserWindow {
             }
         });
 
+    }
+
+    show() {
+        this.webViewPanel.reveal();
     }
 
     setSvg(svg: string): void {
