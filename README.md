@@ -20,9 +20,9 @@ y: |`md
 `|
 ```
 
-## Installation
+## Install
 
-The VSCode extension for D2 can be installed using the extension sidebar or by going to the [Visual Studio Marketplace Website](https://marketplace.visualstudio.com/items?itemName=terrastruct.d2) and clicking 'Install'
+You can install using the extension sidebar or by going to the [Visual Studio Marketplace Website](https://marketplace.visualstudio.com/items?itemName=terrastruct.d2) and clicking 'Install'.
 
 ## Contributing
 
