@@ -1,4 +1,4 @@
-import { d2ConfigSection, ws } from "./extension";
+import { ws } from "./extension";
 
 /**
  * RefreshTimer - Allow for auto updates when the

@@ -69,7 +69,8 @@ export class DocToPreviewGenerator {
 
     const fileText = trkObj.inputDoc.getText();
     if (!fileText) {
-      return; // Empty document, do nothing
+      // Empty document, do nothing
+      return;
     }
 
     const data: string = this.generateFromText(fileText);

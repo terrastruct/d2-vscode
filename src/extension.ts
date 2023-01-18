@@ -19,7 +19,7 @@ import {
 import { DocToPreviewGenerator } from "./docToPreviewGenerator";
 import { DocumentFormatter } from "./documentFormatter";
 import { D2OutputChannel } from "./outputChannel";
-import mdItContainer = require("markdown-it-container");
+import * as mdItContainer from "markdown-it-container";
 import { layoutPicker } from "./layoutPicker";
 import { themePicker } from "./themePicker";
 
@@ -35,6 +35,7 @@ export let ws: WorkspaceConfiguration =
 export let outputChannel: D2OutputChannel;
 export let extContext: ExtensionContext;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function activate(context: ExtensionContext): any {
   extContext = context;
   outputChannel = new D2OutputChannel();
@@ -49,7 +50,7 @@ export function activate(context: ExtensionContext): any {
         ws.get("previewTheme") !== wsOld.get("previewTheme")
       ) {
         const activeEditor = window.activeTextEditor;
-        if (activeEditor?.document.languageId == d2Ext) {
+        if (activeEditor?.document.languageId === d2Ext) {
           previewGenerator.generate(activeEditor.document);
         }
       }
@@ -130,12 +131,12 @@ export function activate(context: ExtensionContext): any {
     { language: d2Lang, scheme: "file" },
     {
       provideDocumentFormattingEdits(document: TextDocument): TextEdit[] {
-        const editor = window.visibleTextEditors.find(
+        const documentEditor = window.visibleTextEditors.find(
           (editor) => editor.document === document
         );
 
-        if (editor) {
-          documentFormatter.format(editor);
+        if (documentEditor) {
+          documentFormatter.format(documentEditor);
         }
 
         return [];
@@ -189,11 +190,6 @@ export function activate(context: ExtensionContext): any {
       return extendMarkdownItWithD2(md);
     },
   };
-}
-
-// This method is called when your extension is deactivated
-export function deactivate(): void {
-  undefined;
 }
 
 const pluginKeyword = "d2";
