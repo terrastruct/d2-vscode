@@ -26,6 +26,10 @@ y: |`md
 `|
 ```
 
+## Install
+
+You can install using the extension sidebar or by going to the [Visual Studio Marketplace Website](https://marketplace.visualstudio.com/items?itemName=terrastruct.d2) and clicking "Install".
+
 ## Contributing
 
 To package and install the extension locally, run:
