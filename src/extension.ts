@@ -4,7 +4,6 @@
 
 import {
 	commands,
-	ConfigurationChangeEvent,
 	ExtensionContext,
 	TextDocument,
 	TextDocumentChangeEvent,
@@ -14,19 +13,31 @@ import {
 } from 'vscode';
 
 import { DocToPreviewGenerator } from './docToPreviewGenerator';
+import { themePicker } from './themePicker';
+import { layoutPicker } from './layoutPicker';
 
 const d2Ext = 'd2';
+export const d2ConfigSection = 'D2';
 
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
-let ws: WorkspaceConfiguration = workspace.getConfiguration('D2');
+export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
 export let extContext: ExtensionContext;
 
 export function activate(context: ExtensionContext): void {
 
 	extContext = context;
 
-	context.subscriptions.push(workspace.onDidChangeConfiguration((e: ConfigurationChangeEvent) => {
-		ws = workspace.getConfiguration('D2');
+	context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
+		const wsOld = ws;
+		ws = workspace.getConfiguration(d2ConfigSection);
+
+		if ((ws.get('previewLayout') !== wsOld.get('previewLayout')) ||
+			(ws.get('previewTheme') !== wsOld.get('previewTheme'))) {
+			const activeEditor = window.activeTextEditor;
+			if (activeEditor?.document.languageId == d2Ext) {
+				previewGenerator.generate(activeEditor.document);
+			}
+		}
 	}));
 
 	context.subscriptions.push(workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
@@ -74,6 +85,34 @@ export function activate(context: ExtensionContext): void {
 
 	}));
 
+	context.subscriptions.push(commands.registerCommand('D2.PickLayout', () => {
+		const activeEditor = window.activeTextEditor;
+
+		if (activeEditor?.document.languageId === d2Ext) {
+			const layoutPick = new layoutPicker();
+			layoutPick.showPicker().then((layout) => {
+				if (layout) {
+					ws.update('previewLayout', layout.label, true);
+				}
+			});
+		}
+	}));
+
+	context.subscriptions.push(commands.registerCommand('D2.PickTheme', () => {
+		const activeEditor = window.activeTextEditor;
+
+		if (activeEditor?.document.languageId === d2Ext) {
+			const themePick = new themePicker();
+			themePick.showPicker().then((theme) => {
+				if (theme) {
+					ws.update('previewTheme', theme.label, true).then(() => {
+						previewGenerator.generate(activeEditor.document);
+					});
+				}
+			});
+		}
+	}));
+
 	// * Find all open d2 files and add to tracker
 	workspace.textDocuments.forEach((td: TextDocument) => {
 		if (td.languageId === d2Ext) {
@@ -83,4 +122,4 @@ export function activate(context: ExtensionContext): void {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate(): void { }
+export function deactivate(): void { undefined }

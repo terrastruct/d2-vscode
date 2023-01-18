@@ -4,7 +4,10 @@ import { TextDocument, window } from 'vscode';
 
 import { BrowserWindow } from './browserWindow';
 import { RefreshTimer } from './refreshTimer';
+
 import temp = require('temp');
+import { ws } from './extension';
+import { NameToThemeNumber } from './themePicker';
 
 /**
  * D2P - Document to Preview.  This tracks the connection
@@ -29,9 +32,6 @@ export class D2P {
 export class DocToPreviewGenerator {
 
     mapOfConnection: Map<TextDocument, D2P> = new Map<TextDocument, D2P>();
-
-    constructor() { }
-
 
     createObjectToTrack(inDoc: TextDocument): D2P {
         const trk = new D2P();
@@ -72,8 +72,16 @@ export class DocToPreviewGenerator {
 
                 writeFileSync(trkObj.inFile, fileText);
 
+                const layout: string = ws.get('previewLayout', 'dagre');
+                const theme: string = ws.get('previewTheme', 'default');
+                const themeNumber: number = NameToThemeNumber(theme);
                 try {
-                    const proc = spawnSync('d2', [trkObj.inFile, trkObj.outFile]);
+                    const proc = spawnSync('d2', [
+                        `--layout=${layout}`,
+                        `--theme=${themeNumber}`,
+                        trkObj.inFile,
+                        trkObj.outFile
+                    ]);
 
                     let errorString = '';
                     if (proc.status !== 0) {
