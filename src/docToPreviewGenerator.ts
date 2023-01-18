@@ -5,8 +5,9 @@ import * as temp from 'temp';
 import { TextDocument } from 'vscode';
 
 import { BrowserWindow } from './browserWindow';
-import { outputChannel } from './extension';
+import { outputChannel, ws } from './extension';
 import { RefreshTimer } from './refreshTimer';
+import { NameToThemeNumber } from './themePicker';
 
 /**
  *  D2P - Document to Preview.  This tracks the connection
@@ -99,7 +100,16 @@ export class DocToPreviewGenerator {
         writeFileSync(inFile, text);
 
         try {
-            const proc = spawnSync('d2', [inFile, outFile]);
+            const layout: string = ws.get('previewLayout', 'dagre');
+            const theme: string = ws.get('previewTheme', 'default');
+            const themeNumber: number = NameToThemeNumber(theme);
+
+            const proc = spawnSync('d2', [
+                `--layout=${layout}`,
+                `--theme=${themeNumber}`,
+                inFile,
+                outFile
+            ]);
 
             // TODO - Catch error when spawn can't find d2
             let errorString = '';

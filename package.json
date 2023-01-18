@@ -69,16 +69,6 @@
         "command": "D2.PickLayout",
         "title": "Pick Preview Layout",
         "category": "d2"
-      },
-      {
-        "command": "D2.PickTheme",
-        "title": "Pick Preview Theme",
-        "category": "d2"
-      },
-      {
-        "command": "D2.PickLayout",
-        "title": "Pick Preview Layout",
-        "category": "d2"
       }
     ],
     "keybindings": [
@@ -105,7 +95,7 @@
         "D2.updateOnSave": {
           "type": "boolean",
           "default": false,
-          "description": "Automatically update on saving the d2 file."
+          "description": "Automatically update on saving the D2 file."
         },
         "D2.previewTheme": {
           "type": "string",
