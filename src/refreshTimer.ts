@@ -1,9 +1,9 @@
-import { d2ConfigSection, ws } from "./extension";
+import { ws } from "./extension";
 
 /**
  * RefreshTimer - Allow for auto updates when the
  *  document changes.
- * 
+ *
  *  Basic Usage:
  *      Create Timer
  *      Start Timer
@@ -13,34 +13,32 @@ import { d2ConfigSection, ws } from "./extension";
 type TimerCallback = () => void;
 
 export class RefreshTimer {
+  timerId?: NodeJS.Timer;
+  callback: TimerCallback;
+  interval = 0;
 
-    timerId?: NodeJS.Timer;
-    callback: TimerCallback;
-    interval = 0;
+  constructor(callback: TimerCallback) {
+    this.callback = callback;
+  }
 
-    constructor(callback: TimerCallback) {
-        this.callback = callback;
+  start(start: boolean) {
+    this.interval = ws.get("updateTimer", 1500);
+    this.timerId = setTimeout(() => {
+      this.stop();
+      this.callback();
+    }, this.interval);
+
+    if (!start) {
+      this.stop();
     }
+  }
 
-    start(start: boolean) {
-        this.interval = ws.get('updateTimer', 1500);
-        this.timerId = setTimeout(() => {
-            this.stop();
-            this.callback();
-        }, this.interval);
+  stop() {
+    clearTimeout(this.timerId);
+  }
 
-        if (!start) {
-            this.stop();
-        }
-    }
-
-    stop() {
-        clearTimeout(this.timerId);
-    }
-
-    reset() {
-        this.stop();
-        this.start(true);
-    }
+  reset() {
+    this.stop();
+    this.start(true);
+  }
 }
-
