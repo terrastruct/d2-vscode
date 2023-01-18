@@ -15,8 +15,6 @@ export class DocumentFormatter {
 
     inFile: string = temp.path({ suffix: 'in.d2.temp' });
 
-    constructor() { }
-
     format(textEditor: TextEditor): void {
 
         const fileText = textEditor.document.getText();
@@ -36,7 +34,7 @@ export class DocumentFormatter {
 
                 const p = path.parse(textEditor.document.fileName);
 
-                let data: string = readFileSync(this.inFile, 'utf-8');
+                const data: string = readFileSync(this.inFile, 'utf-8');
 
                 if (!data) {
                     outputChannel.appendError(`Document ${p.base} could not be read.`);
@@ -46,7 +44,7 @@ export class DocumentFormatter {
                 // This will replace the entire document with the newly formatted document
                 textEditor.edit((builder) => {
                     const doc = textEditor.document;
-                    builder.replace(new Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), data.toString());
+                    builder.replace(new Range(doc.lineAt(0).range.start, doc.lineAt(doc.lineCount - 1).range.end), data);
                 });
 
                 outputChannel.appendInfo(`Document ${p.base} formatted.`);
@@ -61,7 +59,7 @@ export class DocumentFormatter {
             // The existence of these files should not escape this function.
             unlink(this.inFile, (err) => {
                 if (err) {
-                    outputChannel.appendWarning(`Temp File ${err?.message} could not be delted`);
+                    outputChannel.appendWarning(`Temp File ${err?.message} could not be deleted`);
                 }
             });
         }

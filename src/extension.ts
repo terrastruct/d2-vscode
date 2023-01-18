@@ -4,7 +4,6 @@
 
 import {
 	commands,
-	ConfigurationChangeEvent,
 	ExtensionContext,
 	languages,
 	TextDocument,
@@ -21,6 +20,8 @@ import { DocToPreviewGenerator } from './docToPreviewGenerator';
 import { DocumentFormatter } from './documentFormatter';
 import { D2OutputChannel } from './outputChannel';
 import mdItContainer = require('markdown-it-container');
+import { layoutPicker } from './layoutPicker';
+import { themePicker } from './themePicker';
 
 const d2Ext = 'd2';
 const d2Lang = 'd2';
@@ -33,16 +34,23 @@ export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSecti
 export let outputChannel: D2OutputChannel;
 export let extContext: ExtensionContext;
 
-export function activate(context: ExtensionContext) {
+export function activate(context: ExtensionContext): any {
 
 	extContext = context;
 	outputChannel = new D2OutputChannel();
 
-	// When a configuration chenge is detected, we need to update our view into the settings
-	context.subscriptions.push(workspace.onDidChangeConfiguration((e: ConfigurationChangeEvent) => {
+	context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
+		const wsOld = ws;
 		ws = workspace.getConfiguration(d2ConfigSection);
-	}));
 
+		if ((ws.get('previewLayout') !== wsOld.get('previewLayout')) ||
+			(ws.get('previewTheme') !== wsOld.get('previewTheme'))) {
+			const activeEditor = window.activeTextEditor;
+			if (activeEditor?.document.languageId == d2Ext) {
+				previewGenerator.generate(activeEditor.document);
+			}
+		}
+	}));
 
 	context.subscriptions.push(workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
 		if (e.document.languageId === d2Ext) {
@@ -70,9 +78,11 @@ export function activate(context: ExtensionContext) {
 
 			const trk = previewGenerator.getTrackObject(doc);
 
+			// If we don't have preview window open, then no need to update it
 			if (updateOnSave && hardSave && trk?.outputDoc) {
 				previewGenerator.generate(doc);
 			}
+
 			hardSave = false;
 		}
 	}));
@@ -103,17 +113,43 @@ export function activate(context: ExtensionContext) {
 	languages.registerDocumentFormattingEditProvider({ language: d2Lang, scheme: "file" }, {
 		provideDocumentFormattingEdits(document: TextDocument): TextEdit[] {
 
-				const editor = window.visibleTextEditors.find(
-					(editor) => editor.document === document
-				);
+			const editor = window.visibleTextEditors.find(
+				(editor) => editor.document === document
+			);
 
-				if (editor) {
-					documentFormatter.format(editor);
-				}
+			if (editor) {
+				documentFormatter.format(editor);
+			}
 
 			return [];
 		}
 	});
+
+	context.subscriptions.push(commands.registerCommand('D2.PickLayout', () => {
+		const activeEditor = window.activeTextEditor;
+
+		if (activeEditor?.document.languageId === d2Ext) {
+			const layoutPick = new layoutPicker();
+			layoutPick.showPicker().then((layout) => {
+				if (layout) {
+					ws.update('previewLayout', layout.label, true);
+				}
+			});
+		}
+	}));
+
+	context.subscriptions.push(commands.registerCommand('D2.PickTheme', () => {
+		const activeEditor = window.activeTextEditor;
+
+		if (activeEditor?.document.languageId === d2Ext) {
+			const themePick = new themePicker();
+			themePick.showPicker().then((theme) => {
+				if (theme) {
+					ws.update('previewTheme', theme.label, true);
+				}
+			});
+		}
+	}));
 
 	/** Find all open d2 files and add to tracker if they are 
 	 *  open before the extension loads
@@ -126,14 +162,16 @@ export function activate(context: ExtensionContext) {
 
 	return {
 		// Sets up our ability to render for markdown files
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		extendMarkdownIt(md: any) {
 			return extendMarkdownItWithD2(md);
 		}
 	}
 }
 
+
 // This method is called when your extension is deactivated
-export function deactivate(): void { }
+export function deactivate(): void { undefined }
 
 const pluginKeyword = 'd2';
 
@@ -142,7 +180,9 @@ const pluginKeyword = 'd2';
  * This function will be asked by the Markdown system to render
  * a d2 snippit in a markdown file 
  */
-export function extendMarkdownItWithD2(md: any): any {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function extendMarkdownItWithD2(md: any): unknown {
+
 	md.use(mdItContainer, pluginKeyword, {});
 
 	const highlight = md.options.highlight;
@@ -152,6 +192,7 @@ export function extendMarkdownItWithD2(md: any): any {
 		}
 		return highlight(code, lang);
 	};
+
 	return md;
 }
 

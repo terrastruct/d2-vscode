@@ -3,7 +3,7 @@
   "displayName": "D2",
   "publisher": "Terrastruct",
   "description": "Support for .d2 files.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "license": "BSD-3-Clause",
   "contributors": [
     "Barry Nolte <barry@barrynolte.com>"
@@ -59,6 +59,16 @@
         "command": "D2.ShowPreviewWindow",
         "title": "Show D2 Preview",
         "category": "d2"
+      },
+      {
+        "command": "D2.PickTheme",
+        "title": "Pick Preview Theme",
+        "category": "d2"
+      },
+      {
+        "command": "D2.PickLayout",
+        "title": "Pick Preview Layout",
+        "category": "d2"
       }
     ],
     "keybindings": [
@@ -86,6 +96,40 @@
           "type": "boolean",
           "default": false,
           "description": "Automatically update on saving the D2 file."
+        },
+        "D2.previewTheme": {
+          "type": "string",
+          "default": "default",
+          "enum": [
+            "default",
+            "Neutral grey",
+            "Flagship Terrastruct",
+            "Cool classics",
+            "Mixed berry blue",
+            "Grape soda",
+            "Aubergine",
+            "Colorblind clear",
+            "Vanilla nitro cola",
+            "Orange creamsicle",
+            "Shirley temple",
+            "Earth tones",
+            "Everglade green",
+            "Buttered toast"
+          ],
+          "description": "Theme used for preview."
+        },
+        "D2.previewLayout": {
+          "type": "string",
+          "default": "dagre",
+          "enum": [
+            "dagre",
+            "elk"
+          ],
+          "enumDescriptions": [
+            "The directed graph layout library Dagre",
+            "Eclipse Layout Kernel (ELK) with the Layered algorithm"
+          ],
+          "description": "Layout used for preview."
         }
       }
     },
@@ -94,6 +138,16 @@
         {
           "command": "D2.ShowPreviewWindow",
           "when": "editorLangId == d2",
+          "group": "d2"
+        },
+        {
+          "command": "D2.PickTheme",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        },
+        {
+          "command": "D2.PickLayout",
+          "when": "resourceLangId == d2",
           "group": "d2"
         }
       ],
@@ -144,16 +198,21 @@
     "@types/node": "16.x",
     "@types/temp": "^0.9.1",
     "@types/vscode": "^1.73.0",
-    "@typescript-eslint/eslint-plugin": "^5.42.0",
-    "@typescript-eslint/parser": "^5.42.0",
+    "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "@typescript-eslint/parser": "^5.48.2",
     "@vscode/test-electron": "^2.2.0",
-    "eslint": "^8.26.0",
+    "eslint": "^8.32.0",
     "eslint-config-next": "^13.0.7",
     "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard-with-typescript": "^30.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-webpack-plugin": "^3.2.0",
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
     "ts-loader": "^9.4.2",
-    "typescript": "^4.8.4",
+    "typescript": "^4.9.4",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0"
   },

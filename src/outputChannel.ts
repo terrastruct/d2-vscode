@@ -9,8 +9,6 @@ import { OutputChannel, window } from "vscode";
 export class D2OutputChannel {
     outputChannel: OutputChannel = window.createOutputChannel('D2-Output');
 
-    constructor() { }
-
     appendInfo(info: string): void {
         this.output(info);
     }

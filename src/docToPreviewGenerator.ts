@@ -5,8 +5,9 @@ import * as temp from 'temp';
 import { TextDocument } from 'vscode';
 
 import { BrowserWindow } from './browserWindow';
-import { outputChannel } from './extension';
+import { outputChannel, ws } from './extension';
 import { RefreshTimer } from './refreshTimer';
+import { NameToThemeNumber } from './themePicker';
 
 /**
  *  D2P - Document to Preview.  This tracks the connection
@@ -28,8 +29,6 @@ export class D2P {
 export class DocToPreviewGenerator {
 
     mapOfConnection: Map<TextDocument, D2P> = new Map<TextDocument, D2P>();
-
-    constructor() { }
 
     createObjectToTrack(inDoc: TextDocument): D2P {
         const trk = new D2P();
@@ -70,7 +69,7 @@ export class DocToPreviewGenerator {
             return; // Empty document, do nothing
         }
 
-        let data: string = this.generateFromText(fileText);
+        const data: string = this.generateFromText(fileText);
 
         // If we don't have a preview window already, create one
         if (!trkObj.outputDoc) {
@@ -93,14 +92,24 @@ export class DocToPreviewGenerator {
      */
     generateFromText(text: string): string {
 
-        let inFile = temp.path({ suffix: 'in.d2.temp' });
-        let outFile = temp.path({ suffix: 'out.d2.temp' });
+        const inFile = temp.path({ suffix: 'in.d2.temp' });
+        const outFile = temp.path({ suffix: 'out.d2.temp' });
+
 
         // Write out our document so the D2 executable can read it.
         writeFileSync(inFile, text);
 
         try {
-            const proc = spawnSync('d2', [inFile, outFile]);
+            const layout: string = ws.get('previewLayout', 'dagre');
+            const theme: string = ws.get('previewTheme', 'default');
+            const themeNumber: number = NameToThemeNumber(theme);
+
+            const proc = spawnSync('d2', [
+                `--layout=${layout}`,
+                `--theme=${themeNumber}`,
+                inFile,
+                outFile
+            ]);
 
             // TODO - Catch error when spawn can't find d2
             let errorString = '';
@@ -116,7 +125,7 @@ export class DocToPreviewGenerator {
         }
 
         // Get the the contents of the output file
-        let data: string = readFileSync(outFile, 'utf-8');
+        const data: string = readFileSync(outFile, 'utf-8');
 
         // No longer need our temp files, get rid of them.
         // The existence of these files should not escape this function.
