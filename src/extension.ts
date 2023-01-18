@@ -5,25 +5,36 @@
 import {
 	commands,
 	ExtensionContext,
+	languages,
 	TextDocument,
 	TextDocumentChangeEvent,
+	TextDocumentSaveReason,
+	TextDocumentWillSaveEvent,
+	TextEdit,
 	window,
 	workspace,
 	WorkspaceConfiguration
 } from 'vscode';
 
 import { DocToPreviewGenerator } from './docToPreviewGenerator';
-import { themePicker } from './themePicker';
+import { DocumentFormatter } from './documentFormatter';
+import { D2OutputChannel } from './outputChannel';
+import mdItContainer = require('markdown-it-container');
 import { layoutPicker } from './layoutPicker';
+import { themePicker } from './themePicker';
 
 const d2Ext = 'd2';
+const d2Lang = 'd2';
 export const d2ConfigSection = 'D2';
 
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
+const documentFormatter: DocumentFormatter = new DocumentFormatter();
 export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
+
+export let outputChannel: D2OutputChannel;
 export let extContext: ExtensionContext;
 
-export function activate(context: ExtensionContext): void {
+export function activate(context: ExtensionContext) {
 
 	extContext = context;
 
@@ -51,6 +62,15 @@ export function activate(context: ExtensionContext): void {
 		}
 	}));
 
+	// User actually forced a save, NOT auto save
+	let hardSave = false;
+
+	context.subscriptions.push(workspace.onWillSaveTextDocument((e: TextDocumentWillSaveEvent) => {
+		if (e.document.languageId === d2Ext) {
+			hardSave = e.reason === TextDocumentSaveReason.Manual;
+		}
+	}));
+
 	context.subscriptions.push(workspace.onDidSaveTextDocument((doc: TextDocument) => {
 		if (doc.languageId === d2Ext) {
 			const updateOnSave = ws.get('updateOnSave', false);
@@ -58,9 +78,11 @@ export function activate(context: ExtensionContext): void {
 			const trk = previewGenerator.getTrackObject(doc);
 
 			// If we don't have preview window open, then no need to update it
-			if (updateOnSave && trk?.outputDoc) {
+			if (updateOnSave && hardSave && trk?.outputDoc) {
 				previewGenerator.generate(doc);
 			}
+
+			hardSave = false;
 		}
 	}));
 
@@ -84,6 +106,32 @@ export function activate(context: ExtensionContext): void {
 		}
 
 	}));
+
+	context.subscriptions.push(commands.registerCommand('D2.ShowPreviewWindow', () => {
+		const activeEditor = window.activeTextEditor;
+
+		if (activeEditor?.document.languageId === d2Ext) {
+			previewGenerator.generate(activeEditor.document);
+
+			const trk = previewGenerator.getTrackObject(activeEditor.document);
+			trk?.outputDoc?.show();
+		}
+	}));
+
+	languages.registerDocumentFormattingEditProvider({ language: d2Lang, scheme: "file" }, {
+		provideDocumentFormattingEdits(document: TextDocument): TextEdit[] {
+
+			const editor = window.visibleTextEditors.find(
+				(editor) => editor.document === document
+			);
+
+			if (editor) {
+				documentFormatter.format(editor);
+			}
+
+			return [];
+		}
+	});
 
 	context.subscriptions.push(commands.registerCommand('D2.PickLayout', () => {
 		const activeEditor = window.activeTextEditor;
@@ -119,7 +167,39 @@ export function activate(context: ExtensionContext): void {
 			previewGenerator.createObjectToTrack(td);
 		}
 	});
+
+	return {
+		// Sets up our ability to render for markdown files
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		extendMarkdownIt(md: any) {
+			return extendMarkdownItWithD2(md);
+		}
+	}
 }
 
 // This method is called when your extension is deactivated
 export function deactivate(): void { undefined }
+
+const pluginKeyword = 'd2';
+
+/**
+ * 
+ * This function will be asked by the Markdown system to render
+ * a d2 snippit in a markdown file 
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function extendMarkdownItWithD2(md: any): unknown {
+	md.use(mdItContainer, pluginKeyword, {});
+
+	const highlight = md.options.highlight;
+	md.options.highlight = (code: string, lang: string) => {
+		if (lang === d2Lang) {
+			return previewGenerator.generateFromText(code);
+		}
+		return highlight(code, lang);
+	};
+
+	return md;
+}
+
+

@@ -72,6 +72,16 @@
         "command": "D2.PickLayout",
         "title": "Pick Preview Layout",
         "category": "d2"
+      },
+      {
+        "command": "D2.PickTheme",
+        "title": "Pick Preview Theme",
+        "category": "d2"
+      },
+      {
+        "command": "D2.PickLayout",
+        "title": "Pick Preview Layout",
+        "category": "d2"
       }
     ],
     "keybindings": [

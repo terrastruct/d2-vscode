@@ -1,24 +1,20 @@
 import { ExecException, spawnSync } from 'child_process';
 import { readFileSync, unlink, writeFileSync } from 'fs';
-import { TextDocument, window } from 'vscode';
+import * as path from 'path';
+import * as temp from 'temp';
+import { TextDocument } from 'vscode';
 
 import { BrowserWindow } from './browserWindow';
+import { outputChannel } from './extension';
 import { RefreshTimer } from './refreshTimer';
 
-import temp = require('temp');
-import { ws } from './extension';
-import { NameToThemeNumber } from './themePicker';
-
 /**
- * D2P - Document to Preview.  This tracks the connection
+ *  D2P - Document to Preview.  This tracks the connection
  *  between the D2 document and to the preview window.
  * 
  * Stores the temp file string.
- * Stores the temp file string.
  **/
 export class D2P {
-    inFile = '';
-    outFile = '';
     inputDoc?: TextDocument;
     outputDoc?: BrowserWindow;
     timer?: RefreshTimer;
@@ -38,12 +34,10 @@ export class DocToPreviewGenerator {
 
         trk.inputDoc = inDoc;
 
-        trk.inFile = temp.path({ suffix: 'in.d2.temp' });
-        trk.outFile = temp.path({ suffix: 'out.d2.temp' });
-
         this.mapOfConnection.set(inDoc, trk);
 
         trk.timer = new RefreshTimer(() => {
+            // If there is a document to update, update it.
             if (trk.outputDoc) {
                 this.generate(inDoc);
             }
@@ -64,62 +58,78 @@ export class DocToPreviewGenerator {
 
     generate(inDoc: TextDocument): void {
         const trkObj = this.getTrackObject(inDoc);
+        // if we can't find our tracking info, no sense doing anything
+        if (!trkObj) { return; }
+        // No input document? How did we get here?
+        if (!trkObj.inputDoc) { return; }
 
-        if (trkObj) {
-
-            const fileText = trkObj.inputDoc?.getText();
-            if (typeof fileText === 'string') {
-
-                writeFileSync(trkObj.inFile, fileText);
-
-                const layout: string = ws.get('previewLayout', 'dagre');
-                const theme: string = ws.get('previewTheme', 'default');
-                const themeNumber: number = NameToThemeNumber(theme);
-                try {
-                    const proc = spawnSync('d2', [
-                        `--layout=${layout}`,
-                        `--theme=${themeNumber}`,
-                        trkObj.inFile,
-                        trkObj.outFile
-                    ]);
-
-                    let errorString = '';
-                    if (proc.status !== 0) {
-                        errorString = proc.stderr.toString();
-                        window.showErrorMessage(errorString);
-                        return;
-                    }
-
-                    let data: Buffer = Buffer.alloc(1);
-                    data = readFileSync(trkObj.outFile);
-
-                    // If we don't have a preview window already, create one
-                    if (!trkObj.outputDoc) {
-                        trkObj.outputDoc = new BrowserWindow(trkObj);
-                    }
-
-                    trkObj.outputDoc.setSvg(data.toString());
-
-                } catch (error) {
-                    const ex: ExecException = error as ExecException;
-
-                    window.showErrorMessage(ex.message);
-                }
-
-                // No longer need our temp files, get rid of them.
-                // The existance of these files should not escape this function.
-                unlink(trkObj.inFile, (err) => {
-                    if (err) {
-                        window.showInformationMessage(`Temp File Error: ${err?.message}`);
-                    }
-                });
-                unlink(trkObj.outFile, (err) => {
-                    if (err) {
-                        window.showInformationMessage(`Temp File Error: ${err?.message}`);
-                    }
-                });
-            }
+        const fileText = trkObj.inputDoc.getText();
+        if (!fileText) {
+            return; // Empty document, do nothing
         }
+
+        const data: string = this.generateFromText(fileText);
+
+        // If we don't have a preview window already, create one
+        if (!trkObj.outputDoc) {
+            trkObj.outputDoc = new BrowserWindow(trkObj);
+        }
+
+        if (data.length > 0) {
+            trkObj.outputDoc.setSvg(data);
+        }
+
+        const p = path.parse(trkObj.inputDoc.fileName);
+
+        outputChannel.appendInfo(`Preview for ${p.base} updated.`);
+
+    }
+
+    /**
+     * Take the d2 document text and pass it to the D2 executable
+     * and then retreive the output to render in our preveiw window.
+     */
+    generateFromText(text: string): string {
+
+        const inFile = temp.path({ suffix: 'in.d2.temp' });
+        const outFile = temp.path({ suffix: 'out.d2.temp' });
+
+        // Write out our document so the D2 executable can read it.
+        writeFileSync(inFile, text);
+
+        try {
+            const proc = spawnSync('d2', [inFile, outFile]);
+
+            // TODO - Catch error when spawn can't find d2
+            let errorString = '';
+            if (proc.status !== 0) {
+                errorString = proc.stderr.toString();
+                outputChannel.appendError(errorString);
+                return '';
+            }
+        } catch (error) {
+            const ex: ExecException = error as ExecException;
+
+            outputChannel.appendError(ex.message);
+        }
+
+        // Get the the contents of the output file
+        const data: string = readFileSync(outFile, 'utf-8');
+
+        // No longer need our temp files, get rid of them.
+        // The existence of these files should not escape this function.
+        unlink(inFile, (err) => {
+            if (err) {
+                outputChannel.appendWarning(`Temp File ${err?.message} could not be deleted.`);
+            }
+        });
+        unlink(outFile, (err) => {
+            if (err) {
+                outputChannel.appendWarning(`Temp File ${err?.message} could not be deleted.`);
+            }
+        });
+
+        return data;
     }
 }
 

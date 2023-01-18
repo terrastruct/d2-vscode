@@ -8,7 +8,12 @@
 
 # VSCode extension for [D2](https://d2lang.com) files.
 
-Currently only supports syntax highlighting of `.d2` files.
+## Currently Supports
+* Syntax highlighting `.d2` files
+* Open preview window on the side (right-click or (ctrl+shift+d) (mac -> shift+cmd+d))
+* Format Document for `.d2` files
+* View rendered D2 code snippets in markdown document preview
+* Theme and Layout are configurable from settings and the Command Palette
 
 ```d2
 x -> y
@@ -19,10 +24,6 @@ y: |`md
   VSCode extension for [D2](https://d2lang.com) files.
 `|
 ```
-
-## Install
-
-You can install using the extension sidebar or by going to the [Visual Studio Marketplace Website](https://marketplace.visualstudio.com/items?itemName=terrastruct.d2) and clicking "Install".
 
 ## Contributing
 

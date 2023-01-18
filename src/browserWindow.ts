@@ -43,6 +43,10 @@ export class BrowserWindow {
 
     }
 
+    show() {
+        this.webViewPanel.reveal();
+    }
+
     setSvg(svg: string): void {
         this.webViewPanel.webview.postMessage({ command: 'render', data: svg });
     }
