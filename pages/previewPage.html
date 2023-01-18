@@ -1,179 +1,194 @@
 <!DOCTYPE html>
 <html lang="en" title="d2 Diagram">
-<title>Diagram</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta charset="utf-8">
+  <title>Diagram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
 
-<head>
+  <head>
     <style>
-        #toolbar {
-            z-index: 100;
-            position: fixed;
-            left: 0px;
-            top: 0px;
-            background-color: var(--vscode-sideBar-background);
-            padding-left: 15px;
-            padding-right: 200px;
-            padding-bottom: 5px;
-            width: 100%;
-            color: var(--vscode-sideBar-forground);
-        }
+      #toolbar {
+        z-index: 100;
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        background-color: var(--vscode-sideBar-background);
+        padding-left: 15px;
+        padding-right: 200px;
+        padding-bottom: 5px;
+        width: 100%;
+        color: var(--vscode-sideBar-forground);
+      }
 
-        #zoomSlider {
-            appearance: none;
-            border-radius: 3px;
-            background: var(--vscode-scrollbarSlider-background);
-            height: 5px;
-        }
+      #zoomSlider {
+        appearance: none;
+        border-radius: 3px;
+        background: var(--vscode-scrollbarSlider-background);
+        height: 5px;
+      }
 
-        #zoomSlider::-webkit-slider-thumb {
-            appearance: none;
-            border: 1px solid var(--vscode-button-border);
-            height: 20px;
-            width: 8px;
-            margin-bottom: 5px;
-            border-radius: 3px;
-            color: var(--vscode-button-background);
-            background: var(--vscode-button-background);
-            cursor: pointer;
-        }
+      #zoomSlider::-webkit-slider-thumb {
+        appearance: none;
+        border: 1px solid var(--vscode-button-border);
+        height: 20px;
+        width: 8px;
+        margin-bottom: 5px;
+        border-radius: 3px;
+        color: var(--vscode-button-background);
+        background: var(--vscode-button-background);
+        cursor: pointer;
+      }
 
-        #percent {
-            display: inline-block;
-            line-height: 30px;
-            height: 30px;
-            text-align: center;
-            padding-top: 2px;
-            font-size: 18px;
-            font-weight: 600;
-            width: 60px;
-        }
+      #percent {
+        display: inline-block;
+        line-height: 30px;
+        height: 30px;
+        text-align: center;
+        padding-top: 2px;
+        font-size: 18px;
+        font-weight: 600;
+        width: 60px;
+      }
 
-        button {
-            margin-top: 3px;
-            color: white;
-            border-color: 1px solid var(--vscode-button-border);
-            background-color: var(--vscode-button-background);
-            padding: 5px;
-            border: 0px;
-            min-width: 50px;
-        }
+      button {
+        margin-top: 3px;
+        color: white;
+        border-color: 1px solid var(--vscode-button-border);
+        background-color: var(--vscode-button-background);
+        padding: 5px;
+        border: 0px;
+        min-width: 50px;
+      }
 
-        svg {
-            position: absolute;
-            left: 0px;
-            top: 0px;
-        }
+      svg {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+      }
 
-        body {
-            background-color: var(--vscode-editor-background);
-            color: var(--vscode-editor-foreground);
-            fill: var(--vscode-editor-foreground);
-            width: 100%;
-            height: 100%;
-        }
+      body {
+        background-color: var(--vscode-editor-background);
+        color: var(--vscode-editor-foreground);
+        fill: var(--vscode-editor-foreground);
+        width: 100%;
+        height: 100%;
+      }
     </style>
     <script>
-        var zoomLevel = 100;
-        var zoomStep = 5;
-        var percent;
-        var zoomSlider;
-        var fitMode = true;
+      var zoomLevel = 100;
+      var zoomStep = 5;
+      var percent;
+      var zoomSlider;
+      var fitMode = true;
 
-        function getSvgElement() {
-            var svgs = document.getElementsByTagName('svg');
-            return svgs[0];
-        }
-        function init() {
-            percent = document.getElementById('percent');
-            zoomSlider = document.getElementById('zoomSlider');
-            zoomFit();
-        }
-        function zoomPlus() {
-            zoomLevel = Math.min(150, zoomLevel + zoomStep);
-            setZoomLevel(zoomLevel);
-        }
-        function zoomMinus() {
-            zoomLevel = Math.max(10, zoomLevel - zoomStep);
-            setZoomLevel(zoomLevel);
-        }
-        function zoomFit() {
-            setZoomLevel(100);
-            var svg = getSvgElement();
-            svg.style.height = "100%";
-            svg.style.width = "100%";
-            setZoomText(false)
+      function getSvgElement() {
+        var svgs = document.getElementsByTagName("svg");
+        return svgs[0];
+      }
+      function init() {
+        percent = document.getElementById("percent");
+        zoomSlider = document.getElementById("zoomSlider");
+        zoomFit();
+      }
+      function zoomPlus() {
+        zoomLevel = Math.min(150, zoomLevel + zoomStep);
+        setZoomLevel(zoomLevel);
+      }
+      function zoomMinus() {
+        zoomLevel = Math.max(10, zoomLevel - zoomStep);
+        setZoomLevel(zoomLevel);
+      }
+      function zoomFit() {
+        setZoomLevel(100);
+        var svg = getSvgElement();
+        svg.style.height = "100%";
+        svg.style.width = "100%";
+        setZoomText(false);
 
-            zoomLevel = roundToZoomLevel((svg.clientHeight / svg.height.baseVal.value) * 100);
+        zoomLevel = roundToZoomLevel(
+          (svg.clientHeight / svg.height.baseVal.value) * 100
+        );
 
-            fitMode = true;
+        fitMode = true;
+      }
+      function setZoomLevel(zl) {
+        var svg = getSvgElement();
+        svg.style.marginTop = (30 * 100.0) / zl;
+        svg.style.height = "";
+        svg.style.width = "";
+        svg.style.zoom = zl / 100.0;
+        setZoomText(true);
+
+        zoomSlider.value = zl;
+        zoomLevel = zl;
+
+        fitMode = false;
+      }
+      function sliderOnChange() {
+        setZoomLevel(zoomSlider.value);
+      }
+      function setZoomText(text) {
+        var svg = getSvgElement();
+
+        if (text === true) {
+          percent.innerText = (svg.style.zoom * 100.0).toFixed() + "%";
+        } else {
+          percent.innerText = "Fit";
         }
-        function setZoomLevel(zl) {
-            var svg = getSvgElement();
-            svg.style.marginTop = 30 * 100.0 / zl;
-            svg.style.height = "";
-            svg.style.width = "";
-            svg.style.zoom = zl / 100.0;
-            setZoomText(true);
+      }
+      function roundToZoomLevel(zl) {
+        var newZl = Math.round(zl + zoomStep) - Math.round(zl % zoomStep);
+        return Math.max(10, newZl);
+      }
+      window.addEventListener("DOMContentLoaded", () => {
+        init();
+      });
 
-            zoomSlider.value = zl;
-            zoomLevel = zl;
+      window.addEventListener("message", (event) => {
+        const message = event.data; // The JSON data our extension sent
 
-            fitMode = false;
-        }
-        function sliderOnChange() { setZoomLevel(zoomSlider.value); }
-        function setZoomText(text) {
-            var svg = getSvgElement();
+        switch (message.command) {
+          case "render":
+            var previewWrapper = document.getElementById("previewWrapper");
+            previewWrapper.innerHTML = message.data;
 
-            if (text === true) {
-                percent.innerText = (svg.style.zoom * 100.0).toFixed() + "%";
+            if (fitMode === true) {
+              zoomFit();
+            } else {
+              setZoomLevel(zoomLevel);
             }
-            else {
-                percent.innerText = "Fit";
-            }
+            break;
         }
-        function roundToZoomLevel(zl) {
-            var newZl = Math.round(zl + zoomStep) - Math.round(zl % zoomStep);
-            return Math.max(10, newZl);
-        }
-        window.addEventListener("DOMContentLoaded", () => {
-            init();
-        });
-
-        window.addEventListener("message", (event) => {
-            const message = event.data; // The JSON data our extension sent
-
-            switch (message.command) {
-                case "render":
-                    var previewWrapper = document.getElementById('previewWrapper');
-                    previewWrapper.innerHTML = message.data;
-
-                    if (fitMode === true) {
-                        zoomFit();
-                    } else {
-                        setZoomLevel(zoomLevel);
-                    }
-                    break;
-            }
-        });
+      });
     </script>
+  </head>
 
-</head>
-
-<body>
+  <body>
     <div id="toolbar">
-        <button onclick="zoomMinus();" title="Zoom Out">Out</button>
-        <input id="zoomSlider" title="Zoom" onchange="sliderOnChange()" type="range" min="10" max="150" value="100"
-            step="5">
-        <button onclick="zoomPlus();" title="Zoom In">In</button>
-        <span id="percent"></span>
-        <button id="zoomFit" onclick="zoomFit()" title="Fit to window">Fit to window</button>
+      <button onclick="zoomMinus();" title="Zoom Out">Out</button>
+      <input
+        id="zoomSlider"
+        title="Zoom"
+        onchange="sliderOnChange()"
+        type="range"
+        min="10"
+        max="150"
+        value="100"
+        step="5"
+      />
+      <button onclick="zoomPlus();" title="Zoom In">In</button>
+      <span id="percent"></span>
+      <button id="zoomFit" onclick="zoomFit()" title="Fit to window">
+        Fit to window
+      </button>
     </div>
-   <div id="previewWrapper">
-        <svg>
-            <text font-size="x-large" x="20" y="50">Loading...</text>
-        </svg>
+    <div id="previewWrapper">
+      <svg>
+        <text font-size="x-large" x="20" y="50">Loading...</text>
+      </svg>
     </div>
 
     <body>
-        <html>
+      <html></html>
+    </body>
+  </body>
+</html>
