@@ -94,6 +94,7 @@ export class DocToPreviewGenerator {
         const inFile = temp.path({ suffix: 'in.d2.temp' });
         const outFile = temp.path({ suffix: 'out.d2.temp' });
 
+
         // Write out our document so the D2 executable can read it.
         writeFileSync(inFile, text);
 

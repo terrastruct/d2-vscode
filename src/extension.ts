@@ -37,6 +37,7 @@ export let extContext: ExtensionContext;
 export function activate(context: ExtensionContext) {
 
 	extContext = context;
+	outputChannel = new D2OutputChannel();
 
 	context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
 		const wsOld = ws;
@@ -49,7 +50,7 @@ export function activate(context: ExtensionContext) {
 				previewGenerator.generate(activeEditor.document);
 			}
 		}
-	}));
+
 
 	context.subscriptions.push(workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
 		if (e.document.languageId === d2Ext) {
@@ -103,11 +104,13 @@ export function activate(context: ExtensionContext) {
 
 		if (activeEditor?.document.languageId === d2Ext) {
 			previewGenerator.generate(activeEditor.document);
-		}
 
+			const trk = previewGenerator.getTrackObject(activeEditor.document);
+			trk?.outputDoc?.show();
+		}
 	}));
 
-	context.subscriptions.push(commands.registerCommand('D2.ShowPreviewWindow', () => {
+  context.subscriptions.push(commands.registerCommand('D2.ShowPreviewWindow', () => {
 		const activeEditor = window.activeTextEditor;
 
 		if (activeEditor?.document.languageId === d2Ext) {
@@ -161,7 +164,9 @@ export function activate(context: ExtensionContext) {
 		}
 	}));
 
-	// * Find all open d2 files and add to tracker
+	/** Find all open d2 files and add to tracker if they are 
+	 *  open before the extension loads
+	*/
 	workspace.textDocuments.forEach((td: TextDocument) => {
 		if (td.languageId === d2Ext) {
 			previewGenerator.createObjectToTrack(td);
@@ -171,6 +176,7 @@ export function activate(context: ExtensionContext) {
 	return {
 		// Sets up our ability to render for markdown files
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 		extendMarkdownIt(md: any) {
 			return extendMarkdownItWithD2(md);
 		}
@@ -189,6 +195,7 @@ const pluginKeyword = 'd2';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function extendMarkdownItWithD2(md: any): unknown {
+
 	md.use(mdItContainer, pluginKeyword, {});
 
 	const highlight = md.options.highlight;
