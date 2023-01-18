@@ -41,7 +41,7 @@ export class BrowserWindow {
       extContext.extensionPath,
       "pages/previewPage.html"
     );
-    let data: string = readFileSync(onDiskPath, "utf-8");
+    const data: string = readFileSync(onDiskPath, "utf-8");
 
     this.webViewPanel.webview.html = data.toString();
 
