@@ -103,11 +103,13 @@ export class DocToPreviewGenerator {
     try {
       const layout: string = ws.get("previewLayout", "dagre");
       const theme: string = ws.get("previewTheme", "default");
+      const sketch: boolean = ws.get("previewSketch", false);
       const themeNumber: number = NameToThemeNumber(theme);
 
       const proc = spawnSync("d2", [
         `--layout=${layout}`,
         `--theme=${themeNumber}`,
+        `--sketch=${sketch}`,
         inFile,
         outFile,
       ]);

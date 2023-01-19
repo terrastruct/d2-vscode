@@ -3,7 +3,7 @@
   "displayName": "D2",
   "publisher": "Terrastruct",
   "description": "Support for .d2 files.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "license": "BSD-3-Clause",
   "contributors": [
     "Barry Nolte <barry@barrynolte.com>"
@@ -69,6 +69,11 @@
         "command": "D2.PickLayout",
         "title": "Pick Preview Layout",
         "category": "d2"
+      },
+      {
+        "command": "D2.ToggleSketch",
+        "title": "Toggle Preview Sketch Rendering",
+        "category": "d2"
       }
     ],
     "keybindings": [
@@ -130,6 +135,11 @@
             "Eclipse Layout Kernel (ELK) with the Layered algorithm"
           ],
           "description": "Layout used for preview."
+        },
+        "D2.previewSketch": {
+          "type": "boolean",
+          "default": "false",
+          "description": "Use sketch rendering in preview."
         }
       }
     },
@@ -147,6 +157,11 @@
         },
         {
           "command": "D2.PickLayout",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        },
+        {
+          "command": "D2.ToggleSketch",
           "when": "resourceLangId == d2",
           "group": "d2"
         }

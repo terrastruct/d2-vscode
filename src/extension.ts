@@ -47,7 +47,8 @@ export function activate(context: ExtensionContext): any {
 
       if (
         ws.get("previewLayout") !== wsOld.get("previewLayout") ||
-        ws.get("previewTheme") !== wsOld.get("previewTheme")
+        ws.get("previewTheme") !== wsOld.get("previewTheme") ||
+        ws.get("previewSketch") !== wsOld.get("previewSketch")
       ) {
         const activeEditor = window.activeTextEditor;
         if (activeEditor?.document.languageId === d2Ext) {
@@ -170,6 +171,17 @@ export function activate(context: ExtensionContext): any {
             ws.update("previewTheme", theme.label, true);
           }
         });
+      }
+    })
+  );
+
+  context.subscriptions.push(
+    commands.registerCommand("D2.ToggleSketch", () => {
+      const activeEditor = window.activeTextEditor;
+
+      if (activeEditor?.document.languageId === d2Ext) {
+        const current: boolean = ws.get("previewSketch", false);
+        ws.update("previewSketch", !current, true);
       }
     })
   );
