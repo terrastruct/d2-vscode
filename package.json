@@ -40,6 +40,9 @@
           "light": "d2-icon-small.png",
           "dark": "d2-icon-small.png"
         }
+      },
+      {
+        "id": "markdown.d2"
       }
     ],
     "grammars": [
@@ -51,6 +54,11 @@
           "meta.embedded.block.markdown": "markdown",
           "meta.embedded.block.latex": "latex"
         }
+      },
+      {
+        "language": "markdown.d2",
+        "scopeName": "text.html.markdown.d2",
+        "path": "./syntaxes/markdown.tmLanguage.json"
       }
     ],
     "markdown.markdownItPlugins": true,
