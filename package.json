@@ -25,7 +25,7 @@
     "mindmap"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onLanguage:d2"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -40,27 +40,24 @@
           "light": "d2-icon-small.png",
           "dark": "d2-icon-small.png"
         }
-      },
-      {
-        "id": "markdown.d2"
       }
     ],
     "grammars": [
       {
         "language": "d2",
         "scopeName": "source.d2",
-        "path": "./syntaxes/d2.tmLanguage.json"
-      },
-      {
-        "language": "markdown.d2",
-        "scopeName": "text.html.markdown.d2",
-        "path": "./syntaxes/markdown.tmLanguage.json"
+        "path": "./syntaxes/d2.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.markdown": "markdown",
+          "meta.embedded.block.latex": "latex"
+        }
       }
     ],
+    "markdown.markdownItPlugins": true,
     "commands": [
       {
         "command": "D2.ShowPreviewWindow",
-        "title": "Show d2 Preview Window",
+        "title": "Show D2 Preview",
         "category": "d2"
       }
     ],
@@ -73,12 +70,12 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "d2 Viewer Configuration",
+      "title": "D2 Viewer",
       "properties": {
         "D2.autoUpdate": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically update the preview as you edit the d2 file."
+          "description": "Automatically update the preview as you edit the D2 file."
         },
         "D2.updateTimer": {
           "type": "number",
@@ -88,7 +85,7 @@
         "D2.updateOnSave": {
           "type": "boolean",
           "default": false,
-          "description": "Automatically update on saving the d2 file."
+          "description": "Automatically update on saving the D2 file."
         }
       }
     },
@@ -142,6 +139,7 @@
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
+    "@types/markdown-it-container": "^2.0.5",
     "@types/mocha": "^10.0.0",
     "@types/node": "16.x",
     "@types/temp": "^0.9.1",
@@ -163,6 +161,7 @@
     "child_process": "^1.0.2",
     "eslint-plugin-simple-import-sort": "^8.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
+    "markdown-it-container": "^3.0.0",
     "next": "^13.0.7",
     "temp": "^0.9.4"
   },
