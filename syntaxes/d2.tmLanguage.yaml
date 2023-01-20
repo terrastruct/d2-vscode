@@ -144,7 +144,7 @@ repository:
           - include: "#key"
           - include: "#error"
       - name: keyword.reserved.d2
-        match: '(?:shape|layer|tooltip|icon|constraint|near|opacity|stroke|fill|filled|stroke\-width|width|height|border\-radius|source\-arrowhead|target\-arrowhead|link|stroke\-dash|font\-size|font\-color|shadow|multiple|3d|animated|class|label|tooltip|style|imports|vars|scenarios|on_click|src|dst)(?=\s*[\n#;\[\]{}|$''":.<>*&()]|-+-|-+>|-+\*)'
+        match: '(?:shape|layer|tooltip|bold|italic|underline|icon|constraint|near|opacity|stroke|fill|filled|stroke\-width|width|height|border\-radius|source\-arrowhead|target\-arrowhead|link|stroke\-dash|font\-size|font\-color|shadow|multiple|3d|animated|class|label|tooltip|bold|italic|underline|style|imports|vars|scenarios|on_click|src|dst)(?=\s*[\n#;\[\]{}|$''":.<>*&()]|-+-|-+>|-+\*)'
       - name: punctuation.period.d2
         match: '\.'
       - name: keyword.operator.glob.d2
