@@ -26,6 +26,12 @@ y: |`md
 `|
 ```
 
+## Example
+
+<div align="center">
+  <img src="https://terrastruct-site-assets.s3.us-west-1.amazonaws.com/gifs/d2_vscode.gif" alt="D2" />
+</div>
+
 ## Install
 
 You can install using the extension sidebar or by going to the [Visual Studio Marketplace Website](https://marketplace.visualstudio.com/items?itemName=terrastruct.d2) and clicking "Install".
