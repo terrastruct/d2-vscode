@@ -173,8 +173,8 @@
         },
         {
           "name": "string.unquoted.d2",
-          "begin": "(?=[^[:space:]\\n#;\\[\\]{}|$'\"$])",
-          "end": "(?=\\s*[\\n#;\\[\\]{}|'\"])",
+          "begin": "(?=[^[:space:]\\n#;\\[\\]{}])",
+          "end": "(?=\\s*[\\n#;\\[\\]{}])",
           "patterns": [
             {
               "include": "#escape"

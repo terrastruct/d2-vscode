@@ -99,8 +99,8 @@ repository:
         begin: '\|([^[:alnum:]]*)[^[:space:]]+[\n[:space:]]'
         end: '\1\|'
       - name: string.unquoted.d2
-        begin: '(?=[^[:space:]\n#;\[\]{}|$''"$])'
-        end: '(?=\s*[\n#;\[\]{}|''"])'
+        begin: '(?=[^[:space:]\n#;\[\]{}])'
+        end: '(?=\s*[\n#;\[\]{}])'
         patterns:
           - include: "#escape"
   escape:
