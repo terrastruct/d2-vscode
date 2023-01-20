@@ -269,7 +269,7 @@
         },
         {
           "name": "keyword.reserved.d2",
-          "match": "(?:shape|layer|tooltip|bold|italic|underline|icon|constraint|near|opacity|stroke|fill|filled|stroke\\-width|width|height|border\\-radius|source\\-arrowhead|target\\-arrowhead|link|stroke\\-dash|font\\-size|font\\-color|shadow|multiple|3d|animated|class|label|tooltip|bold|italic|underline|style|imports|vars|scenarios|on_click|src|dst)(?=\\s*[\\n#;\\[\\]{}|$'\":.\u003c\u003e*\u0026()]|-+-|-+\u003e|-+\\*)"
+          "match": "(?:shape|layer|tooltip|bold|italic|underline|icon|constraint|near|opacity|stroke|fill|filled|stroke\\-width|width|height|border\\-radius|source\\-arrowhead|target\\-arrowhead|link|stroke\\-dash|font\\-size|font\\-color|shadow|multiple|3d|animated|class|label|style|imports|vars|scenarios|on_click|src|dst)(?=\\s*[\\n#;\\[\\]{}|$'\":.<>*&()]|-+-|-+>|-+\\*)"
         },
         {
           "name": "punctuation.period.d2",
@@ -285,12 +285,12 @@
         },
         {
           "name": "keyword.operator.ampersand.d2",
-          "match": "\u0026"
+          "match": "&"
         },
         {
           "name": "entity.name.tag.unquoted.d2",
-          "begin": "(?=[^[:space:]\\n#;\\[\\]{}|$'\":.\u003c\u003e*\u0026()])(?!-+-)(?!-+\u003e)(?!-+\\*)",
-          "end": "(?=\\s*[\\n#;\\[\\]{}|$'\":.\u003c\u003e*\u0026()]|-+-|-+\u003e|-+\\*)",
+          "begin": "(?=[^[:space:]\\n#;\\[\\]{}|$'\":.<>*&()])(?!-+-)(?!-+>)(?!-+\\*)",
+          "end": "(?=\\s*[\\n#;\\[\\]{}|$'\":.<>*&()]|-+-|-+>|-+\\*)",
           "patterns": [
             {
               "include": "#escape"
@@ -304,8 +304,8 @@
               "name": "punctuation.edge.d2"
             }
           },
-          "begin": "[\\-\u003c\u003e]+",
-          "end": "(?=[^\\-\u003c\u003e])",
+          "begin": "[\\-<>]+",
+          "end": "(?=[^\\-<>])",
           "patterns": [
             {
               "include": "#line_continuation"
