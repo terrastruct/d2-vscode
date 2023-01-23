@@ -29,7 +29,16 @@ export class D2OutputChannel {
       String(this.pad(now.getSeconds())),
     ];
 
-    this.outputChannel.appendLine(`[${time.join(":")}] - ${msg}`);
+    const msgs: string[] = msg.split('\n');
+
+    for (const m in msgs) {
+      const output = msgs[m];
+      if (output.length === 0) {
+        continue;
+      }
+      this.outputChannel.appendLine(`[${time.join(":")}] - ${output}`);
+    }
+    this.outputChannel.show(true);
   }
 
   private pad(num: number): string {
