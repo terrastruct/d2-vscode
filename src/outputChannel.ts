@@ -31,14 +31,11 @@ export class D2OutputChannel {
 
     const msgs: string[] = msg.split("\n");
 
-    for (const m in msgs) {
-      if (msgs[m]) {
-        const output = msgs[m];
-        if (output.length === 0) {
-          continue;
-        }
-        this.outputChannel.appendLine(`[${time.join(":")}] - ${output}`);
+    for (const m of msgs) {
+      if (m.length === 0) {
+        continue;
       }
+      this.outputChannel.appendLine(`[${time.join(":")}] - ${m}`);
     }
     this.outputChannel.show(true);
   }
