@@ -159,10 +159,8 @@ export class DocToPreviewGenerator {
     ];
 
     outputChannel.appendError(this.strBreak);
-    for (const m in errorMsgs) {
-      if (errorMsgs[m]) {
-        outputChannel.appendError(errorMsgs[m]);
-      }
+    for (const m of errorMsgs) {
+      outputChannel.appendError(m);
     }
     outputChannel.appendError(this.strBreak);
 
