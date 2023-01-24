@@ -150,6 +150,7 @@ export class DocToPreviewGenerator {
 
   private strBreak =
     "************************************************************";
+
   private showErrorToolsNotFound(msg: string): void {
     const errorMsgs: string[] = [
       "D2 executable not found.",
