@@ -154,7 +154,7 @@ export class DocToPreviewGenerator {
     const errorMsgs: string[] = [
       "D2 executable not found.",
       "Make sure the D2 executable is installed and on system PATH.",
-      "https://d2lang.com",
+      "https://d2lang.com/tour/install",
       `${msg}`,
     ];
 
