@@ -29,14 +29,16 @@ export class D2OutputChannel {
       String(this.pad(now.getSeconds())),
     ];
 
-    const msgs: string[] = msg.split('\n');
+    const msgs: string[] = msg.split("\n");
 
     for (const m in msgs) {
-      const output = msgs[m];
-      if (output.length === 0) {
-        continue;
+      if (msgs[m]) {
+        const output = msgs[m];
+        if (output.length === 0) {
+          continue;
+        }
+        this.outputChannel.appendLine(`[${time.join(":")}] - ${output}`);
       }
-      this.outputChannel.appendLine(`[${time.join(":")}] - ${output}`);
     }
     this.outputChannel.show(true);
   }
