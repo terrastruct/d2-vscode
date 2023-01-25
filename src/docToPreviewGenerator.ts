@@ -2,7 +2,7 @@ import { ExecException, spawnSync } from "child_process";
 import { readFileSync, unlink, writeFileSync } from "fs";
 import * as path from "path";
 import * as temp from "temp";
-import { TextDocument } from "vscode";
+import { TextDocument, window } from "vscode";
 
 import { BrowserWindow } from "./browserWindow";
 import { outputChannel, ws } from "./extension";
@@ -82,11 +82,10 @@ export class DocToPreviewGenerator {
 
     if (data.length > 0) {
       trkObj.outputDoc.setSvg(data);
+
+      const p = path.parse(trkObj.inputDoc.fileName);
+      outputChannel.appendInfo(`Preview for ${p.base} updated.`);
     }
-
-    const p = path.parse(trkObj.inputDoc.fileName);
-
-    outputChannel.appendInfo(`Preview for ${p.base} updated.`);
   }
 
   /**
@@ -114,12 +113,11 @@ export class DocToPreviewGenerator {
         outFile,
       ]);
 
-      // TODO - Catch error when spawn can't find d2
-      let errorString = "";
-      if (proc.status !== 0) {
-        errorString = proc.stderr.toString();
-        outputChannel.appendError(errorString);
+      if (proc.pid === 0) {
+        this.showErrorToolsNotFound(proc.error?.message ?? "");
         return "";
+      } else {
+        outputChannel.appendError(proc.stderr?.toString() ?? "Unknown Error");
       }
     } catch (error) {
       const ex: ExecException = error as ExecException;
@@ -148,5 +146,26 @@ export class DocToPreviewGenerator {
     });
 
     return data;
+  }
+
+  private strBreak =
+    "************************************************************";
+
+  private showErrorToolsNotFound(msg: string): void {
+    const errorMsgs: string[] = [
+      "D2 executable not found.",
+      "Make sure the D2 executable is installed and on system PATH.",
+      "https://d2lang.com/tour/install",
+      `${msg}`,
+    ];
+
+    outputChannel.appendError(this.strBreak);
+    for (const m of errorMsgs) {
+      outputChannel.appendError(m);
+    }
+    outputChannel.appendError(this.strBreak);
+
+    // Popup some toast to alert to the error
+    window.showErrorMessage(errorMsgs.join("\n"));
   }
 }
