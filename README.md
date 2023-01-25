@@ -41,7 +41,7 @@ You can install using the extension sidebar or by going to the [Visual Studio Ma
 To package and install the extension locally, run:
 
 ```sh
-npm install -g vsce
+npm install -g @vscode/vsce
 npm run dev
 ```
 
@@ -64,7 +64,7 @@ debug VS Code with the updated extension.
 
 ### Generating tmLanguage.json
 
-To regenerate `d2.tmLanguage.json` after updating `d2.tmLanguage.yaml`:
+To regenerate `d2.tmLanguage.json` after updating `d2.tmLanguage.yaml`, use [yq](https://github.com/mikefarah/yq/#install):
 
 ```sh
 brew install yq
@@ -89,7 +89,7 @@ Highly recommend the following keybind for inspecting the textmate scopes under 
 See https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix
 
 ```sh
-npm install -g vsce
+npm install -g @vscode/vsce
 npm run pkg
 # To install:
 # code --install-extension d2.vsix

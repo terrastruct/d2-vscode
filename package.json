@@ -148,6 +148,11 @@
           "type": "boolean",
           "default": "false",
           "description": "Use sketch rendering in preview."
+        },
+        "D2.execPath": {
+          "type": "string",
+          "default": "d2",
+          "description": "Path to d2 executable if not on current PATH"
         }
       }
     },
