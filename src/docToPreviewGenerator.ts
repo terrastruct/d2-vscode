@@ -104,8 +104,9 @@ export class DocToPreviewGenerator {
       const theme: string = ws.get("previewTheme", "default");
       const sketch: boolean = ws.get("previewSketch", false);
       const themeNumber: number = NameToThemeNumber(theme);
+      const d2Path: string = ws.get("execPath", "d2");
 
-      const proc = spawnSync("d2", [
+      const proc = spawnSync(d2Path, [
         `--layout=${layout}`,
         `--theme=${themeNumber}`,
         `--sketch=${sketch}`,

@@ -4,7 +4,7 @@ import * as path from "path";
 import * as temp from "temp";
 import { Range, TextEditor } from "vscode";
 
-import { outputChannel } from "./extension";
+import { outputChannel, ws } from "./extension";
 
 /**
  * DocumentFormatter - Takes the current TextEditor, runs the
@@ -20,7 +20,8 @@ export class DocumentFormatter {
       writeFileSync(this.inFile, fileText);
 
       try {
-        const proc = spawnSync("d2", ["fmt", this.inFile]);
+        const d2Path: string = ws.get("execPath", "d2");
+        const proc = spawnSync(d2Path, ["fmt", this.inFile]);
 
         let errorString = "";
         if (proc.status !== 0) {
