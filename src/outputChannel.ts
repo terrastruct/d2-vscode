@@ -37,7 +37,6 @@ export class D2OutputChannel {
       }
       this.outputChannel.appendLine(`[${time.join(":")}] - ${m}`);
     }
-    this.outputChannel.show(true);
   }
 
   private pad(num: number): string {

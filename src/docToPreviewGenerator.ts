@@ -1,13 +1,9 @@
-import { ExecException, spawnSync } from "child_process";
-import { readFileSync, unlink, writeFileSync } from "fs";
 import * as path from "path";
-import * as temp from "temp";
 import { TextDocument, window } from "vscode";
 
 import { BrowserWindow } from "./browserWindow";
-import { outputChannel, ws } from "./extension";
+import { outputChannel, taskProvider as taskRunner } from "./extension";
 import { RefreshTimer } from "./refreshTimer";
-import { NameToThemeNumber } from "./themePicker";
 
 /**
  *  D2P - Document to Preview.  This tracks the connection
@@ -73,86 +69,28 @@ export class DocToPreviewGenerator {
       return;
     }
 
-    const data: string = this.generateFromText(fileText);
+    taskRunner.genTask(trkObj.inputDoc?.fileName, fileText, (data) => {
+    
+      // If we don't have a preview window already, create one
+      if (!trkObj.outputDoc) {
+        trkObj.outputDoc = new BrowserWindow(trkObj);
+      }
 
-    // If we don't have a preview window already, create one
-    if (!trkObj.outputDoc) {
-      trkObj.outputDoc = new BrowserWindow(trkObj);
-    }
+      if (data.length > 0) {
+        trkObj.outputDoc.setSvg(data);
 
-    if (data.length > 0) {
-      trkObj.outputDoc.setSvg(data);
+        const p = path.parse(trkObj.inputDoc?.fileName || '');
+        outputChannel.appendInfo(`Preview for ${p.base} updated.`);
+      }
 
-      const p = path.parse(trkObj.inputDoc.fileName);
-      outputChannel.appendInfo(`Preview for ${p.base} updated.`);
-    }
+    });
   }
 
-  /**
-   * Take the d2 document text and pass it to the D2 executable
-   * and then retreive the output to render in our preveiw window.
-   */
-  generateFromText(text: string): string {
-    const inFile = temp.path({ suffix: "in.d2.temp" });
-    const outFile = temp.path({ suffix: "out.d2.temp" });
 
-    // Write out our document so the D2 executable can read it.
-    writeFileSync(inFile, text);
-
-    try {
-      const layout: string = ws.get("previewLayout", "dagre");
-      const theme: string = ws.get("previewTheme", "default");
-      const sketch: boolean = ws.get("previewSketch", false);
-      const themeNumber: number = NameToThemeNumber(theme);
-      const d2Path: string = ws.get("execPath", "d2");
-
-      const proc = spawnSync(d2Path, [
-        `--layout=${layout}`,
-        `--theme=${themeNumber}`,
-        `--sketch=${sketch}`,
-        inFile,
-        outFile,
-      ]);
-
-      if (proc.pid === 0) {
-        this.showErrorToolsNotFound(proc.error?.message ?? "");
-        return "";
-      } else {
-        outputChannel.appendError(proc.stderr?.toString() ?? "Unknown Error");
-      }
-    } catch (error) {
-      const ex: ExecException = error as ExecException;
-
-      outputChannel.appendError(ex.message);
-    }
-
-    // Get the the contents of the output file
-    const data: string = readFileSync(outFile, "utf-8");
-
-    // No longer need our temp files, get rid of them.
-    // The existence of these files should not escape this function.
-    unlink(inFile, (err) => {
-      if (err) {
-        outputChannel.appendWarning(
-          `Temp File ${err?.message} could not be deleted.`
-        );
-      }
-    });
-    unlink(outFile, (err) => {
-      if (err) {
-        outputChannel.appendWarning(
-          `Temp File ${err?.message} could not be deleted.`
-        );
-      }
-    });
-
-    return data;
-  }
-
-  private strBreak =
+  private static strBreak =
     "************************************************************";
 
-  private showErrorToolsNotFound(msg: string): void {
+  static showErrorToolsNotFound(msg: string): void {
     const errorMsgs: string[] = [
       "D2 executable not found.",
       "Make sure the D2 executable is installed and on system PATH.",

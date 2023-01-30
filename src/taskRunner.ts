@@ -8,8 +8,8 @@ export type TaskOutput = (text: string) => void
 
 /**
  * TaskRunner - This creates CustomTask and Pseudotermial to run it in.
- * This will return immediately, the callback should be called when the
- * task is finished.
+ * This will return immediately, the tasks callback should be called 
+ * when the task is finished.
  */
 export class TaskRunner {
 

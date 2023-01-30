@@ -22,6 +22,8 @@ import { D2OutputChannel } from "./outputChannel";
 import * as mdItContainer from "markdown-it-container";
 import { layoutPicker } from "./layoutPicker";
 import { themePicker } from "./themePicker";
+import { TaskRunner } from "./taskRunner";
+import { d2Tasks } from "./tasks";
 
 const d2Ext = "d2";
 const d2Lang = "d2";
@@ -29,8 +31,9 @@ export const d2ConfigSection = "D2";
 
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 const documentFormatter: DocumentFormatter = new DocumentFormatter();
-export let ws: WorkspaceConfiguration =
-  workspace.getConfiguration(d2ConfigSection);
+export const taskProvider: TaskRunner = new TaskRunner();
+
+export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
 
 export let outputChannel: D2OutputChannel;
 export let extContext: ExtensionContext;
@@ -115,10 +118,11 @@ export function activate(context: ExtensionContext): any {
     })
   );
 
+
   context.subscriptions.push(
     commands.registerCommand("D2.ShowPreviewWindow", () => {
       const activeEditor = window.activeTextEditor;
-
+       
       if (activeEditor?.document.languageId === d2Ext) {
         previewGenerator.generate(activeEditor.document);
 
@@ -148,7 +152,7 @@ export function activate(context: ExtensionContext): any {
   context.subscriptions.push(
     commands.registerCommand("D2.PickLayout", () => {
       const activeEditor = window.activeTextEditor;
-
+  
       if (activeEditor?.document.languageId === d2Ext) {
         const layoutPick = new layoutPicker();
         layoutPick.showPicker().then((layout) => {
@@ -218,7 +222,11 @@ export function extendMarkdownItWithD2(md: any): unknown {
   const highlight = md.options.highlight;
   md.options.highlight = (code: string, lang: string) => {
     if (lang === d2Lang) {
-      return previewGenerator.generateFromText(code);
+      const filename: string = window.activeTextEditor?.document.fileName ?? '';
+
+      return d2Tasks.convertText(filename, code, (msg) => {
+          outputChannel.appendInfo(msg);
+      });
     }
     return highlight(code, lang);
   };
