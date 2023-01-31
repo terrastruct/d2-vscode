@@ -18,10 +18,8 @@ class LayoutItem implements QuickPickItem {
  */
 const layouts: QuickPickItem[] = [
   new LayoutItem("dagre", "The directed graph layout library Dagre"),
-  new LayoutItem(
-    "elk",
-    "Eclipse Layout Kernel (ELK) with the Layered algorithm"
-  ),
+  new LayoutItem("elk", "Eclipse Layout Kernel (ELK) with the Layered algorithm"),
+  new LayoutItem("tala", "General Orthogonal Layout Engine")
 ];
 
 /**
