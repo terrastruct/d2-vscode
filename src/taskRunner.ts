@@ -58,8 +58,6 @@ class CustomTaskTerminal implements Pseudoterminal {
     }
 
     open(): void {
-        this.writeLine('Staring compile...\r\n');
-
         const data: string = d2Tasks.convertText(this.fileName, this.docText, (msg) => {
             this.writeLine(msg);
         });

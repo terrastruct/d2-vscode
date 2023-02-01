@@ -104,7 +104,8 @@
       {
         "command": "D2.ShowPreviewWindow",
         "key": "ctrl+shift+d",
-        "mac": "shift+cmd+d"
+        "mac": "shift+cmd+d",
+        "when": "editorLangId == d2"
       }
     ],
     "configuration": {

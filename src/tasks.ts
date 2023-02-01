@@ -24,16 +24,15 @@ class D2Tasks {
         const themeNumber: number = NameToThemeNumber(theme);
         const d2Path: string = ws.get("execPath", "d2");
 
-        const proc = spawnSync(d2Path, [
-            `--layout=${layout}`,
-            `--theme=${themeNumber}`,
-            `--sketch=${sketch}`,
-            '-'
-        ], { input: text });
+        taskOutput('Starting Compile...');
+        taskOutput(`Layout: ${layout}  Theme: ${theme}  Sketch: ${sketch}\r\n`);
 
-        /** status: 0 - success
-         *  status: 1 - errors
-         *  pid: 0 - EXE Not Found
+        const args: string[] = [`--layout=${layout}`, `--theme=${themeNumber}`, `--sketch=${sketch}`, '-'];
+        const proc = spawnSync(d2Path, args, { input: text, encoding: 'utf-8', });
+
+        /** proc.status: 0 - success
+         *  proc.status: 1 - errors
+         *  proc.pid: 0 - EXE Not Found
          */
         if (proc.pid === 0) {
             util.showErrorToolsNotFound(proc.error?.message ?? '');
@@ -62,7 +61,7 @@ class D2Tasks {
 
         // Success! Read the output
         if (proc.status === 0) {
-            data = proc.output.toString();
+            data = proc.stdout.toString();
         }
 
         return data;
