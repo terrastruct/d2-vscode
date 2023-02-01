@@ -24,24 +24,24 @@ import { layoutPicker } from "./layoutPicker";
 import { themePicker } from "./themePicker";
 import { TaskRunner } from "./taskRunner";
 import { d2Tasks } from "./tasks";
+import { util } from "./utility";
 
 const d2Ext = "d2";
 const d2Lang = "d2";
 export const d2ConfigSection = "D2";
 
+export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 const documentFormatter: DocumentFormatter = new DocumentFormatter();
-export const taskProvider: TaskRunner = new TaskRunner();
+export const outputChannel: D2OutputChannel = new D2OutputChannel();
 
-export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
+export const taskRunner: TaskRunner = new TaskRunner();
 
-export let outputChannel: D2OutputChannel;
 export let extContext: ExtensionContext;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function activate(context: ExtensionContext): any {
   extContext = context;
-  outputChannel = new D2OutputChannel();
 
   context.subscriptions.push(
     workspace.onDidChangeConfiguration(() => {
@@ -122,7 +122,7 @@ export function activate(context: ExtensionContext): any {
   context.subscriptions.push(
     commands.registerCommand("D2.ShowPreviewWindow", () => {
       const activeEditor = window.activeTextEditor;
-       
+
       if (activeEditor?.document.languageId === d2Ext) {
         previewGenerator.generate(activeEditor.document);
 
@@ -152,7 +152,7 @@ export function activate(context: ExtensionContext): any {
   context.subscriptions.push(
     commands.registerCommand("D2.PickLayout", () => {
       const activeEditor = window.activeTextEditor;
-  
+
       if (activeEditor?.document.languageId === d2Ext) {
         const layoutPick = new layoutPicker();
         layoutPick.showPicker().then((layout) => {
@@ -199,6 +199,12 @@ export function activate(context: ExtensionContext): any {
     }
   });
 
+  /**
+   * Check that D2 is available up front
+   */
+  util.checkForD2Install();
+
+  // Return our markdown renderer
   return {
     // Sets up our ability to render for markdown files
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -225,7 +231,7 @@ export function extendMarkdownItWithD2(md: any): unknown {
       const filename: string = window.activeTextEditor?.document.fileName ?? '';
 
       return d2Tasks.convertText(filename, code, (msg) => {
-          outputChannel.appendInfo(msg);
+        outputChannel.appendInfo(msg);
       });
     }
     return highlight(code, lang);

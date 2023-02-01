@@ -1,8 +1,7 @@
 import * as path from "path";
-import { TextDocument, window } from "vscode";
-
+import { TextDocument } from "vscode";
 import { BrowserWindow } from "./browserWindow";
-import { outputChannel, taskProvider as taskRunner } from "./extension";
+import { outputChannel, taskRunner } from "./extension";
 import { RefreshTimer } from "./refreshTimer";
 
 /**
@@ -84,27 +83,5 @@ export class DocToPreviewGenerator {
       }
 
     });
-  }
-
-
-  private static strBreak =
-    "************************************************************";
-
-  static showErrorToolsNotFound(msg: string): void {
-    const errorMsgs: string[] = [
-      "D2 executable not found.",
-      "Make sure the D2 executable is installed and on system PATH.",
-      "https://d2lang.com/tour/install",
-      `${msg}`,
-    ];
-
-    outputChannel.appendError(this.strBreak);
-    for (const m of errorMsgs) {
-      outputChannel.appendError(m);
-    }
-    outputChannel.appendError(this.strBreak);
-
-    // Popup some toast to alert to the error
-    window.showErrorMessage(errorMsgs.join("\n"));
   }
 }

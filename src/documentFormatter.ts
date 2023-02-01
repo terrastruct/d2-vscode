@@ -1,26 +1,27 @@
-import { ExecException, spawnSync } from "child_process";
-import { readFileSync, unlink, writeFileSync } from "fs";
 import * as path from "path";
-import * as temp from "temp";
+import { ExecException, spawnSync } from "child_process";
 import { Range, TextEditor } from "vscode";
-
 import { outputChannel, ws } from "./extension";
 
 /**
  * DocumentFormatter - Takes the current TextEditor, runs the
  *  text through the formatter "d2 fmt <file>" and then puts
- *  the resultant text back in the TextEditor
+ *  the resultant text back in the TextEditor.
+ *
+ * This function needs to stay synchronous since it's in the
+ * document format pipeline.
  **/
 export class DocumentFormatter {
-  inFile: string = temp.path({ suffix: "in.d2.temp" });
 
   format(textEditor: TextEditor): void {
     const fileText = textEditor.document.getText();
-    writeFileSync(this.inFile, fileText);
 
     try {
       const d2Path: string = ws.get("execPath", "d2");
-      const proc = spawnSync(d2Path, ["fmt", this.inFile]);
+      const proc = spawnSync(d2Path, [
+        "fmt",
+        "-"
+      ], { input: fileText });
 
       let errorString = "";
       if (proc.status !== 0) {
@@ -29,9 +30,9 @@ export class DocumentFormatter {
         return;
       }
 
-      const p = path.parse(textEditor.document.fileName);
+      const data: string = proc.output.toString();
 
-      const data: string = readFileSync(this.inFile, "utf-8");
+      const p = path.parse(textEditor.document.fileName);
 
       if (!data) {
         outputChannel.appendError(`Document ${p.base} could not be read.`);
@@ -56,15 +57,5 @@ export class DocumentFormatter {
 
       outputChannel.appendError(ex.message);
     }
-
-    // No longer need our temp files, get rid of them.
-    // The existence of these files should not escape this function.
-    unlink(this.inFile, (err) => {
-      if (err) {
-        outputChannel.appendWarning(
-          `Temp File ${err?.message} could not be deleted`
-        );
-      }
-    });
   }
 }

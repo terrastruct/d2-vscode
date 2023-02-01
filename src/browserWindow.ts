@@ -1,7 +1,6 @@
 import { readFileSync } from "fs";
 import * as path from "path";
 import { Uri, ViewColumn, WebviewPanel, window } from "vscode";
-
 import { D2P } from "./docToPreviewGenerator";
 import { extContext } from "./extension";
 
