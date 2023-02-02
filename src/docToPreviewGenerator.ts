@@ -69,7 +69,6 @@ export class DocToPreviewGenerator {
     }
 
     taskRunner.genTask(trkObj.inputDoc?.fileName, fileText, (data) => {
-    
       // If we don't have a preview window already, create one
       if (!trkObj.outputDoc) {
         trkObj.outputDoc = new BrowserWindow(trkObj);
@@ -78,10 +77,9 @@ export class DocToPreviewGenerator {
       if (data.length > 0) {
         trkObj.outputDoc.setSvg(data);
 
-        const p = path.parse(trkObj.inputDoc?.fileName || '');
+        const p = path.parse(trkObj.inputDoc?.fileName || "");
         outputChannel.appendInfo(`Preview for ${p.base} updated.`);
       }
-
     });
   }
 }

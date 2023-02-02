@@ -17,7 +17,6 @@ import {
 } from "vscode";
 
 import { DocToPreviewGenerator } from "./docToPreviewGenerator";
-import { DocumentFormatter } from "./documentFormatter";
 import { D2OutputChannel } from "./outputChannel";
 import * as mdItContainer from "markdown-it-container";
 import { layoutPicker } from "./layoutPicker";
@@ -28,15 +27,13 @@ import { util } from "./utility";
 
 const d2Ext = "d2";
 const d2Lang = "d2";
-export const d2ConfigSection = "D2";
-
-export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
-const documentFormatter: DocumentFormatter = new DocumentFormatter();
+
+export const d2ConfigSection = "D2";
+export let ws: WorkspaceConfiguration =
+  workspace.getConfiguration(d2ConfigSection);
 export const outputChannel: D2OutputChannel = new D2OutputChannel();
-
 export const taskRunner: TaskRunner = new TaskRunner();
-
 export let extContext: ExtensionContext;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -118,7 +115,6 @@ export function activate(context: ExtensionContext): any {
     })
   );
 
-
   context.subscriptions.push(
     commands.registerCommand("D2.ShowPreviewWindow", () => {
       const activeEditor = window.activeTextEditor;
@@ -141,7 +137,7 @@ export function activate(context: ExtensionContext): any {
         );
 
         if (documentEditor) {
-          documentFormatter.format(documentEditor);
+          d2Tasks.format(documentEditor);
         }
 
         return [];
@@ -228,9 +224,7 @@ export function extendMarkdownItWithD2(md: any): unknown {
   const highlight = md.options.highlight;
   md.options.highlight = (code: string, lang: string) => {
     if (lang === d2Lang) {
-      const filename: string = window.activeTextEditor?.document.fileName ?? '';
-
-      return d2Tasks.convertText(filename, code, (msg) => {
+      return d2Tasks.compile(code, (msg) => {
         outputChannel.appendInfo(msg);
       });
     }
