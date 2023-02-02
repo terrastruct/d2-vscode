@@ -142,7 +142,7 @@
           "enumDescriptions": [
             "The directed graph layout library Dagre",
             "Eclipse Layout Kernel (ELK) with the Layered algorithm",
-            "General Orthogonal Layout Engine - available if installed"
+            "Terrastruct's AutoLayout Approach - available if installed"
           ],
           "description": "Layout used for preview."
         },

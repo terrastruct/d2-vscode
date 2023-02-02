@@ -1,6 +1,5 @@
 import { QuickPickItem, window } from "vscode";
 import { util } from "./utility";
-import * as os from "os";
 
 /**
  * Container for D2 Layouts
@@ -20,12 +19,16 @@ class LayoutItem implements QuickPickItem {
  */
 const layouts: QuickPickItem[] = [
   new LayoutItem("dagre", "The directed graph layout library Dagre"),
-  new LayoutItem("elk", "Eclipse Layout Kernel (ELK) with the Layered algorithm")
+  new LayoutItem(
+    "elk",
+    "Eclipse Layout Kernel (ELK) with the Layered algorithm"
+  ),
 ];
 
-const layoutTala = new LayoutItem("tala", "General Orthogonal Layout Engine");
+const layoutTala = new LayoutItem("tala", "Terrastruct's AutoLayout Approach");
 
-const talaPluginName: string = process.platform === 'win32' ? 'd2plugin-tala.dll' : 'd2plugin-tala'; 
+const talaPluginName: string =
+  process.platform === "win32" ? "d2plugin-tala.dll" : "d2plugin-tala";
 
 /**
  * layouPicker - This will show the quick pick list in
