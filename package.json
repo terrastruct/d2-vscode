@@ -3,7 +3,7 @@
   "displayName": "D2",
   "publisher": "Terrastruct",
   "description": "Support for .d2 files.",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "license": "BSD-3-Clause",
   "contributors": [
     "Barry Nolte <barry@barrynolte.com>"
@@ -34,7 +34,7 @@
         "name": "D2Matcher",
         "owner": "D2 Extension",
         "fileLocation": [
-          "autodetect",
+          "autoDetect",
           "${cwd}"
         ],
         "pattern": {
@@ -245,7 +245,7 @@
     "@types/mocha": "^10.0.0",
     "@types/node": "16.x",
     "@types/temp": "^0.9.1",
-    "@types/vscode": "^1.73.0",
+    "@types/vscode": "^1.75.0",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",
     "@vscode/test-electron": "^2.2.0",

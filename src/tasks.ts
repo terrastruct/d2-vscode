@@ -11,15 +11,15 @@ import { util } from "./utility";
  * to be synchronous, and return their results in a callback.
  */
 class D2Tasks {
-  public compile(text: string, log?: TaskOutput, err?: TaskOutput): string {
+  public compile(text: string, log?: TaskOutput, terminal?: TaskOutput): string {
     const layout: string = ws.get("previewLayout", "dagre");
     const theme: string = ws.get("previewTheme", "default");
     const sketch: boolean = ws.get("previewSketch", false);
     const themeNumber: number = NameToThemeNumber(theme);
     const d2Path: string = ws.get("execPath", "d2");
 
-    err?.("Starting Compile...");
-    err?.(`Layout: ${layout}  Theme: ${theme}  Sketch: ${sketch}\r\n`);
+    terminal?.("Starting Compile...");
+    terminal?.(`Layout: ${layout}  Theme: ${theme}  Sketch: ${sketch}\r\n`);
 
     const args: string[] = [
       `--layout=${layout}`,
@@ -45,11 +45,11 @@ class D2Tasks {
           continue;
         }
 
-        err?.(msg, true);
+        terminal?.(msg, true);
       }
     }
 
-    err?.("");
+    terminal?.("");
 
     let data = "";
     // Success! Read the output
