@@ -24,6 +24,7 @@ import { themePicker } from "./themePicker";
 import { TaskRunner } from "./taskRunner";
 import { d2Tasks } from "./tasks";
 import { util } from "./utility";
+import path = require("path");
 
 const d2Ext = "d2";
 const d2Lang = "d2";
@@ -224,7 +225,11 @@ export function extendMarkdownItWithD2(md: any): unknown {
   const highlight = md.options.highlight;
   md.options.highlight = (code: string, lang: string) => {
     if (lang === d2Lang) {
-      return d2Tasks.compile(code, (msg) => {
+      const activeEditor = path.parse(
+        window.activeTextEditor?.document.fileName ?? ""
+      ).dir;
+
+      return d2Tasks.compile(code, activeEditor, (msg) => {
         outputChannel.appendInfo(msg);
       });
     }

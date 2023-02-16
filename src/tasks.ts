@@ -11,7 +11,12 @@ import { util } from "./utility";
  * to be synchronous, and return their results in a callback.
  */
 class D2Tasks {
-  public compile(text: string, log?: TaskOutput, terminal?: TaskOutput): string {
+  public compile(
+    text: string,
+    filePath?: string,
+    log?: TaskOutput,
+    terminal?: TaskOutput
+  ): string {
     const layout: string = ws.get("previewLayout", "dagre");
     const theme: string = ws.get("previewTheme", "default");
     const sketch: boolean = ws.get("previewSketch", false);
@@ -19,7 +24,9 @@ class D2Tasks {
     const d2Path: string = ws.get("execPath", "d2");
 
     terminal?.("Starting Compile...");
-    terminal?.(`Layout: ${layout}  Theme: ${theme}  Sketch: ${sketch}\r\n`);
+    terminal?.(`Layout: ${layout}  Theme: ${theme}  Sketch: ${sketch}`);
+    terminal?.(`Current Working Directory: ${filePath}`);
+    terminal?.("");
 
     const args: string[] = [
       `--layout=${layout}`,
@@ -27,7 +34,11 @@ class D2Tasks {
       `--sketch=${sketch}`,
       "-",
     ];
-    const proc = spawnSync(d2Path, args, { input: text, encoding: "utf-8" });
+    const proc = spawnSync(d2Path, args, {
+      cwd: filePath,
+      input: text,
+      encoding: "utf-8",
+    });
 
     /** proc.status: 0 - success
      *  proc.status: 1 - errors

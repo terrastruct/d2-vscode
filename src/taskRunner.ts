@@ -63,11 +63,13 @@ class CustomTaskTerminal implements Pseudoterminal {
   onDidClose?: Event<number> = this.closeEmitter.event;
 
   private fileName: string;
+  private fileDirectory: string;
   private docText: string;
   private callback: TaskRunnerCallback;
 
   constructor(filename: string, text: string, callback: TaskRunnerCallback) {
     this.fileName = path.parse(filename).base;
+    this.fileDirectory = path.parse(filename).dir;
     this.docText = text;
     this.callback = callback;
   }
@@ -75,6 +77,7 @@ class CustomTaskTerminal implements Pseudoterminal {
   open(): void {
     const data: string = d2Tasks.compile(
       this.docText,
+      this.fileDirectory,
       (msg) => {
         outputChannel.appendInfo(msg);
       },
