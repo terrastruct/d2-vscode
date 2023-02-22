@@ -34,10 +34,17 @@ class D2Tasks {
       `--sketch=${sketch}`,
       "-",
     ];
+
+    // spawnSync doesn't like blank working directories
+    if (filePath === ''){
+      filePath = undefined;
+    }
+
     const proc = spawnSync(d2Path, args, {
       cwd: filePath,
       input: text,
       encoding: "utf-8",
+      maxBuffer: 1024 * 1024 * 24
     });
 
     /** proc.status: 0 - success
@@ -57,6 +64,11 @@ class D2Tasks {
         }
 
         terminal?.(msg, true);
+      }
+
+      const spawnErr = proc.error?.message;
+      if (spawnErr) {
+        terminal?.(spawnErr, true);
       }
     }
 
