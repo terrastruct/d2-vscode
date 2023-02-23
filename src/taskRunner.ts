@@ -94,7 +94,9 @@ class CustomTaskTerminal implements Pseudoterminal {
       },
       (err, flag) => {
         if (flag === true) {
-          this.writeLine(`[${path.join(this.fileDirectory, this.fileName)}] ${err}`);
+          this.writeLine(
+            `[${path.join(this.fileDirectory, this.fileName)}] ${err}`
+          );
         } else {
           this.writeLine(err);
         }
