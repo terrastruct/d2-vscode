@@ -1,10 +1,13 @@
 import path = require("path");
+
 import {
   CustomExecution,
   Event,
   EventEmitter,
   Pseudoterminal,
   Task,
+  TaskPanelKind,
+  TaskRevealKind,
   tasks,
   TaskScope,
 } from "vscode";
@@ -45,6 +48,14 @@ export class TaskRunner {
       ["$D2Matcher"]
     );
 
+    task.presentationOptions = {
+      echo: true,
+      reveal: TaskRevealKind.Silent,
+      focus: false,
+      clear: false,
+      panel: TaskPanelKind.Dedicated,
+      showReuseMessage: false,
+    };
     tasks.executeTask(task);
   }
 }
