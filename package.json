@@ -29,6 +29,11 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "taskDefinitions": [
+      {
+        "type": "D2"
+      }
+    ],
     "problemMatchers": [
       {
         "name": "D2Matcher",
