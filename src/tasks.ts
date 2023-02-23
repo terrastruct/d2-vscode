@@ -36,7 +36,7 @@ class D2Tasks {
     ];
 
     // spawnSync doesn't like blank working directories
-    if (filePath === ''){
+    if (filePath === "") {
       filePath = undefined;
     }
 
@@ -44,7 +44,7 @@ class D2Tasks {
       cwd: filePath,
       input: text,
       encoding: "utf-8",
-      maxBuffer: 1024 * 1024 * 24
+      maxBuffer: 1024 * 1024 * 24,
     });
 
     /** proc.status: 0 - success
