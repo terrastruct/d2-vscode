@@ -17,28 +17,29 @@ import {
 } from "vscode";
 
 import { DocToPreviewGenerator } from "./docToPreviewGenerator";
-import { DocumentFormatter } from "./documentFormatter";
 import { D2OutputChannel } from "./outputChannel";
 import * as mdItContainer from "markdown-it-container";
 import { layoutPicker } from "./layoutPicker";
 import { themePicker } from "./themePicker";
+import { TaskRunner } from "./taskRunner";
+import { d2Tasks } from "./tasks";
+import { util } from "./utility";
+import path = require("path");
 
 const d2Ext = "d2";
 const d2Lang = "d2";
-export const d2ConfigSection = "D2";
-
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
-const documentFormatter: DocumentFormatter = new DocumentFormatter();
+
+export const d2ConfigSection = "D2";
 export let ws: WorkspaceConfiguration =
   workspace.getConfiguration(d2ConfigSection);
-
-export let outputChannel: D2OutputChannel;
+export const outputChannel: D2OutputChannel = new D2OutputChannel();
+export const taskRunner: TaskRunner = new TaskRunner();
 export let extContext: ExtensionContext;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function activate(context: ExtensionContext): any {
   extContext = context;
-  outputChannel = new D2OutputChannel();
 
   context.subscriptions.push(
     workspace.onDidChangeConfiguration(() => {
@@ -60,7 +61,7 @@ export function activate(context: ExtensionContext): any {
 
   context.subscriptions.push(
     workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
-      if (e.document.languageId === d2Ext) {
+      if (e.document.languageId === d2Ext && e.contentChanges.length > 0) {
         const autoUp = ws.get("autoUpdate", false);
 
         if (autoUp) {
@@ -137,7 +138,7 @@ export function activate(context: ExtensionContext): any {
         );
 
         if (documentEditor) {
-          documentFormatter.format(documentEditor);
+          d2Tasks.format(documentEditor);
         }
 
         return [];
@@ -195,6 +196,12 @@ export function activate(context: ExtensionContext): any {
     }
   });
 
+  /**
+   * Check that D2 is available up front
+   */
+  util.checkForD2Install();
+
+  // Return our markdown renderer
   return {
     // Sets up our ability to render for markdown files
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -218,7 +225,13 @@ export function extendMarkdownItWithD2(md: any): unknown {
   const highlight = md.options.highlight;
   md.options.highlight = (code: string, lang: string) => {
     if (lang === d2Lang) {
-      return previewGenerator.generateFromText(code);
+      const activeEditor = path.parse(
+        window.activeTextEditor?.document.fileName ?? ""
+      ).dir;
+
+      return d2Tasks.compile(code, activeEditor, (msg) => {
+        outputChannel.appendInfo(msg);
+      });
     }
     return highlight(code, lang);
   };
