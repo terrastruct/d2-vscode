@@ -61,7 +61,7 @@ export function activate(context: ExtensionContext): any {
 
   context.subscriptions.push(
     workspace.onDidChangeTextDocument((e: TextDocumentChangeEvent) => {
-      if (e.document.languageId === d2Ext) {
+      if (e.document.languageId === d2Ext && e.contentChanges.length > 0) {
         const autoUp = ws.get("autoUpdate", false);
 
         if (autoUp) {
