@@ -65,7 +65,7 @@ repository:
         begin: '\|([^[:alnum:]]*)md[\n[:space:]]'
         end: '\1\|'
         patterns:
-          - include: text.html.markdown.d2
+          - include: text.html.markdown
       - name: meta.string.block.js.d2
         captures: { 0: { name: punctuation.block.d2 } }
         begin: '\|([^[:alnum:]]*)js[\n[:space:]]'
@@ -93,14 +93,14 @@ repository:
         begin: '\|([^[:alnum:]]*)[\n[:space:]]'
         end: '\1\|'
         patterns:
-          - include: text.html.markdown.d2
+          - include: text.html.markdown
       - name: meta.string.block.d2
         captures: { 0: { name: punctuation.block.d2 } }
         begin: '\|([^[:alnum:]]*)[^[:space:]]+[\n[:space:]]'
         end: '\1\|'
       - name: string.unquoted.d2
         begin: '(?=[^[:space:]\n#;\[\]{}|$''"$])'
-        end: '(?=\s*[\n#;\[\]{}|''"])'
+        end: '(?=\s*[\n#;\[\]{}])'
         patterns:
           - include: "#escape"
   escape:

@@ -80,9 +80,11 @@
         }
       },
       {
-        "language": "markdown.d2",
-        "scopeName": "text.html.markdown.d2",
-        "path": "./syntaxes/markdown.tmLanguage.json"
+        "path": "./syntaxes/d2.injection.tmLanguage.json",
+        "scopeName": "meta.injection.d2",
+        "injectTo": [
+          "text.html.markdown"
+        ]
       }
     ],
     "markdown.markdownItPlugins": true,

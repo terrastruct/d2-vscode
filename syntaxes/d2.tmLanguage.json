@@ -87,7 +87,7 @@
           "end": "\\1\\|",
           "patterns": [
             {
-              "include": "text.html.markdown.d2"
+              "include": "text.html.markdown"
             }
           ]
         },
@@ -157,7 +157,7 @@
           "end": "\\1\\|",
           "patterns": [
             {
-              "include": "text.html.markdown.d2"
+              "include": "text.html.markdown"
             }
           ]
         },
@@ -174,7 +174,7 @@
         {
           "name": "string.unquoted.d2",
           "begin": "(?=[^[:space:]\\n#;\\[\\]{}|$'\"$])",
-          "end": "(?=\\s*[\\n#;\\[\\]{}|'\"])",
+          "end": "(?=\\s*[\\n#;\\[\\]{}])",
           "patterns": [
             {
               "include": "#escape"

@@ -4,7 +4,7 @@ import { Range, TextEditor } from "vscode";
 import { outputChannel, ws } from "./extension";
 import { TaskOutput } from "./taskRunner";
 import { NameToThemeNumber } from "./themePicker";
-import { util } from "./utility";
+import { util, VT } from "./utility";
 
 /**
  * D2Tasks - static functions to be used in tasks.  Functions need
@@ -23,9 +23,11 @@ class D2Tasks {
     const themeNumber: number = NameToThemeNumber(theme);
     const d2Path: string = ws.get("execPath", "d2");
 
-    terminal?.("Starting Compile...");
-    terminal?.(`Layout: ${layout}  Theme: ${theme}  Sketch: ${sketch}`);
-    terminal?.(`Current Working Directory: ${filePath}`);
+    terminal?.(`${VT.Green}Starting Compile...${VT.Reset}`);
+    terminal?.(
+      `Layout: ${VT.Yellow}${layout}${VT.Reset}  Theme: ${VT.Yellow}${theme}${VT.Reset}  Sketch: ${VT.Yellow}${sketch}${VT.Reset}`
+    );
+    terminal?.(`Current Working Directory: ${VT.Yellow}${filePath}${VT.Reset}`);
     terminal?.("");
 
     const args: string[] = [
@@ -54,7 +56,9 @@ class D2Tasks {
     if (proc.pid === 0) {
       util.showErrorToolsNotFound(proc.error?.message ?? "");
     } else {
-      const error: string = proc.stderr?.toString() ?? "";
+      let error: string = proc.stderr?.toString() ?? "";
+      // Get rid of superfluous info that means nothing to vscode users
+      error = error.replace("- to -", "");
 
       for (const msg of error.split("\n")) {
         if (msg.length === 0) {
