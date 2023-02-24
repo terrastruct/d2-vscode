@@ -11,6 +11,7 @@ import {
   TextDocumentSaveReason,
   TextDocumentWillSaveEvent,
   TextEdit,
+  Uri,
   window,
   workspace,
   WorkspaceConfiguration,
@@ -25,6 +26,7 @@ import { TaskRunner } from "./taskRunner";
 import { d2Tasks } from "./tasks";
 import { util } from "./utility";
 import path = require("path");
+import { TextEncoder } from "util";
 
 const d2Ext = "d2";
 const d2Lang = "d2";
@@ -126,6 +128,28 @@ export function activate(context: ExtensionContext): any {
         const trk = previewGenerator.getTrackObject(activeEditor.document);
         trk?.outputDoc?.show();
       }
+    })
+  );
+
+  context.subscriptions.push(
+    commands.registerCommand("D2.CompileToSvg", (fileInfo) => {
+      workspace.openTextDocument(fileInfo.fsPath).then((doc) => {
+        taskRunner.genTask(fileInfo.fsPath, doc.getText(), (svgText) => {
+          const inputFilename = fileInfo.fsPath.toString();
+          const svgFilename =
+            inputFilename.substr(0, inputFilename.lastIndexOf(".")) + ".svg";
+          const encoder = new TextEncoder();
+          const encodedText = encoder.encode(svgText);
+
+          workspace.fs
+            .writeFile(Uri.file(svgFilename), encodedText)
+            .then(() => {
+              outputChannel.appendInfo(
+                `File ${inputFilename} converted to ${svgFilename}`
+              );
+            });
+        });
+      });
     })
   );
 
