@@ -3,7 +3,7 @@
   "displayName": "D2",
   "publisher": "Terrastruct",
   "description": "Support for .d2 files.",
-  "version": "0.6.1",
+  "version": "0.8.0",
   "license": "BSD-3-Clause",
   "contributors": [
     "Barry Nolte <barry@barrynolte.com>"
@@ -29,6 +29,30 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "taskDefinitions": [
+      {
+        "type": "D2"
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "D2Matcher",
+        "owner": "D2 Extension",
+        "fileLocation": [
+          "autoDetect",
+          "${cwd}"
+        ],
+        "pattern": {
+          "regexp": "^\\[(.*)\\] (err):([A-Za-z\\s]*)([\\:]*\\s)(\\d+):(\\d+):(.*)$",
+          "file": 1,
+          "severity": 2,
+          "code": 3,
+          "line": 5,
+          "column": 6,
+          "message": 7
+        }
+      }
+    ],
     "languages": [
       {
         "id": "d2",
@@ -88,7 +112,8 @@
       {
         "command": "D2.ShowPreviewWindow",
         "key": "ctrl+shift+d",
-        "mac": "shift+cmd+d"
+        "mac": "shift+cmd+d",
+        "when": "editorLangId == d2"
       }
     ],
     "configuration": {
@@ -226,10 +251,10 @@
     "@types/node": "16.x",
     "@types/temp": "^0.9.1",
     "@types/vscode": "^1.73.0",
-    "@typescript-eslint/eslint-plugin": "^5.48.2",
-    "@typescript-eslint/parser": "^5.48.2",
+    "@typescript-eslint/eslint-plugin": "^5.50.0",
+    "@typescript-eslint/parser": "^5.50.0",
     "@vscode/test-electron": "^2.2.0",
-    "eslint": "^8.32.0",
+    "eslint": "^8.33.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-webpack-plugin": "^3.2.0",
     "glob": "^8.0.3",
@@ -242,6 +267,7 @@
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
+    "eslint-formatter-pretty": "^4.1.0",
     "markdown-it-container": "^3.0.0"
   },
   "homepage": "https://d2lang.com",
