@@ -133,11 +133,25 @@ export function activate(context: ExtensionContext): any {
 
   context.subscriptions.push(
     commands.registerCommand("D2.CompileToSvg", (fileInfo) => {
-      workspace.openTextDocument(fileInfo.fsPath).then((doc) => {
-        taskRunner.genTask(fileInfo.fsPath, doc.getText(), (svgText) => {
-          const inputFilename = fileInfo.fsPath.toString();
+      let filePath = fileInfo?.fsPath;
+
+      if (filePath === undefined) {
+        const activeEditor = window.activeTextEditor;
+        filePath = activeEditor?.document.uri.fsPath;
+        if (filePath === undefined) {
+          return;
+        }
+      }
+
+      workspace.openTextDocument(filePath).then((doc) => {
+        taskRunner.genTask(filePath, doc.getText(), (svgText) => {
+          if (svgText.length === 0) {
+            outputChannel.appendError(`Unable to convert ${filePath}`);
+            return;
+          }
+
           const svgFilename =
-            inputFilename.substr(0, inputFilename.lastIndexOf(".")) + ".svg";
+            filePath.substr(0, filePath.lastIndexOf(".")) + ".svg";
           const encoder = new TextEncoder();
           const encodedText = encoder.encode(svgText);
 
@@ -145,7 +159,7 @@ export function activate(context: ExtensionContext): any {
             .writeFile(Uri.file(svgFilename), encodedText)
             .then(() => {
               outputChannel.appendInfo(
-                `File ${inputFilename} converted to ${svgFilename}`
+                `File ${filePath} converted to ${svgFilename}`
               );
             });
         });
