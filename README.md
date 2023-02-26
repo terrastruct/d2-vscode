@@ -8,6 +8,10 @@
 
 # VSCode extension for [D2](https://d2lang.com) files.
 
+_Note: Requires D2 to be installed on your machine. See
+[https://github.com/terrastruct/d2/tree/master#install](https://github.com/terrastruct/d2/tree/master#install)
+for instructions._
+
 ## Currently Supports
 
 - Syntax highlighting `.d2` files
