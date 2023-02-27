@@ -28,7 +28,7 @@ const layouts: QuickPickItem[] = [
 const layoutTala = new LayoutItem("tala", "Terrastruct's AutoLayout Approach");
 
 const talaPluginName: string =
-  process.platform === "win32" ? "d2plugin-tala.dll" : "d2plugin-tala";
+  process.platform === "win32" ? "d2plugin-tala.exe" : "d2plugin-tala";
 
 /**
  * layouPicker - This will show the quick pick list in
