@@ -11,6 +11,7 @@ import {
   TextDocumentSaveReason,
   TextDocumentWillSaveEvent,
   TextEdit,
+  Uri,
   window,
   workspace,
   WorkspaceConfiguration,
@@ -25,6 +26,7 @@ import { TaskRunner } from "./taskRunner";
 import { d2Tasks } from "./tasks";
 import { util } from "./utility";
 import path = require("path");
+import { TextEncoder } from "util";
 
 const d2Ext = "d2";
 const d2Lang = "d2";
@@ -126,6 +128,42 @@ export function activate(context: ExtensionContext): any {
         const trk = previewGenerator.getTrackObject(activeEditor.document);
         trk?.outputDoc?.show();
       }
+    })
+  );
+
+  context.subscriptions.push(
+    commands.registerCommand("D2.CompileToSvg", (fileInfo) => {
+      let filePath = fileInfo?.fsPath;
+
+      if (filePath === undefined) {
+        const activeEditor = window.activeTextEditor;
+        filePath = activeEditor?.document.uri.fsPath;
+        if (filePath === undefined) {
+          return;
+        }
+      }
+
+      workspace.openTextDocument(filePath).then((doc) => {
+        taskRunner.genTask(filePath, doc.getText(), (svgText) => {
+          if (svgText.length === 0) {
+            outputChannel.appendError(`Unable to convert ${filePath}`);
+            return;
+          }
+
+          const svgFilename =
+            filePath.substr(0, filePath.lastIndexOf(".")) + ".svg";
+          const encoder = new TextEncoder();
+          const encodedText = encoder.encode(svgText);
+
+          workspace.fs
+            .writeFile(Uri.file(svgFilename), encodedText)
+            .then(() => {
+              outputChannel.appendInfo(
+                `File ${filePath} converted to ${svgFilename}`
+              );
+            });
+        });
+      });
     })
   );
 
