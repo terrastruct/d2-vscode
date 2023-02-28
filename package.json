@@ -3,7 +3,7 @@
   "displayName": "D2",
   "publisher": "Terrastruct",
   "description": "Support for .d2 files.",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "license": "BSD-3-Clause",
   "contributors": [
     "Barry Nolte <barry@barrynolte.com>"
@@ -25,7 +25,7 @@
     "mindmap"
   ],
   "activationEvents": [
-    "onLanguage:d2"
+    "onStartupFinished"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -90,6 +90,11 @@
       {
         "command": "D2.ShowPreviewWindow",
         "title": "Show D2 Preview",
+        "category": "d2"
+      },
+      {
+        "command": "D2.CompileToSvg",
+        "title": "Compile D2 to SVG",
         "category": "d2"
       },
       {
@@ -191,6 +196,11 @@
           "group": "d2"
         },
         {
+          "command": "D2.CompileToSvg",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        },
+        {
           "command": "D2.PickTheme",
           "when": "resourceLangId == d2",
           "group": "d2"
@@ -211,11 +221,21 @@
           "command": "D2.ShowPreviewWindow",
           "when": "resourceLangId == d2",
           "group": "d2"
+        },
+        {
+          "command": "D2.CompileToSvg",
+          "when": "resourceLangId == d2",
+          "group": "d2"
         }
       ],
       "editor/title": [
         {
           "command": "D2.ShowPreviewWindow",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        },
+        {
+          "command": "D2.CompileToSvg",
           "when": "resourceLangId == d2",
           "group": "d2"
         }
@@ -225,11 +245,21 @@
           "command": "D2.ShowPreviewWindow",
           "when": "resourceLangId == d2",
           "group": "d2"
+        },
+        {
+          "command": "D2.CompileToSvg",
+          "when": "resourceLangId == d2",
+          "group": "d2"
         }
       ],
       "explorer/context": [
         {
           "command": "D2.ShowPreviewWindow",
+          "when": "resourceLangId == d2",
+          "group": "d2"
+        },
+        {
+          "command": "D2.CompileToSvg",
           "when": "resourceLangId == d2",
           "group": "d2"
         }
