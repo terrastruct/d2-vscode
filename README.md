@@ -59,6 +59,15 @@ can also run the following on macOS:
 osascript -e 'quit app "Visual Studio Code"'; yarn dev && code ~/d2-testing
 ```
 
+To package for marketplace:
+
+```sh
+vsce package
+```
+
+Upload the output `.vsix` onto
+[https://marketplace.visualstudio.com/manage/publishers/terrastruct](https://marketplace.visualstudio.com/manage/publishers/terrastruct).
+
 ### launch.json
 
 We have a `.vscode/launch.json` that enables starting a separate debug VS Code with the
