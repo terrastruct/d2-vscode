@@ -178,7 +178,7 @@
         },
         "D2.previewSketch": {
           "type": "boolean",
-          "default": "false",
+          "default": false,
           "description": "Use sketch rendering in preview."
         },
         "D2.execPath": {
