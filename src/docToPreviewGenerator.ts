@@ -68,10 +68,13 @@ export class DocToPreviewGenerator {
       return;
     }
 
-    taskRunner.genTask(trkObj.inputDoc?.fileName, fileText, (data) => {
+    taskRunner.genTask(trkObj.inputDoc?.fileName, fileText, (data, error) => {
+      let errorMsg = '';
+
       // If we don't have a preview window already, create one
       if (!trkObj.outputDoc) {
         trkObj.outputDoc = new BrowserWindow(trkObj);
+        errorMsg = error;
       }
 
       if (data.length > 0) {
@@ -79,6 +82,8 @@ export class DocToPreviewGenerator {
 
         const p = path.parse(trkObj.inputDoc?.fileName || "");
         outputChannel.appendInfo(`Preview for ${p.base} updated.`);
+      } else if (errorMsg.length > 0) {
+        trkObj.outputDoc.setSvg(`<svg><text font-size="x-large" x="20" y="50">${errorMsg}</text></svg>`);
       }
     });
   }

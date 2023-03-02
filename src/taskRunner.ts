@@ -15,7 +15,7 @@ import { outputChannel } from "./extension";
 import { d2Tasks } from "./tasks";
 
 // eslint-disable-next-line no-unused-vars
-export type TaskRunnerCallback = (data: string) => void;
+export type TaskRunnerCallback = (data: string, error: string) => void;
 // eslint-disable-next-line no-unused-vars
 export type TaskOutput = (text: string, flag?: boolean) => void;
 
@@ -103,7 +103,7 @@ class CustomTaskTerminal implements Pseudoterminal {
       }
     );
 
-    this.callback(data);
+    this.callback(data, "Compile Error");
 
     // This is the magic bullet to complete the task.
     this.closeEmitter.fire(0);
