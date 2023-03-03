@@ -77,6 +77,7 @@ class CustomTaskTerminal implements Pseudoterminal {
   private fileDirectory: string;
   private docText: string;
   private callback: TaskRunnerCallback;
+  private compileErrors = "";
 
   constructor(filename: string, text: string, callback: TaskRunnerCallback) {
     this.fileName = path.parse(filename).base;
@@ -94,6 +95,7 @@ class CustomTaskTerminal implements Pseudoterminal {
       },
       (err, flag) => {
         if (flag === true) {
+          this.compileErrors += err + "\n";
           this.writeLine(
             `[${path.join(this.fileDirectory, this.fileName)}] ${err}`
           );
@@ -103,7 +105,7 @@ class CustomTaskTerminal implements Pseudoterminal {
       }
     );
 
-    this.callback(data, "Compile Error");
+    this.callback(data, this.compileErrors);
 
     // This is the magic bullet to complete the task.
     this.closeEmitter.fire(0);
