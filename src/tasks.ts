@@ -58,7 +58,7 @@ class D2Tasks {
     } else {
       let error: string = proc.stderr?.toString() ?? "";
       // Get rid of superfluous info that means nothing to vscode users
-      error = error.replace("- to -", "");
+      error = error.replace(" - to -", "");
 
       for (const msg of error.split("\n")) {
         if (msg.length === 0) {
