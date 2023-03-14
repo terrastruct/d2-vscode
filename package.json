@@ -277,7 +277,8 @@
         "uiTheme": "vs-dark",
         "path": "./themes/dark-color-theme.json"
       }
-    ],
+    ]
+  },
     "scripts": {
       "vscode:prepublish": "yarn run package",
       "compile": "webpack",
