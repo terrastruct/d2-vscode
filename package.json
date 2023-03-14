@@ -13,7 +13,8 @@
   },
   "categories": [
     "Programming Languages",
-    "Visualization"
+    "Visualization",
+    "Themes"
   ],
   "keywords": [
     "diagram",
@@ -264,7 +265,19 @@
           "group": "d2"
         }
       ]
-    }
+    },
+    "themes": [
+      {
+        "label": "D2 Light",
+        "uiTheme": "vs",
+        "path": "./themes/light-color-theme.json"
+      },
+      {
+        "label": "D2 Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dark-color-theme.json"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "yarn run package",
