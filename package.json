@@ -1,315 +1,327 @@
 {
-  "name": "d2",
-  "displayName": "D2",
-  "publisher": "Terrastruct",
-  "description": "Support for .d2 files.",
-  "version": "0.8.1",
-  "license": "BSD-3-Clause",
-  "contributors": [
-    "Barry Nolte <barry@barrynolte.com>"
-  ],
-  "engines": {
-    "vscode": "^1.73.0"
-  },
-  "categories": [
-    "Programming Languages",
-    "Visualization"
-  ],
-  "keywords": [
-    "diagram",
-    "diagramming",
-    "model",
-    "modelling",
-    "visual",
-    "uml",
-    "mindmap"
-  ],
-  "activationEvents": [
-    "onStartupFinished"
-  ],
-  "main": "./dist/extension.js",
-  "contributes": {
-    "taskDefinitions": [
-      {
-        "type": "D2"
-      }
+    "name": "d2",
+    "displayName": "D2",
+    "publisher": "Terrastruct",
+    "description": "Support for .d2 files.",
+    "version": "0.8.1",
+    "license": "BSD-3-Clause",
+    "contributors": [
+        "Barry Nolte <barry@barrynolte.com>"
     ],
-    "problemMatchers": [
-      {
-        "name": "D2Matcher",
-        "owner": "D2 Extension",
-        "fileLocation": [
-          "autoDetect",
-          "${cwd}"
-        ],
-        "pattern": {
-          "regexp": "^\\[(.*)\\] (err):(.*):*((\\d+):(\\d+):)(.*)$",
-          "file": 1,
-          "severity": 2,
-          "code": 3,
-          "line": 5,
-          "column": 6,
-          "message": 7
-        }
-      }
-    ],
-    "languages": [
-      {
-        "id": "d2",
-        "extensions": [
-          ".d2"
-        ],
-        "configuration": "./language-configuration.json",
-        "icon": {
-          "light": "d2-icon-small.png",
-          "dark": "d2-icon-small.png"
-        }
-      },
-      {
-        "id": "markdown.d2"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "d2",
-        "scopeName": "source.d2",
-        "path": "./syntaxes/d2.tmLanguage.json",
-        "embeddedLanguages": {
-          "meta.embedded.block.markdown": "markdown",
-          "meta.embedded.block.latex": "latex"
-        }
-      },
-      {
-        "language": "markdown.d2",
-        "scopeName": "text.html.markdown.d2",
-        "path": "./syntaxes/markdown.tmLanguage.json"
-      }
-    ],
-    "markdown.markdownItPlugins": true,
-    "commands": [
-      {
-        "command": "D2.ShowPreviewWindow",
-        "title": "Show D2 Preview",
-        "category": "d2"
-      },
-      {
-        "command": "D2.CompileToSvg",
-        "title": "Compile D2 to SVG",
-        "category": "d2"
-      },
-      {
-        "command": "D2.PickTheme",
-        "title": "Pick Preview Theme",
-        "category": "d2"
-      },
-      {
-        "command": "D2.PickLayout",
-        "title": "Pick Preview Layout",
-        "category": "d2"
-      },
-      {
-        "command": "D2.ToggleSketch",
-        "title": "Toggle Preview Sketch Rendering",
-        "category": "d2"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "D2.ShowPreviewWindow",
-        "key": "ctrl+shift+d",
-        "mac": "shift+cmd+d",
-        "when": "editorLangId == d2"
-      }
-    ],
-    "configuration": {
-      "type": "object",
-      "title": "D2 Viewer",
-      "properties": {
-        "D2.autoUpdate": {
-          "type": "boolean",
-          "default": true,
-          "description": "Automatically update the preview as you edit the D2 file."
-        },
-        "D2.updateTimer": {
-          "type": "number",
-          "default": 1500,
-          "description": "Specifies the amount of time (in ms) to wait between keystrokes before updating the preview."
-        },
-        "D2.updateOnSave": {
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically update on saving the D2 file."
-        },
-        "D2.previewTheme": {
-          "type": "string",
-          "default": "default",
-          "enum": [
-            "default",
-            "Neutral grey",
-            "Flagship Terrastruct",
-            "Cool classics",
-            "Mixed berry blue",
-            "Grape soda",
-            "Aubergine",
-            "Colorblind clear",
-            "Vanilla nitro cola",
-            "Orange creamsicle",
-            "Shirley temple",
-            "Earth tones",
-            "Everglade green",
-            "Buttered toast"
-          ],
-          "description": "Theme used for preview."
-        },
-        "D2.previewLayout": {
-          "type": "string",
-          "default": "dagre",
-          "enum": [
-            "dagre",
-            "elk",
-            "tala"
-          ],
-          "enumDescriptions": [
-            "The directed graph layout library Dagre",
-            "Eclipse Layout Kernel (ELK) with the Layered algorithm",
-            "Terrastruct's AutoLayout Approach - available if installed"
-          ],
-          "description": "Layout used for preview."
-        },
-        "D2.previewSketch": {
-          "type": "boolean",
-          "default": false,
-          "description": "Use sketch rendering in preview."
-        },
-        "D2.execPath": {
-          "type": "string",
-          "default": "d2",
-          "description": "Path to d2 executable if not on current PATH"
-        }
-      }
+    "engines": {
+        "vscode": "^1.73.0"
     },
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "D2.ShowPreviewWindow",
-          "when": "editorLangId == d2",
-          "group": "d2"
+    "categories": [
+        "Programming Languages",
+        "Visualization"
+    ],
+    "keywords": [
+        "diagram",
+        "diagramming",
+        "model",
+        "modelling",
+        "visual",
+        "uml",
+        "mindmap"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "taskDefinitions": [
+            {
+                "type": "D2"
+            }
+        ],
+        "problemMatchers": [
+            {
+                "name": "D2Matcher",
+                "owner": "D2 Extension",
+                "fileLocation": [
+                    "autoDetect",
+                    "${cwd}"
+                ],
+                "pattern": {
+                    "regexp": "^\\[(.*)\\] (err):([A-Za-z\\s]*)([\\:]*\\s)(\\d+):(\\d+):(.*)$",
+                    "file": 1,
+                    "severity": 2,
+                    "code": 3,
+                    "line": 5,
+                    "column": 6,
+                    "message": 7
+                }
+            }
+        ],
+        "languages": [
+            {
+                "id": "d2",
+                "extensions": [
+                    ".d2"
+                ],
+                "configuration": "./language-configuration.json",
+                "icon": {
+                    "light": "d2-icon-small.png",
+                    "dark": "d2-icon-small.png"
+                }
+            },
+            {
+                "id": "markdown.d2"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "d2",
+                "scopeName": "source.d2",
+                "path": "./syntaxes/d2.tmLanguage.json",
+                "embeddedLanguages": {
+                    "meta.embedded.block.markdown": "markdown",
+                    "meta.embedded.block.latex": "latex"
+                }
+            },
+            {
+                "language": "markdown.d2",
+                "scopeName": "text.html.markdown.d2",
+                "path": "./syntaxes/markdown.tmLanguage.json"
+            }
+        ],
+        "themes": [
+            {
+                "label": "D2 Light",
+                "uiTheme": "vs",
+                "path": "./themes/light-color-theme.json"
+            },
+            {
+                "label": "D2 Dark",
+                "uiTheme": "vs-dark",
+                "path": "./themes/dark-color-theme.json"
+            }
+        ],
+        "markdown.markdownItPlugins": true,
+        "commands": [
+            {
+                "command": "D2.ShowPreviewWindow",
+                "title": "Show D2 Preview",
+                "category": "d2"
+            },
+            {
+                "command": "D2.CompileToSvg",
+                "title": "Compile D2 to SVG",
+                "category": "d2"
+            },
+            {
+                "command": "D2.PickTheme",
+                "title": "Pick Preview Theme",
+                "category": "d2"
+            },
+            {
+                "command": "D2.PickLayout",
+                "title": "Pick Preview Layout",
+                "category": "d2"
+            },
+            {
+                "command": "D2.ToggleSketch",
+                "title": "Toggle Preview Sketch Rendering",
+                "category": "d2"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "D2.ShowPreviewWindow",
+                "key": "ctrl+shift+d",
+                "mac": "shift+cmd+d",
+                "when": "editorLangId == d2"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "D2 Viewer",
+            "properties": {
+                "D2.autoUpdate": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Automatically update the preview as you edit the D2 file."
+                },
+                "D2.updateTimer": {
+                    "type": "number",
+                    "default": 1500,
+                    "description": "Specifies the amount of time (in ms) to wait between keystrokes before updating the preview."
+                },
+                "D2.updateOnSave": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Automatically update on saving the D2 file."
+                },
+                "D2.previewTheme": {
+                    "type": "string",
+                    "default": "default",
+                    "enum": [
+                        "default",
+                        "Neutral grey",
+                        "Flagship Terrastruct",
+                        "Cool classics",
+                        "Mixed berry blue",
+                        "Grape soda",
+                        "Aubergine",
+                        "Colorblind clear",
+                        "Vanilla nitro cola",
+                        "Orange creamsicle",
+                        "Shirley temple",
+                        "Earth tones",
+                        "Everglade green",
+                        "Buttered toast"
+                    ],
+                    "description": "Theme used for preview."
+                },
+                "D2.previewLayout": {
+                    "type": "string",
+                    "default": "dagre",
+                    "enum": [
+                        "dagre",
+                        "elk",
+                        "tala"
+                    ],
+                    "enumDescriptions": [
+                        "The directed graph layout library Dagre",
+                        "Eclipse Layout Kernel (ELK) with the Layered algorithm",
+                        "Terrastruct's AutoLayout Approach - available if installed"
+                    ],
+                    "description": "Layout used for preview."
+                },
+                "D2.previewSketch": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Use sketch rendering in preview."
+                },
+                "D2.execPath": {
+                    "type": "string",
+                    "default": "d2",
+                    "description": "Path to d2 executable if not on current PATH"
+                }
+            }
         },
-        {
-          "command": "D2.CompileToSvg",
-          "when": "resourceLangId == d2",
-          "group": "d2"
-        },
-        {
-          "command": "D2.PickTheme",
-          "when": "resourceLangId == d2",
-          "group": "d2"
-        },
-        {
-          "command": "D2.PickLayout",
-          "when": "resourceLangId == d2",
-          "group": "d2"
-        },
-        {
-          "command": "D2.ToggleSketch",
-          "when": "resourceLangId == d2",
-          "group": "d2"
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "D2.ShowPreviewWindow",
+                    "when": "editorLangId == d2",
+                    "group": "d2"
+                },
+                {
+                    "command": "D2.CompileToSvg",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                },
+                {
+                    "command": "D2.PickTheme",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                },
+                {
+                    "command": "D2.PickLayout",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                },
+                {
+                    "command": "D2.ToggleSketch",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "D2.ShowPreviewWindow",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                },
+                {
+                    "command": "D2.CompileToSvg",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                }
+            ],
+            "editor/title": [
+                {
+                    "command": "D2.ShowPreviewWindow",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                },
+                {
+                    "command": "D2.CompileToSvg",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                }
+            ],
+            "editor/title/context": [
+                {
+                    "command": "D2.ShowPreviewWindow",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                },
+                {
+                    "command": "D2.CompileToSvg",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "D2.ShowPreviewWindow",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                },
+                {
+                    "command": "D2.CompileToSvg",
+                    "when": "resourceLangId == d2",
+                    "group": "d2"
+                }
+            ]
         }
-      ],
-      "editor/context": [
-        {
-          "command": "D2.ShowPreviewWindow",
-          "when": "resourceLangId == d2",
-          "group": "d2"
-        },
-        {
-          "command": "D2.CompileToSvg",
-          "when": "resourceLangId == d2",
-          "group": "d2"
-        }
-      ],
-      "editor/title": [
-        {
-          "command": "D2.ShowPreviewWindow",
-          "when": "resourceLangId == d2",
-          "group": "d2"
-        },
-        {
-          "command": "D2.CompileToSvg",
-          "when": "resourceLangId == d2",
-          "group": "d2"
-        }
-      ],
-      "editor/title/context": [
-        {
-          "command": "D2.ShowPreviewWindow",
-          "when": "resourceLangId == d2",
-          "group": "d2"
-        },
-        {
-          "command": "D2.CompileToSvg",
-          "when": "resourceLangId == d2",
-          "group": "d2"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "D2.ShowPreviewWindow",
-          "when": "resourceLangId == d2",
-          "group": "d2"
-        },
-        {
-          "command": "D2.CompileToSvg",
-          "when": "resourceLangId == d2",
-          "group": "d2"
-        }
-      ]
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn run package",
+        "compile": "webpack",
+        "watch": "webpack --watch",
+        "package": "webpack --mode production --devtool hidden-source-map",
+        "lint": "eslint src --ext ts",
+        "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
+        "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
+        "pkg": "vsce package --out d2.vsix"
+    },
+    "devDependencies": {
+        "@types/glob": "^8.0.0",
+        "@types/markdown-it-container": "^2.0.5",
+        "@types/mocha": "^10.0.0",
+        "@types/node": "16.x",
+        "@types/temp": "^0.9.1",
+        "@types/vscode": "^1.73.0",
+        "@typescript-eslint/eslint-plugin": "^5.50.0",
+        "@typescript-eslint/parser": "^5.50.0",
+        "@vscode/test-electron": "^2.2.0",
+        "eslint": "^8.33.0",
+        "eslint-config-prettier": "^8.6.0",
+        "eslint-webpack-plugin": "^3.2.0",
+        "glob": "^8.0.3",
+        "mocha": "^10.1.0",
+        "prettier": "^2.8.3",
+        "temp": "^0.9.4",
+        "ts-loader": "^9.4.2",
+        "typescript": "^4.9.4",
+        "webpack": "^5.74.0",
+        "webpack-cli": "^4.10.0"
+    },
+    "dependencies": {
+        "eslint-formatter-pretty": "^4.1.0",
+        "markdown-it-container": "^3.0.0"
+    },
+    "homepage": "https://d2lang.com",
+    "icon": "d2-icon.png",
+    "bugs": {
+        "url": "https://github.com/terrastruct/d2-vscode/issues",
+        "email": "info@terrastruct.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/terrastruct/d2-vscode"
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "yarn run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "lint": "eslint src --ext ts",
-    "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
-    "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
-    "pkg": "vsce package --out d2.vsix"
-  },
-  "devDependencies": {
-    "@types/glob": "^8.0.0",
-    "@types/markdown-it-container": "^2.0.5",
-    "@types/mocha": "^10.0.0",
-    "@types/node": "16.x",
-    "@types/temp": "^0.9.1",
-    "@types/vscode": "^1.73.0",
-    "@typescript-eslint/eslint-plugin": "^5.50.0",
-    "@typescript-eslint/parser": "^5.50.0",
-    "@vscode/test-electron": "^2.2.0",
-    "eslint": "^8.33.0",
-    "eslint-config-prettier": "^8.6.0",
-    "eslint-webpack-plugin": "^3.2.0",
-    "glob": "^8.0.3",
-    "mocha": "^10.1.0",
-    "prettier": "^2.8.3",
-    "temp": "^0.9.4",
-    "ts-loader": "^9.4.2",
-    "typescript": "^4.9.4",
-    "webpack": "^5.74.0",
-    "webpack-cli": "^4.10.0"
-  },
-  "dependencies": {
-    "eslint-formatter-pretty": "^4.1.0",
-    "markdown-it-container": "^3.0.0"
-  },
-  "homepage": "https://d2lang.com",
-  "icon": "d2-icon.png",
-  "bugs": {
-    "url": "https://github.com/terrastruct/d2-vscode/issues",
-    "email": "info@terrastruct.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/terrastruct/d2-vscode"
-  }
 }
