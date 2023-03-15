@@ -144,16 +144,20 @@
         init();
       });
 
-      window.addEventListener("wheel", (event) => {
-        if (event.ctrlKey === true) {
-          event.preventDefault();
-          if (event.deltaY > 0) {
-            zoomMinus();
-          } else {
-            zoomPlus();
+      window.addEventListener(
+        "wheel",
+        (event) => {
+          if (event.ctrlKey === true) {
+            event.preventDefault();
+            if (event.deltaY > 0) {
+              zoomMinus();
+            } else {
+              zoomPlus();
+            }
           }
-        }
-      }, { passive: false });
+        },
+        { passive: false }
+      );
 
       window.addEventListener("message", (event) => {
         const message = event.data; // The JSON data our extension sent
