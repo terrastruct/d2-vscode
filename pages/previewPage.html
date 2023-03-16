@@ -139,9 +139,25 @@
         var newZl = Math.round(zl + zoomStep) - Math.round(zl % zoomStep);
         return Math.max(10, newZl);
       }
+
       window.addEventListener("DOMContentLoaded", () => {
         init();
       });
+
+      window.addEventListener(
+        "wheel",
+        (event) => {
+          if (event.ctrlKey === true) {
+            event.preventDefault();
+            if (event.deltaY > 0) {
+              zoomMinus();
+            } else {
+              zoomPlus();
+            }
+          }
+        },
+        { passive: false }
+      );
 
       window.addEventListener("message", (event) => {
         const message = event.data; // The JSON data our extension sent
