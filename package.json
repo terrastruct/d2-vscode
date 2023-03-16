@@ -313,7 +313,7 @@
   },
   "dependencies": {
     "eslint-formatter-pretty": "^4.1.0",
-    "markdown-it-container": "^3.0.0",
+    "markdown-it-container": "^3.0.0"
   },
   "homepage": "https://d2lang.com",
   "icon": "d2-icon.png",
