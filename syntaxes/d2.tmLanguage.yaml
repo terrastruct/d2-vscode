@@ -262,3 +262,4 @@ repository:
         match: '.*constant\.language\.null.*'
       - name: comment
         match: ".*comment.*"
+        
