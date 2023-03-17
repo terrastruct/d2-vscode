@@ -114,9 +114,7 @@ class D2Tasks {
       builder.replace(
         new Range(
           textEditor.document.lineAt(0).range.start,
-          textEditor.document.lineAt(
-            textEditor.document.lineCount - 1
-          ).range.end
+          textEditor.document.lineAt(textEditor.document.lineCount - 1).range.end
         ),
         data
       );

@@ -88,9 +88,7 @@ export class DocToPreviewGenerator {
 
         let msg = "";
         arr.forEach((s, i) => {
-          msg += `<text fill="#757575" x="15" y="${
-            i * 12 + 100
-          }">${s}</text>\n`;
+          msg += `<text fill="#757575" x="15" y="${i * 12 + 100}">${s}</text>\n`;
         });
 
         trkObj.outputDoc.setSvg(`<svg>${msg}</svg>`);

@@ -30,16 +30,11 @@ export class BrowserWindow {
         enableFindWidget: true,
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [
-          Uri.file(path.join(extContext.extensionPath, "pages")),
-        ],
+        localResourceRoots: [Uri.file(path.join(extContext.extensionPath, "pages"))],
       }
     );
 
-    const onDiskPath = path.join(
-      extContext.extensionPath,
-      "pages/previewPage.html"
-    );
+    const onDiskPath = path.join(extContext.extensionPath, "pages/previewPage.html");
     const data: string = readFileSync(onDiskPath, "utf-8");
 
     this.webViewPanel.webview.html = data.toString();

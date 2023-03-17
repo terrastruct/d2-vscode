@@ -33,8 +33,7 @@ const d2Lang = "d2";
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 
 export const d2ConfigSection = "D2";
-export let ws: WorkspaceConfiguration =
-  workspace.getConfiguration(d2ConfigSection);
+export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
 export const outputChannel: D2OutputChannel = new D2OutputChannel();
 export const taskRunner: TaskRunner = new TaskRunner();
 export let extContext: ExtensionContext;
@@ -150,18 +149,13 @@ export function activate(context: ExtensionContext): any {
             return;
           }
 
-          const svgFilename =
-            filePath.substr(0, filePath.lastIndexOf(".")) + ".svg";
+          const svgFilename = filePath.substr(0, filePath.lastIndexOf(".")) + ".svg";
           const encoder = new TextEncoder();
           const encodedText = encoder.encode(svgText);
 
-          workspace.fs
-            .writeFile(Uri.file(svgFilename), encodedText)
-            .then(() => {
-              outputChannel.appendInfo(
-                `File ${filePath} converted to ${svgFilename}`
-              );
-            });
+          workspace.fs.writeFile(Uri.file(svgFilename), encodedText).then(() => {
+            outputChannel.appendInfo(`File ${filePath} converted to ${svgFilename}`);
+          });
         });
       });
     })

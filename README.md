@@ -6,6 +6,10 @@
   <br />
 </div>
 
+[![ci](https://github.com/terrastruct/d2-vscode/actions/workflows/ci.yml/badge.svg)](https://github.com/terrastruct/d2-vscode/actions/workflows/ci.yml)
+[![daily](https://github.com/terrastruct/d2-vscode/actions/workflows/daily.yml/badge.svg)](https://github.com/terrastruct/d2-vscode/actions/workflows/daily.yml)
+[![license](https://img.shields.io/github/license/terrastruct/d2-vscode?color=9cf)](./LICENSE)
+
 # VSCode extension for [D2](https://d2lang.com) files.
 
 _Note: Requires D2 to be installed on your machine. See
@@ -59,7 +63,26 @@ can also run the following on macOS:
 osascript -e 'quit app "Visual Studio Code"'; yarn dev && code ~/d2-testing
 ```
 
-To package for marketplace:
+### CI
+
+CI relies on Terrastruct's shared [CI submodule](https://github.com/terrastruct/ci).
+
+To run all CI: `./make.sh`.
+
+To run individual jobs:
+
+- Format: `./make.sh fmt`
+- Lint: `./make.sh lint`
+- Build: `./make.sh build`
+
+Jobs only run on changed files. To force it to run on all files, add `CI_FORCE=1`. This is
+what daily job does.
+
+```
+CI_FORCE=1 ./make.sh fmt
+```
+
+### Packaging
 
 ```sh
 vsce package

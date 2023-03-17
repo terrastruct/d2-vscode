@@ -26,11 +26,7 @@ export type TaskOutput = (text: string, flag?: boolean) => void;
  */
 export class TaskRunner {
   public retVal = "";
-  public genTask(
-    filename: string,
-    text: string,
-    callback: TaskRunnerCallback
-  ): void {
+  public genTask(filename: string, text: string, callback: TaskRunnerCallback): void {
     const pty = new CustomTaskTerminal(filename, text, callback);
     const ce = new CustomExecution(
       (): Promise<CustomTaskTerminal> =>
@@ -96,9 +92,7 @@ class CustomTaskTerminal implements Pseudoterminal {
       (err, flag) => {
         if (flag === true) {
           this.compileErrors += err + "\n";
-          this.writeLine(
-            `[${path.join(this.fileDirectory, this.fileName)}] ${err}`
-          );
+          this.writeLine(`[${path.join(this.fileDirectory, this.fileName)}] ${err}`);
         } else {
           this.writeLine(err);
         }
