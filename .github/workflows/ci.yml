@@ -1,0 +1,31 @@
+name: ci
+on: [push, pull_request]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets._GITHUB_TOKEN }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - run: COLOR=1 ./make.sh
+        timeout-minutes: 30
+        env:
+          GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
+  nofixups:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: git submodule update --init
+      - run: COLOR=1 ./ci/sub/bin/nofixups.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}

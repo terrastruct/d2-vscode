@@ -284,7 +284,6 @@
     "compile": "webpack",
     "watch": "webpack --watch",
     "package": "webpack --mode production --devtool hidden-source-map",
-    "lint": "eslint src --ext ts",
     "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
     "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
     "pkg": "vsce package --out d2.vsix"
