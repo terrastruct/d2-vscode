@@ -104,9 +104,7 @@
         svg.style.width = "100%";
         setZoomText(false);
 
-        zoomLevel = roundToZoomLevel(
-          (svg.clientHeight / svg.height.baseVal.value) * 100
-        );
+        zoomLevel = roundToZoomLevel((svg.clientHeight / svg.height.baseVal.value) * 100);
 
         fitMode = true;
       }
