@@ -21,4 +21,5 @@ jobs:
       - run: COLOR=1 CI_FORCE=1 ./make.sh
         timeout-minutes: 30
         env:
+          GITHUB_TOKEN: ${{ secrets._GITHUB_TOKEN }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
