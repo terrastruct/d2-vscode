@@ -99,8 +99,7 @@
         var svgElem = document.getElementsByTagName("svg")[0];
 
         var widthPct = visualViewport.width / svgElem.width.baseVal.value;
-        var heightPct =
-          (visualViewport.height - 45) / svgElem.height.baseVal.value;
+        var heightPct = (visualViewport.height - 45) / svgElem.height.baseVal.value;
 
         var zoomPct = Math.min(widthPct, heightPct) * 100;
         setZoomLevel(zoomPct);
