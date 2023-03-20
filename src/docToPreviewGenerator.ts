@@ -92,6 +92,7 @@ export class DocToPreviewGenerator {
         });
 
         trkObj.outputDoc.setSvg(`<svg>${msg}</svg>`);
+        trkObj.outputDoc.resetZoom();
       }
     });
   }
