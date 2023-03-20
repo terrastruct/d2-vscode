@@ -55,9 +55,9 @@ export class BrowserWindow {
   }
 
   resetZoom(): void {
-    this.webViewPanel.webview.postMessage({ command: "resetZoom"});
+    this.webViewPanel.webview.postMessage({ command: "resetZoom" });
   }
-  
+
   dispose(): void {
     this.webViewPanel.dispose();
   }
