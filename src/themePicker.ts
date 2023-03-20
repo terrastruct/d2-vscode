@@ -18,7 +18,7 @@ class ThemeItem implements QuickPickItem {
  */
 const themes: ThemeItem[] = [
   new ThemeItem("default", 0),
-  new ThemeItem("Neutral grey", 1),
+  new ThemeItem("Neutral gray", 1),
   new ThemeItem("Flagship Terrastruct", 3),
   new ThemeItem("Cool classics", 4),
   new ThemeItem("Mixed berry blue", 5),
