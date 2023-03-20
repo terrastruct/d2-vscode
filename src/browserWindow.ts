@@ -54,6 +54,10 @@ export class BrowserWindow {
     this.webViewPanel.webview.postMessage({ command: "render", data: svg });
   }
 
+  resetZoom(): void {
+    this.webViewPanel.webview.postMessage({ command: "resetZoom" });
+  }
+
   dispose(): void {
     this.webViewPanel.dispose();
   }

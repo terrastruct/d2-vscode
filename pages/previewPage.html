@@ -78,15 +78,13 @@
       var zoomStep = 5;
       var percent;
       var zoomSlider;
+      var wrapper;
       var fitMode = true;
 
-      function getSvgElement() {
-        var svgs = document.getElementsByTagName("svg");
-        return svgs[0];
-      }
       function init() {
         percent = document.getElementById("percent");
         zoomSlider = document.getElementById("zoomSlider");
+        wrapper = document.getElementById("previewWrapper");
         zoomFit();
       }
       function zoomPlus() {
@@ -98,22 +96,22 @@
         setZoomLevel(zoomLevel);
       }
       function zoomFit() {
-        setZoomLevel(100);
-        var svg = getSvgElement();
-        svg.style.height = "100%";
-        svg.style.width = "100%";
+        var svgElem = document.getElementsByTagName("svg")[0];
+
+        var widthPct = visualViewport.width / svgElem.width.baseVal.value;
+        var heightPct = (visualViewport.height - 45) / svgElem.height.baseVal.value;
+
+        var zoomPct = Math.min(widthPct, heightPct) * 100;
+        setZoomLevel(zoomPct);
+
         setZoomText(false);
 
-        zoomLevel = roundToZoomLevel((svg.clientHeight / svg.height.baseVal.value) * 100);
+        zoomLevel = roundToZoomLevel(zoomPct);
 
         fitMode = true;
       }
       function setZoomLevel(zl) {
-        var svg = getSvgElement();
-        svg.style.marginTop = (30 * 100.0) / zl;
-        svg.style.height = "";
-        svg.style.width = "";
-        svg.style.zoom = zl / 100.0;
+        wrapper.style.transform = `scale(${zl / 100},${zl / 100})`;
         setZoomText(true);
 
         zoomSlider.value = zl;
@@ -125,10 +123,8 @@
         setZoomLevel(zoomSlider.value);
       }
       function setZoomText(text) {
-        var svg = getSvgElement();
-
         if (text === true) {
-          percent.innerText = (svg.style.zoom * 100.0).toFixed() + "%";
+          percent.innerText = zoomLevel.toFixed() + "%";
         } else {
           percent.innerText = "Fit";
         }
@@ -162,14 +158,17 @@
 
         switch (message.command) {
           case "render":
-            var previewWrapper = document.getElementById("previewWrapper");
-            previewWrapper.innerHTML = message.data;
+            wrapper.innerHTML = message.data;
 
             if (fitMode === true) {
               zoomFit();
             } else {
               setZoomLevel(zoomLevel);
             }
+            break;
+          case "resetZoom":
+            setZoomLevel(100.0);
+            setZoomText(true);
             break;
         }
       });
@@ -195,14 +194,10 @@
         Fit to window
       </button>
     </div>
-    <div id="previewWrapper">
+    <div id="previewWrapper" style="margin-top: 45px">
       <svg>
         <text font-size="x-large" x="20" y="50">Loading...</text>
       </svg>
     </div>
-
-    <body>
-      <html></html>
-    </body>
   </body>
 </html>
