@@ -76,6 +76,8 @@
     <script>
       var zoomLevel = 100;
       var zoomStep = 5;
+      var zoomMin = 10;
+      var zoomMax = 350;
       var percent;
       var zoomSlider;
       var wrapper;
@@ -88,11 +90,17 @@
         zoomFit();
       }
       function zoomPlus() {
-        zoomLevel = Math.min(150, zoomLevel + zoomStep);
+        if (zoomLevel >= 50) {
+          zoomStep = 10;
+        }
+        zoomLevel = Math.min(zoomMax, zoomLevel + zoomStep);
         setZoomLevel(zoomLevel);
       }
       function zoomMinus() {
-        zoomLevel = Math.max(10, zoomLevel - zoomStep);
+        if (zoomLevel <= 50) {
+          zoomStep = 5;
+        }
+        zoomLevel = Math.max(zoomMin, zoomLevel - zoomStep);
         setZoomLevel(zoomLevel);
       }
       function zoomFit() {
@@ -184,7 +192,7 @@
         onchange="sliderOnChange()"
         type="range"
         min="10"
-        max="150"
+        max="350"
         value="100"
         step="5"
       />
