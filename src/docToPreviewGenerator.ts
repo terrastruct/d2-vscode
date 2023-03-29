@@ -89,7 +89,7 @@ export class DocToPreviewGenerator {
         const arr: string[] = error.split("\n");
 
         let list = "";
-        arr.forEach((s, i) => {
+        arr.forEach((s) => {
           list += `<li>${s}</li>`;
         });
 
