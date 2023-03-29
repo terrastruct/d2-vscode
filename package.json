@@ -282,7 +282,7 @@
   "scripts": {
     "vscode:prepublish": "yarn run package",
     "compile": "webpack",
-    "watch": "webpack --watch",
+    "watch": "webpack --watch --devtool source-map",
     "package": "webpack --mode production --devtool hidden-source-map",
     "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
     "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
@@ -312,7 +312,8 @@
   },
   "dependencies": {
     "eslint-formatter-pretty": "^4.1.0",
-    "markdown-it-container": "^3.0.0"
+    "markdown-it-container": "^3.0.0",
+    "vsce": "^2.15.0"
   },
   "homepage": "https://d2lang.com",
   "icon": "d2-icon.png",

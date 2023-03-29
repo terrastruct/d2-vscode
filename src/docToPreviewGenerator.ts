@@ -67,33 +67,38 @@ export class DocToPreviewGenerator {
       // Empty document, do nothing
       return;
     }
+    // If we don't have a preview window already, create one
+    if (!trkObj.outputDoc) {
+      trkObj.outputDoc = new BrowserWindow(trkObj);
+      trkObj.outputDoc.show();
+      trkObj.outputDoc.showToast();
+      trkObj.outputDoc.setToastMsg("Loading...");
+    }
+
+    trkObj.outputDoc.showBusy();
 
     taskRunner.genTask(trkObj.inputDoc?.fileName, fileText, (data, error) => {
-      let errorMsg = "";
-
-      // If we don't have a preview window already, create one
-      if (!trkObj.outputDoc) {
-        trkObj.outputDoc = new BrowserWindow(trkObj);
-        errorMsg = error;
-      }
-
       const p = path.parse(trkObj.inputDoc?.fileName || "");
 
       if (data.length > 0) {
-        trkObj.outputDoc.setSvg(data);
+        trkObj.outputDoc?.setSvg(data);
         outputChannel.appendInfo(`Preview for ${p.base} updated.`);
-      } else if (errorMsg.length > 0) {
+        trkObj.outputDoc?.hideToast();
+      } else if (error.length > 0) {
         outputChannel.appendInfo(`Preview for ${p.base} has errors.`);
-        const arr: string[] = errorMsg.split("\n");
+        const arr: string[] = error.split("\n");
 
-        let msg = "";
+        let list = "";
         arr.forEach((s, i) => {
-          msg += `<text fill="#757575" x="15" y="${i * 12 + 100}">${s}</text>\n`;
+          list += `<li>${s}</li>`;
         });
 
-        trkObj.outputDoc.setSvg(`<svg>${msg}</svg>`);
-        trkObj.outputDoc.resetZoom();
+        trkObj.outputDoc?.setToastMsg("Errors");
+        trkObj.outputDoc?.setToastList(list);
+        trkObj.outputDoc?.showToast();
       }
+
+      trkObj.outputDoc?.hideBusy();
     });
   }
 }
