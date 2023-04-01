@@ -67,7 +67,8 @@ export class BrowserWindow {
                 }
                 break;
               // Do nothing, vscode opens hyperlink on it's own
-              case "html": break; 
+              case "html":
+                break;
               default: {
                 window.showErrorMessage(`Unrecognized file type: ${uri.fsPath}`);
               }
