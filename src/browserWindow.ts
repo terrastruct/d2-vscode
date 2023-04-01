@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import * as path from "path";
-import { Uri, ViewColumn, WebviewPanel, window } from "vscode";
+import { Uri, ViewColumn, WebviewPanel, window, workspace } from "vscode";
 import { D2P } from "./docToPreviewGenerator";
 import { extContext } from "./extension";
 
@@ -16,10 +16,12 @@ export class BrowserWindow {
     this.trackerObject = trkObj;
 
     let fileName = "";
+    let filePath = "";
     if (trkObj.inputDoc?.fileName) {
       const p = path.parse(trkObj.inputDoc.fileName);
 
       fileName = p.base;
+      filePath = p.dir;
     }
 
     this.webViewPanel = window.createWebviewPanel(
@@ -44,6 +46,42 @@ export class BrowserWindow {
         this.trackerObject.outputDoc = undefined;
       }
     });
+
+    this.webViewPanel.webview.onDidReceiveMessage(
+      (message) => {
+        switch (message.command) {
+          case "clickOnTag_A": {
+            const uri = Uri.parse(message.link);
+            switch (uri.scheme) {
+              case "file":
+                {
+                  const filepath = path.join(filePath, message.link);
+                  workspace.openTextDocument(filepath).then(
+                    (document) => {
+                      window.showTextDocument(document);
+                    },
+                    () => {
+                      window.showErrorMessage(`Could not open: ${filepath}`);
+                    }
+                  );
+                }
+                break;
+              case "html":
+                {
+                  // Do nothing, vscode opens hyperlink on it's own
+                }
+                break;
+              default: {
+                window.showErrorMessage(`Unrecognized file type: ${uri.fsPath}`);
+              }
+            }
+          }
+        }
+        return;
+      },
+      this,
+      extContext.subscriptions
+    );
   }
 
   show() {
