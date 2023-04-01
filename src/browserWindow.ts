@@ -66,18 +66,13 @@ export class BrowserWindow {
                   );
                 }
                 break;
-              case "html":
-                {
-                  // Do nothing, vscode opens hyperlink on it's own
-                }
-                break;
+              case "html": break; // Do nothing, vscode opens hyperlink on it's own
               default: {
                 window.showErrorMessage(`Unrecognized file type: ${uri.fsPath}`);
               }
             }
           }
         }
-        return;
       },
       this,
       extContext.subscriptions
