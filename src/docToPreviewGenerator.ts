@@ -8,7 +8,6 @@ import { RefreshTimer } from "./refreshTimer";
  *  D2P - Document to Preview.  This tracks the connection
  *  between the D2 document and to the preview window.
  *
- * Stores the temp file string.
  **/
 export class D2P {
   inputDoc?: TextDocument;
