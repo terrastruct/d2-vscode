@@ -212,7 +212,7 @@
       );
 
       // keep the timer so we can turn it off
-      timer = undefined;
+      let timer = undefined;
 
       window.addEventListener("message", (event) => {
         const message = event.data; // The JSON data our extension sent
