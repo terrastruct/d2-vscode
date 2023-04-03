@@ -75,7 +75,9 @@
 
       #progressBar {
         position: fixed;
-        margin: -5px;
+        margin-left: -10px;
+        bottom: 0px;
+        height: 8px;
         width: 100%;
         z-index: 101;
       }
@@ -94,6 +96,7 @@
         height: auto;
         left: 0px;
         position: fixed;
+        padding-bottom: 8px;
         bottom: 0px;
         width: 100%;
         padding: 10px;
@@ -211,9 +214,6 @@
         { passive: false }
       );
 
-      // keep the timer so we can turn it off
-      let timer = undefined;
-
       window.addEventListener("message", (event) => {
         const message = event.data; // The JSON data our extension sent
 
@@ -229,12 +229,9 @@
             window.postMessage({ command: "hideBusy" });
             break;
           case "showBusy":
-            timer = window.setTimeout(() => {
               busyIndicator.style.visibility = "visible";
-            }, 2000);
             break;
           case "hideBusy":
-            window.clearTimeout(timer);
             busyIndicator.style.visibility = "hidden";
             break;
           case "showToast":
@@ -277,13 +274,13 @@
         Fit to window
       </button>
     </div>
-    <div id="progressBar">
-      <progress></progress>
-    </div>
     <div id="previewWrapper" style="margin-top: 45px"></div>
     <div id="toast">
       <div id="toastMsg">Loading...</div>
       <ul id="toastList"></ul>
+    </div>
+    <div id="progressBar">
+      <progress></progress>
     </div>
   </body>
 </html>
