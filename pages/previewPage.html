@@ -72,21 +72,74 @@
         width: 100%;
         height: 100%;
       }
+
+      #progressBar {
+        position: fixed;
+        margin-left: -10px;
+        bottom: 0px;
+        height: 8px;
+        width: 100%;
+        z-index: 101;
+      }
+
+      progress {
+        position: inherit;
+      }
+
+      progress:indeterminate {
+        width: inherit;
+        height: 8px;
+        color: darkcyan;
+      }
+
+      #toast {
+        height: auto;
+        left: 0px;
+        position: fixed;
+        padding-bottom: 8px;
+        bottom: 0px;
+        width: 100%;
+        padding: 10px;
+        background-color: #303030;
+        transition: opacity 0.8s ease-in-out;
+        opacity: 1;
+        z-index: 101;
+      }
+
+      #toastMsg {
+        margin-top: 0px;
+        margin-left: 3px;
+        font-size: x-large;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      #toastList {
+        margin-top: 1px;
+        margin-bottom: 1px;
+        list-style: none;
+        padding-left: 10px;
+      }
     </style>
     <script>
       var zoomLevel = 100;
       var zoomStep = 5;
       var zoomMin = 10;
-      var zoomMax = 350;
+      var zoomMax = 750;
       var percent;
       var zoomSlider;
       var wrapper;
+      var busyIndicator;
+      var toast, toastMsg, toastList;
       var fitMode = true;
 
       function init() {
         percent = document.getElementById("percent");
         zoomSlider = document.getElementById("zoomSlider");
         wrapper = document.getElementById("previewWrapper");
+        busyIndicator = document.getElementById("progressBar");
+        toast = document.getElementById("toast");
+        toastMsg = document.getElementById("toastMsg");
+        toastList = document.getElementById("toastList");
         zoomFit();
       }
       function zoomPlus() {
@@ -173,6 +226,25 @@
             } else {
               setZoomLevel(zoomLevel);
             }
+            window.postMessage({ command: "hideBusy" });
+            break;
+          case "showBusy":
+            busyIndicator.style.visibility = "visible";
+            break;
+          case "hideBusy":
+            busyIndicator.style.visibility = "hidden";
+            break;
+          case "showToast":
+            toast.style.opacity = 1.0;
+            break;
+          case "hideToast":
+            toast.style.opacity = 0.0;
+            break;
+          case "setToastMsg":
+            toastMsg.innerHTML = message.data;
+            break;
+          case "setToastList":
+            toastList.innerHTML = message.data;
             break;
           case "resetZoom":
             setZoomLevel(100.0);
@@ -192,7 +264,7 @@
         onchange="sliderOnChange()"
         type="range"
         min="10"
-        max="350"
+        max="750"
         value="100"
         step="5"
       />
@@ -202,10 +274,13 @@
         Fit to window
       </button>
     </div>
-    <div id="previewWrapper" style="margin-top: 45px">
-      <svg>
-        <text font-size="x-large" x="20" y="50">Loading...</text>
-      </svg>
+    <div id="previewWrapper" style="margin-top: 45px"></div>
+    <div id="toast">
+      <div id="toastMsg">Loading...</div>
+      <ul id="toastList"></ul>
+    </div>
+    <div id="progressBar">
+      <progress></progress>
     </div>
   </body>
 </html>
