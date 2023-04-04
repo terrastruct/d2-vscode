@@ -258,7 +258,10 @@
         "click",
         (event) => {
           const link = event.target.closest("a[href]");
-          vscode.postMessage({ command: "clickOnTag_A", link: link.href.baseVal || link.href});
+          vscode.postMessage({
+            command: "clickOnTag_A",
+            link: link.href.baseVal || link.href,
+          });
         },
         false
       );
