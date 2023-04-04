@@ -49,32 +49,35 @@ export class BrowserWindow {
       }
     });
 
+    const isRelative = (p: string) => !/^([a-z]+:)?[\\/]/i.test(p);
+
     this.webViewPanel.webview.onDidReceiveMessage(
       (message) => {
         switch (message.command) {
           case "clickOnTag_A": {
-            const uri = Uri.parse(message.link);
-            switch (uri.scheme) {
-              case "file":
-                {
-                  const filepath = path.join(filePath, message.link);
-                  workspace.openTextDocument(filepath).then(
-                    (document) => {
-                      window.showTextDocument(document);
-                    },
-                    () => {
-                      window.showErrorMessage(`Could not open: ${filepath}`);
-                    }
-                  );
-                }
-                break;
-              // Do nothing, vscode opens hyperlink on it's own
-              case "html":
-                break;
-              default: {
-                window.showErrorMessage(`Unrecognized file type: ${uri.fsPath}`);
-              }
+            const f = message.link.trim().toLowerCase();
+            const isWeb: boolean = f.startsWith("http://") || f.startsWith("https://");
+            const ir = isRelative(f);
+
+            // if it's a website, we can let the default handler deal with it
+            // by falling out of this function.
+            if (isWeb) {
+              return;
             }
+
+            // We have a file, or something that looks like a file, try to open it,
+            // let vscode decide if it's possible.
+            const filepath = ir ? path.join(filePath, f) : f;
+
+            workspace.openTextDocument(filepath).then(
+              (document) => {
+                // we opened the document, now show it.
+                window.showTextDocument(document);
+              },
+              () => {
+                window.showErrorMessage(`Could not open: ${filepath}`);
+              }
+            );
           }
         }
       },
