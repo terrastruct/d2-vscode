@@ -257,15 +257,8 @@
       window.addEventListener(
         "click",
         (event) => {
-          var domNode = event.target;
-          while (domNode !== null) {
-            console.log(domNode.tagName);
-            if (domNode.tagName.toLowerCase() === "a" && domNode.href !== null) {
-              vscode.postMessage({ command: "clickOnTag_A", link: domNode.href.baseVal });
-              return;
-            }
-            domNode = domNode.parentNode;
-          }
+          const link = event.target.closest("a[href]");
+          vscode.postMessage({ command: "clickOnTag_A", link: link.href.baseVal || link.href});
         },
         false
       );
