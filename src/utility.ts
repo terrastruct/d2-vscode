@@ -76,4 +76,10 @@ class Utility {
   }
 }
 
+export class VT {
+  public static Yellow = "\x1B[1;33m";
+  public static Green = "\x1B[1;32m";
+  public static Reset = "\x1B[0m";
+}
+
 export const util: Utility = new Utility();

@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import * as path from "path";
-import { Uri, ViewColumn, WebviewPanel, window } from "vscode";
+import { Uri, ViewColumn, Webview, WebviewPanel, window } from "vscode";
 import { D2P } from "./docToPreviewGenerator";
 import { extContext } from "./extension";
 
@@ -10,6 +10,7 @@ import { extContext } from "./extension";
  **/
 export class BrowserWindow {
   webViewPanel: WebviewPanel;
+  webView: Webview;
   trackerObject?: D2P;
 
   constructor(trkObj: D2P) {
@@ -30,16 +31,12 @@ export class BrowserWindow {
         enableFindWidget: true,
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [
-          Uri.file(path.join(extContext.extensionPath, "pages")),
-        ],
+        localResourceRoots: [Uri.file(path.join(extContext.extensionPath, "pages"))],
       }
     );
+    this.webView = this.webViewPanel.webview;
 
-    const onDiskPath = path.join(
-      extContext.extensionPath,
-      "pages/previewPage.html"
-    );
+    const onDiskPath = path.join(extContext.extensionPath, "pages/previewPage.html");
     const data: string = readFileSync(onDiskPath, "utf-8");
 
     this.webViewPanel.webview.html = data.toString();
@@ -56,7 +53,35 @@ export class BrowserWindow {
   }
 
   setSvg(svg: string): void {
-    this.webViewPanel.webview.postMessage({ command: "render", data: svg });
+    this.webView.postMessage({ command: "render", data: svg });
+  }
+
+  resetZoom(): void {
+    this.webView.postMessage({ command: "resetZoom" });
+  }
+
+  showBusy(): void {
+    this.webView.postMessage({ command: "showBusy" });
+  }
+
+  hideBusy(): void {
+    this.webView.postMessage({ command: "hideBusy" });
+  }
+
+  showToast(): void {
+    this.webView.postMessage({ command: "showToast" });
+  }
+
+  hideToast(): void {
+    this.webView.postMessage({ command: "hideToast" });
+  }
+
+  setToastMsg(msg: string): void {
+    this.webView.postMessage({ command: "setToastMsg", data: msg });
+  }
+
+  setToastList(list: string): void {
+    this.webView.postMessage({ command: "setToastList", data: list });
   }
 
   dispose(): void {

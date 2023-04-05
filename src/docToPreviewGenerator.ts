@@ -8,7 +8,6 @@ import { RefreshTimer } from "./refreshTimer";
  *  D2P - Document to Preview.  This tracks the connection
  *  between the D2 document and to the preview window.
  *
- * Stores the temp file string.
  **/
 export class D2P {
   inputDoc?: TextDocument;
@@ -67,19 +66,38 @@ export class DocToPreviewGenerator {
       // Empty document, do nothing
       return;
     }
+    // If we don't have a preview window already, create one
+    if (!trkObj.outputDoc) {
+      trkObj.outputDoc = new BrowserWindow(trkObj);
+      trkObj.outputDoc.show();
+      trkObj.outputDoc.showToast();
+      trkObj.outputDoc.setToastMsg("Loading...");
+    }
 
-    taskRunner.genTask(trkObj.inputDoc?.fileName, fileText, (data) => {
-      // If we don't have a preview window already, create one
-      if (!trkObj.outputDoc) {
-        trkObj.outputDoc = new BrowserWindow(trkObj);
-      }
+    trkObj.outputDoc.showBusy();
+
+    taskRunner.genTask(trkObj.inputDoc?.fileName, fileText, (data, error) => {
+      const p = path.parse(trkObj.inputDoc?.fileName || "");
 
       if (data.length > 0) {
-        trkObj.outputDoc.setSvg(data);
-
-        const p = path.parse(trkObj.inputDoc?.fileName || "");
+        trkObj.outputDoc?.setSvg(data);
         outputChannel.appendInfo(`Preview for ${p.base} updated.`);
+        trkObj.outputDoc?.hideToast();
+      } else if (error.length > 0) {
+        outputChannel.appendInfo(`Preview for ${p.base} has errors.`);
+        const arr: string[] = error.split("\n");
+
+        let list = "";
+        arr.forEach((s) => {
+          list += `<li>${s}</li>`;
+        });
+
+        trkObj.outputDoc?.setToastMsg("Errors");
+        trkObj.outputDoc?.setToastList(list);
+        trkObj.outputDoc?.showToast();
       }
+
+      trkObj.outputDoc?.hideBusy();
     });
   }
 }

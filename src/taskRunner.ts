@@ -1,4 +1,4 @@
-import path = require("path");
+import * as path from "path";
 
 import {
   CustomExecution,
@@ -15,7 +15,7 @@ import { outputChannel } from "./extension";
 import { d2Tasks } from "./tasks";
 
 // eslint-disable-next-line no-unused-vars
-export type TaskRunnerCallback = (data: string) => void;
+export type TaskRunnerCallback = (data: string, error: string) => void;
 // eslint-disable-next-line no-unused-vars
 export type TaskOutput = (text: string, flag?: boolean) => void;
 
@@ -26,11 +26,7 @@ export type TaskOutput = (text: string, flag?: boolean) => void;
  */
 export class TaskRunner {
   public retVal = "";
-  public genTask(
-    filename: string,
-    text: string,
-    callback: TaskRunnerCallback
-  ): void {
+  public genTask(filename: string, text: string, callback: TaskRunnerCallback): void {
     const pty = new CustomTaskTerminal(filename, text, callback);
     const ce = new CustomExecution(
       (): Promise<CustomTaskTerminal> =>
@@ -77,6 +73,7 @@ class CustomTaskTerminal implements Pseudoterminal {
   private fileDirectory: string;
   private docText: string;
   private callback: TaskRunnerCallback;
+  private compileErrors = "";
 
   constructor(filename: string, text: string, callback: TaskRunnerCallback) {
     this.fileName = path.parse(filename).base;
@@ -94,16 +91,15 @@ class CustomTaskTerminal implements Pseudoterminal {
       },
       (err, flag) => {
         if (flag === true) {
-          this.writeLine(
-            `[${path.join(this.fileDirectory, this.fileName)}] ${err}`
-          );
+          this.compileErrors += err + "\n";
+          this.writeLine(`[${path.join(this.fileDirectory, this.fileName)}] ${err}`);
         } else {
           this.writeLine(err);
         }
       }
     );
 
-    this.callback(data);
+    this.callback(data, this.compileErrors);
 
     // This is the magic bullet to complete the task.
     this.closeEmitter.fire(0);
