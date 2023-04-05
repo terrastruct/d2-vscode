@@ -59,12 +59,6 @@
         min-width: 50px;
       }
 
-      svg {
-        position: absolute;
-        left: 0px;
-        top: 0px;
-      }
-
       body {
         background-color: var(--vscode-editor-background);
         color: var(--vscode-editor-foreground);
@@ -73,6 +67,10 @@
         height: 100%;
       }
 
+      #previewWrapper {
+        transform-origin: left top;
+        margin-top: 45px;
+      }
       #progressBar {
         position: fixed;
         margin-left: -10px;
@@ -158,10 +156,8 @@
         setZoomLevel(zoomLevel);
       }
       function zoomFit() {
-        var svgElem = document.getElementsByTagName("svg")[0];
-
-        var widthPct = visualViewport.width / svgElem.width.baseVal.value;
-        var heightPct = (visualViewport.height - 45) / svgElem.height.baseVal.value;
+        var widthPct = visualViewport.width / wrapper.clientWidth;
+        var heightPct = (visualViewport.height - 45) / wrapper.clientHeight;
 
         var zoomPct = Math.min(widthPct, heightPct) * 100;
         setZoomLevel(zoomPct);
@@ -287,7 +283,7 @@
         Fit to window
       </button>
     </div>
-    <div id="previewWrapper" style="margin-top: 45px"></div>
+    <div id="previewWrapper" style="margin-top: 45px;"></div>
     <div id="toast">
       <div id="toastMsg">Loading...</div>
       <ul id="toastList"></ul>
