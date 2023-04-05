@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import * as path from "path";
 import { Uri, ViewColumn, Webview, WebviewPanel, window, workspace } from "vscode";
 import { D2P } from "./docToPreviewGenerator";
@@ -76,14 +76,11 @@ export class BrowserWindow {
                 window.showTextDocument(document);
               },
               () => {
-                shell.default(filepath).then(
-                  () => {
-                    // do nothing
-                  },
-                  () => {
-                    window.showErrorMessage(`Could not open: ${filepath}`);
-                  }
-                );
+                if (!existsSync(filepath)) {
+                  window.showErrorMessage(`File does not exist: ${filepath}`);
+                } else {
+                  shell.default(filepath);
+                }
               }
             );
           }
