@@ -1,8 +1,9 @@
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import * as path from "path";
-import { Uri, ViewColumn, Webview, WebviewPanel, window } from "vscode";
+import { Uri, ViewColumn, Webview, WebviewPanel, window, workspace } from "vscode";
 import { D2P } from "./docToPreviewGenerator";
 import { extContext } from "./extension";
+import open from "open";
 
 /**
  * BrowserWindow - Wraps the browser window and
@@ -17,10 +18,12 @@ export class BrowserWindow {
     this.trackerObject = trkObj;
 
     let fileName = "";
+    let filePath = "";
     if (trkObj.inputDoc?.fileName) {
       const p = path.parse(trkObj.inputDoc.fileName);
 
       fileName = p.base;
+      filePath = p.dir;
     }
 
     this.webViewPanel = window.createWebviewPanel(
@@ -46,6 +49,46 @@ export class BrowserWindow {
         this.trackerObject.outputDoc = undefined;
       }
     });
+
+    const isRelative = (p: string) => !/^([a-z]+:)?[\\/]/i.test(p);
+
+    this.webViewPanel.webview.onDidReceiveMessage(
+      (message) => {
+        switch (message.command) {
+          case "clickOnTag_A": {
+            const f = message.link.trim().toLowerCase();
+            const isWeb: boolean = f.startsWith("http://") || f.startsWith("https://");
+            const ir = isRelative(f);
+
+            // if it's a website, we can let the default handler deal with it
+            // by falling out of this function.
+            if (isWeb) {
+              return;
+            }
+
+            // We have a file, or something that looks like a file, try to open it,
+            // let vscode decide if it's possible.
+            const filepath = ir ? path.join(filePath, f) : f;
+
+            workspace.openTextDocument(filepath).then(
+              (document) => {
+                // we opened the document, now show it.
+                window.showTextDocument(document);
+              },
+              () => {
+                if (!existsSync(filepath)) {
+                  window.showErrorMessage(`File does not exist: ${filepath}`);
+                } else {
+                  open(filepath);
+                }
+              }
+            );
+          }
+        }
+      },
+      this,
+      extContext.subscriptions
+    );
   }
 
   show() {
