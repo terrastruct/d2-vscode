@@ -269,7 +269,7 @@
         },
         {
           "name": "keyword.reserved.d2",
-          "match": "(?:direction|grid\\-columns|grid\\-rows|text\\-transform|shape|layer|tooltip|font|bold|italic|underline|top|left|icon|constraint|near|opacity|stroke|fill\\-pattern|fill|filled|stroke\\-width|width|height|double\\-border|border\\-radius|source\\-arrowhead|target\\-arrowhead|link|stroke\\-dash|font\\-size|font\\-color|shadow|multiple|3d|animated|class|label|style|imports|vars|scenarios|on_click|src|dst)(?=\\s*[\\n#;\\[\\]{}|$'\":.<>*&()]|-+-|-+>|-+\\*)"
+          "match": "(?:classes|direction|grid\\-columns|grid\\-rows|text\\-transform|shape|layer|tooltip|font|bold|italic|underline|top|left|icon|constraint|near|opacity|stroke|fill\\-pattern|fill|filled|stroke\\-width|width|height|double\\-border|border\\-radius|source\\-arrowhead|target\\-arrowhead|link|stroke\\-dash|font\\-size|font\\-color|shadow|multiple|3d|animated|class|label|style|imports|vars|scenarios|on_click|src|dst)(?=\\s*[\\n#;\\[\\]{}|$'\":.<>*&()]|-+-|-+>|-+\\*)"
         },
         {
           "name": "punctuation.period.d2",
