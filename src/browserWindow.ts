@@ -1,9 +1,10 @@
 import { existsSync, readFileSync } from "fs";
+import * as os from "os";
 import * as path from "path";
 import { Uri, ViewColumn, Webview, WebviewPanel, window, workspace } from "vscode";
 import { D2P } from "./docToPreviewGenerator";
 import { extContext } from "./extension";
-import open from "open";
+import { util } from "./utility";
 
 /**
  * BrowserWindow - Wraps the browser window and
@@ -61,7 +62,12 @@ export class BrowserWindow {
             const ir = isRelative(f);
 
             // if it's a website, we can let the default handler deal with it
-            // by falling out of this function.
+            // by falling out of this function. Unless we're on linux, because
+            // it's special
+            if (isWeb && os.platform() === "linux") {
+              util.openWithDefaultApp(f);
+              return;
+            }
             if (isWeb) {
               return;
             }
@@ -79,7 +85,7 @@ export class BrowserWindow {
                 if (!existsSync(filepath)) {
                   window.showErrorMessage(`File does not exist: ${filepath}`);
                 } else {
-                  open(filepath);
+                  util.openWithDefaultApp(filepath);
                 }
               }
             );
