@@ -64,11 +64,11 @@ export class BrowserWindow {
             // if it's a website, we can let the default handler deal with it
             // by falling out of this function. Unless we're on linux, because
             // it's special
-            if (isWeb && os.platform() === "linux") {
-              util.openWithDefaultApp(f);
-              return;
-            }
             if (isWeb) {
+              if (os.platform() === "linux") {
+                util.openWithDefaultApp(f);
+                return;
+              }
               return;
             }
 

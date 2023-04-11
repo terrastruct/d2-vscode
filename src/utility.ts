@@ -55,21 +55,18 @@ class Utility {
       }
       case "linux": {
         if (this.isXdgOpenAvailable()) {
-          spawnSync("xdg-open");
+          spawnSync(`xdg-open ${file}`);
         } else {
-          const errorMsgs: string[] = [
-            "XDG-OPEN needs to be installed to launch embedded links.",
-          ];
+          const errorMsg = "XDG-OPEN needs to be installed to launch embedded links.";
 
           outputChannel.appendError(Utility.strBreak);
 
-          for (const m of errorMsgs) {
-            outputChannel.appendError(m);
-          }
+          outputChannel.appendError(errorMsg);
+
           outputChannel.appendError(Utility.strBreak);
 
           // Popup some toast to alert to the error
-          window.showErrorMessage(errorMsgs.join("\n"));
+          window.showErrorMessage(errorMsg);
 
           outputChannel.outputChannel.show();
         }
