@@ -46,16 +46,16 @@ class Utility {
   openWithDefaultApp(file: string) {
     switch (os.platform()) {
       case "win32": {
-        spawnSync(`start ${file}`);
+        spawnSync("start", [file]);
         break;
       }
       case "darwin": {
-        spawnSync(`open ${file}`);
+        spawnSync("open", [file]);
         break;
       }
       case "linux": {
         if (this.isXdgOpenAvailable()) {
-          spawnSync(`xdg-open ${file}`);
+          spawnSync("xdg-open", [file]);
         } else {
           const errorMsg = "XDG-OPEN needs to be installed to launch embedded links.";
 
