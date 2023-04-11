@@ -1,5 +1,4 @@
 import { existsSync, readFileSync } from "fs";
-import * as os from "os";
 import * as path from "path";
 import { Uri, ViewColumn, Webview, WebviewPanel, window, workspace } from "vscode";
 import { D2P } from "./docToPreviewGenerator";
