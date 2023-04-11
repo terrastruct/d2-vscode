@@ -3,7 +3,7 @@ import * as path from "path";
 import { Uri, ViewColumn, Webview, WebviewPanel, window, workspace } from "vscode";
 import { D2P } from "./docToPreviewGenerator";
 import { extContext } from "./extension";
-import open from "open";
+import { util } from "./utility";
 
 /**
  * BrowserWindow - Wraps the browser window and
@@ -79,7 +79,7 @@ export class BrowserWindow {
                 if (!existsSync(filepath)) {
                   window.showErrorMessage(`File does not exist: ${filepath}`);
                 } else {
-                  open(filepath);
+                  util.openWithDefaultApp(filepath);
                 }
               }
             );
