@@ -31,6 +31,7 @@ const themes: ThemeItem[] = [
   new ThemeItem("Earth tones", 103),
   new ThemeItem("Everglade green", 104),
   new ThemeItem("Buttered toast", 105),
+  new ThemeItem("Dark mauve", 200),
 ];
 
 /**
