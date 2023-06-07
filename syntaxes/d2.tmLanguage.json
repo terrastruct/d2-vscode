@@ -16,6 +16,9 @@
       "include": "#spread_substitution"
     },
     {
+      "include": "#spread_import"
+    },
+    {
       "include": "#key"
     },
     {
@@ -361,6 +364,21 @@
         }
       ]
     },
+    "import": {
+      "name": "meta.operator.import.d2",
+      "captures": {
+        "0": {
+          "name": "keyword.operator.import.d2"
+        }
+      },
+      "begin": "@",
+      "end": "(?=\\s*[\\n#;\\[\\]{}|$])",
+      "patterns": [
+        {
+          "include": "#key"
+        }
+      ]
+    },
     "spread_substitution": {
       "name": "meta.operator.substitution.d2",
       "captures": {
@@ -369,6 +387,21 @@
         }
       },
       "begin": "\\.\\.\\.\\$",
+      "end": "(?=\\s*[\\n#;\\[\\]{}|$])",
+      "patterns": [
+        {
+          "include": "#key"
+        }
+      ]
+    },
+    "spread_import": {
+      "name": "meta.operator.import.d2",
+      "captures": {
+        "0": {
+          "name": "keyword.operator.import.d2"
+        }
+      },
+      "begin": "\\.\\.\\.@",
       "end": "(?=\\s*[\\n#;\\[\\]{}|$])",
       "patterns": [
         {
@@ -391,6 +424,15 @@
         },
         {
           "include": "#semicolon"
+        },
+        {
+          "include": "#import"
+        },
+        {
+          "include": "#spread_substitution"
+        },
+        {
+          "include": "#spread_import"
         },
         {
           "include": "#value"
@@ -446,6 +488,9 @@
         },
         {
           "include": "#substitution"
+        },
+        {
+          "include": "#import"
         },
         {
           "include": "#array"
