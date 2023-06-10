@@ -1,5 +1,5 @@
 {
-  "#": "*************** AUTO GENERATED DO NOT EDIT BY HAND, SEE d2.tmLanguage.yaml ****************",
+  "comment": "*************** AUTO GENERATED DO NOT EDIT BY HAND, SEE d2.tmLanguage.yaml ****************",
   "name": "d2",
   "scopeName": "source.d2",
   "patterns": [
