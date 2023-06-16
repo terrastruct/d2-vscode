@@ -191,6 +191,11 @@
           "type": "string",
           "default": "d2",
           "description": "Path to d2 executable if not on current PATH"
+        },
+        "D2.checkForInstallAtStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check for required D2 command line tools on startup."
         }
       }
     },
