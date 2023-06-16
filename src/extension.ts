@@ -231,7 +231,7 @@ export function activate(context: ExtensionContext): any {
   /**
    * Check that D2 is available up front
    */
-  const checkForD2 = ws.get("checkForInstallAtStart");
+  const checkForD2 = ws.get("checkForInstallAtStart", true);
   if (checkForD2) {
     util.checkForD2Install();
   }
