@@ -27,10 +27,12 @@ import { d2Tasks } from "./tasks";
 import { util } from "./utility";
 import path = require("path");
 import { TextEncoder } from "util";
+import {LanguageClient, LanguageClientOptions, ServerOptions, TransportKind} from "vscode-languageclient/node";
 
 const d2Ext = "d2";
 const d2Lang = "d2";
 const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
+let langClient: LanguageClient;
 
 export const d2ConfigSection = "D2";
 export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
@@ -236,6 +238,8 @@ export function activate(context: ExtensionContext): any {
     util.checkForD2Install();
   }
 
+  startLanguageServer();
+
   // Return our markdown renderer
   return {
     // Sets up our ability to render for markdown files
@@ -244,6 +248,48 @@ export function activate(context: ExtensionContext): any {
       return extendMarkdownItWithD2(md);
     },
   };
+}
+
+function startLanguageServer(): void {
+  // The server is implemented in node
+  const serverModule = extContext.asAbsolutePath(path.join('langsrv', 'dist', 'server.js'));
+  // The debug options for the server
+  // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
+  const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
+
+  // If the extension is launched in debug mode then the debug server options are used
+  // Otherwise the run options are used
+  const serverOptions: ServerOptions = {
+    run: { 
+      module: serverModule, 
+      transport: TransportKind.ipc 
+    },
+    debug: {
+      module: serverModule,
+      transport: TransportKind.ipc,
+      options: debugOptions
+    }
+  };
+
+  // Options to control the language client
+  const clientOptions: LanguageClientOptions = {
+    // Register the server for plain text documents
+    documentSelector: [{ scheme: 'file', language: d2Lang }],
+    synchronize: {
+      configurationSection: d2ConfigSection,
+    }
+  };
+
+  // Create the language client and start the client.
+  langClient = new LanguageClient(
+    'D2LanguageServer',
+    'D2 Language Server',
+    serverOptions,
+    clientOptions
+  );
+
+  langClient.start();
+
 }
 
 const pluginKeyword = "d2";
