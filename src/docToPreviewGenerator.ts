@@ -89,7 +89,13 @@ export class DocToPreviewGenerator {
 
         let list = "";
         arr.forEach((s) => {
-          list += `<li>${s}</li>`;
+          if (s.length > 0) {
+            const rg = new RegExp(/^(.*?):(\d+):(\d+):(\s+)(.*)$/g).exec(s);
+            const msg = rg !== null ? rg[5] : "Unknown Error";
+            const line = rg ? rg[2] || "0" : "0";
+            const col = rg ? rg[3] || "0" : "0";
+            list += `<li>${msg}  (${line}:${col})</li>`;
+          }
         });
 
         trkObj.outputDoc?.setToastMsg("Errors");

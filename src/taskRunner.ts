@@ -11,7 +11,7 @@ import {
   tasks,
   TaskScope,
 } from "vscode";
-import { outputChannel } from "./extension";
+import { isLanguageServerRunning, outputChannel } from "./extension";
 import { d2Tasks } from "./tasks";
 
 // eslint-disable-next-line no-unused-vars
@@ -41,7 +41,9 @@ export class TaskRunner {
       "D2 Task",
       "D2 Extension",
       ce,
-      ["$D2Matcher"]
+      // If the languange server is not running, fall back to the
+      // standard problem matcher
+      isLanguageServerRunning() ? undefined : ["$D2Matcher"]
     );
 
     task.presentationOptions = {

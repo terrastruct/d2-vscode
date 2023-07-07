@@ -1,7 +1,7 @@
 {
   "name": "d2-language-server",
   "description": "D2 Language Server",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "publisher": "Terrastruct",
   "license": "BSD-3-Clause",
   "contributors": [
@@ -31,6 +31,7 @@
   },
   "scripts": {
     "compile": "webpack",
-    "watch": "webpack --watch --devtool source-map"
+    "watch": "webpack --watch --devtool source-map",
+    "package": "webpack --mode production --devtool hidden-source-map"
   }
 }

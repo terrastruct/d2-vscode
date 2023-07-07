@@ -322,6 +322,7 @@
   },
   "dependencies": {
     "markdown-it-container": "^3.0.0",
+    "path": "^0.12.7",
     "vscode-languageclient": "^7.0.0"
   },
   "homepage": "https://d2lang.com",

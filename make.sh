@@ -20,4 +20,6 @@ if <"$CHANGED_FILES" grep -q '\.\(ts\|tsx\|scss\|css\)$'; then
   runjob lint &
 fi
 runjob build 'yarn package' &
+cd langsrv &&
+runjob build 'yarn package' &
 ci_waitjobs

@@ -1,26 +1,41 @@
-/* D2_LSP_AST */
-
-import { spawnSync } from "child_process";
+/**
+ * D2 Language Server
+ *
+ */
 
 import {
   createConnection,
   TextDocuments,
   ProposedFeatures,
   InitializeParams,
-  CompletionItem,
-  CompletionItemKind,
-  TextDocumentPositionParams,
   TextDocumentSyncKind,
   InitializeResult,
   ReferenceParams,
   Location,
+  RenameParams,
+  TextEdit,
+  WorkspaceEdit,
+  PrepareRenameParams,
+  Range,
+  TextDocumentEdit,
+  OptionalVersionedTextDocumentIdentifier,
+  DocumentLink,
 } from "vscode-languageserver/node";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { spawnSync } from "child_process";
 
-import { d2DocumentData } from "./parsedLanguage";
+import path = require("path");
 
-let docData: d2DocumentData;
+import { AstContainer } from "./d2Ast";
+import { d2StringAndRange } from "./dataContainers";
+
+// Holder of all parsed output from the D2 program
+//
+let astData: AstContainer;
+let cwd: string;
+
+export let d2ExePath = "D2";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -29,162 +44,163 @@ const connection = createConnection(ProposedFeatures.all);
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
+/**
+ * Called when the server starts
+ */
 connection.onInitialize((params: InitializeParams) => {
-  connection.console.log(
-    "\n***************************\nD2 Language Server Starting\n"
-  );
+  connection.console.log("\n***************************");
+  connection.console.log("D2 Language Server Starting\n");
   connection.console.log(`Client:  ${params.clientInfo?.name}`);
   connection.console.log(`Version: ${params.clientInfo?.version}`);
-  connection.console.log(`PID:     ${params.processId}`)
-
-  connection.console.log("***************************\n")
+  connection.console.log(`PID:     ${params.processId}`);
+  connection.console.log("***************************\n");
 
   const result: InitializeResult = {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Full,
-      // Tell the client that this server supports code completion.
-      completionProvider: {
-        resolveProvider: true,
-      },
-      // hoverProvider: true,
-      // documentHighlightProvider: true,
       referencesProvider: true,
+      renameProvider: {
+        prepareProvider: true,
+      },
+      documentLinkProvider: {
+        resolveProvider: false,
+      },
     },
     serverInfo: {
       name: "D2 Language Server",
-      version: "0.5"
-    }
+      version: "0.6",
+    },
   };
 
   return result;
 });
 
-connection.onInitialized(() => {
-  connection.console.log("Language Server Initialized");
+connection.onDocumentLinks((): DocumentLink[] => {
+  const retLinks: DocumentLink[] = [];
+
+  astData.Links.forEach((link: d2StringAndRange) => {
+    const docLink = DocumentLink.create(link.Range);
+
+    let docPath = link.str.replace(/['|"]/g, "");
+
+    // If '.d2' is there, get rid of it.
+    docPath = path.basename(docPath, ".d2");
+
+    docLink.target = path.join(cwd, docPath + ".d2");
+
+    retLinks.push(docLink);
+  });
+
+  return retLinks;
 });
 
+/**
+ * Pickup on configuration changes of the client
+ */
 connection.onDidChangeConfiguration((change) => {
-  connection.console.log("Client Configuration Changed: " + JSON.stringify(change.settings, null, 2));
+  // We'll use the path to D2 so we don't get divergent
+  // functionality
+  d2ExePath = change.settings.execPath;
 });
 
-/*
-connection.onHover((evt): Hover => {
-  connection.console.log(`Hover: ${evt.position} ${evt.position.character}`);
-
-  const endPos = evt.position;
-  endPos.character += 2;
-
-  return {
-    contents: "foobar",
-    range: {
-      start: evt.position,
-      end: endPos,
-    }
-  }
-});
-*/
-
-// Only keep settings for open documents
-documents.onDidClose((e) => {
-  connection.console.log(`Document Closed: ${e.document.uri}`);
-});
-
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
+/**
+ * The content of a text document has changed. This event is emitted
+ * when the text document first opened or when its content has changed.
+ */
 documents.onDidChangeContent((change) => {
-  connection.console.log(
-    `Document Changed: ${change.document.version} -> ${change.document.uri}`
-  );
+  console.log(`Change: ${change.document.uri}`);
 
   const args: string[] = ["-"];
 
   /**
    * Run D2 in the special "D2_LSP_MODE" mode.
    */
+  // TODO: get this path from the settings
   const proc = spawnSync("/home/barry/Projects/d2/d2", args, {
     input: change.document.getText(),
     encoding: "utf-8",
     maxBuffer: 1024 * 1024 * 2,
-    env: { "D2_LSP_MODE": "1" }
+    env: { D2_LSP_MODE: "1" },
   });
 
-  // TODO: Need a better failure mode...
+  // Pass error back to the client
   if (proc.pid === 0) {
-    connection.console.log("PID is ZERO")
+    connection.window.showErrorMessage("Could not find D2 executable!");
+    return;
   }
 
-  // Reset Document Data
-  docData = new d2DocumentData();
-  docData.ReadD2Data(proc.stdout);
+  // Reset Document Data and Parse out the json from the D2 program
+  astData = new AstContainer(proc.stdout);
 
-  debugger;
-  const eret = docData.GetErrors();
+  /**
+   * Handle any errors.
+   */
+  const eret = astData.Errors;
+
   // Clear Errors
   connection.sendDiagnostics({ uri: change.document.uri, diagnostics: [] });
-  if (eret[0]) {
-    eret[1].uri = change.document.uri;
-    connection.sendDiagnostics(eret[1]);
+  if (eret) {
+    eret.uri = change.document.uri;
+    connection.sendDiagnostics(eret);
   }
+
+  cwd = path.dirname(change.document.uri);
 });
 
 /**
- * 
+ * Produce the edits needed to rename a node
+ */
+connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
+  const locs = astData.FindReferencesAtLocation(params.position, params.textDocument);
+
+  const workspaceChanges: WorkspaceEdit = {};
+  workspaceChanges.documentChanges = [];
+
+  const ed = TextDocumentEdit.create(
+    OptionalVersionedTextDocumentIdentifier.create(params.textDocument.uri, 0),
+    []
+  );
+  ed.edits = [];
+
+  locs.forEach((l: Location) => {
+    ed.edits.push(TextEdit.replace(l.range, params.newName));
+  });
+
+  workspaceChanges.documentChanges = [ed];
+
+  return workspaceChanges;
+});
+
+/**
+ * Called before onRenameRequest to position the rename edit control
+ */
+connection.onPrepareRename(
+  (params: PrepareRenameParams): Range | { defaultBehavior: boolean } => {
+    const r = astData.GetRangeFromLocation(params.position);
+    if (r) {
+      return r;
+    }
+
+    // This is where the edit control will be placed for
+    // the rename parameter.  It appears to only work when the
+    // symbol to be renamed is selected by this range.  A zero,
+    // "length" range will cause onRenameRequest to not be called.
+    return { start: params.position, end: params.position };
+  }
+);
+
+/**
+ * When, "show all references", is choosen, this returns all references
+ * for the symbol under the caret
  */
 connection.onReferences((params: ReferenceParams): Location[] => {
-  console.log("onReferences: " + JSON.stringify(params, null, 2));
-
-  return docData.FindReferencesAtLocation(params.position, params.textDocument)
+  return astData.FindReferencesAtLocation(params.position, params.textDocument);
 });
 
 /**
- * 
+ * Listen on the connection, returns when the server is shutdown.
  */
-/*
-connection.onDocumentHighlight((params: DocumentHighlightParams): DocumentHighlight[] => {
-  console.log("onDocumentHighlight: " + JSON.stringify(params, null, 2));
-    
-  return [];
-});
-*/
-
-/**
- * 
- */
-connection.onCompletion((tdp: TextDocumentPositionParams): CompletionItem[] => {
-  connection.console.log(
-    `OnCompletion: Line -> ${tdp.position.line} Char: -> ${tdp.position.character}`
-  );
-  // The pass parameter contains the postion of the text document in
-  // which code complete got requested. For the example we ignore this
-  // info and always provide the same completion items.
-  return [
-    {
-      label: "TypeScript",
-      kind: CompletionItemKind.Text,
-      data: 1,
-    },
-    {
-      label: "JavaScript",
-      kind: CompletionItemKind.Text,
-      data: 2,
-    },
-  ];
-});
-
-/**
- *
- */
-connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-  connection.console.log("onCompletionResolve");
-  if (item.data === 1) {
-    item.detail = "TypeScript details";
-    item.documentation = "TypeScript documentation";
-  } else if (item.data === 2) {
-    item.detail = "JavaScript details";
-    item.documentation = "JavaScript documentation";
-  }
-  return item;
-});
+connection.listen();
 
 /**
  * Make the text document manager listen on the connection
@@ -193,14 +209,7 @@ connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
 documents.listen(connection);
 
 /**
- * Listen on the connection
- */
-connection.listen();
-
-
-/** 
  ***********************
  * END OF FILE
  ***********************
  */
-
