@@ -115,8 +115,7 @@ documents.onDidChangeContent((change) => {
   /**
    * Run D2 in the special "D2_LSP_MODE" mode.
    */
-  // TODO: get this path from the settings
-  const proc = spawnSync("/home/barry/Projects/d2/d2", args, {
+  const proc = spawnSync(d2ExePath, args, {
     input: change.document.getText(),
     encoding: "utf-8",
     maxBuffer: 1024 * 1024 * 2,
