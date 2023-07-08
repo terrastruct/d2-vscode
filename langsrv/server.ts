@@ -20,6 +20,9 @@ import {
   TextDocumentEdit,
   OptionalVersionedTextDocumentIdentifier,
   DocumentLink,
+  CompletionParams,
+  CompletionList,
+  CompletionItem,
 } from "vscode-languageserver/node";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
@@ -35,7 +38,7 @@ import { d2StringAndRange } from "./dataContainers";
 let astData: AstContainer;
 let cwd: string;
 
-export let d2ExePath = "D2";
+export let d2ExePath = "d2";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -65,6 +68,10 @@ connection.onInitialize((params: InitializeParams) => {
       documentLinkProvider: {
         resolveProvider: false,
       },
+      completionProvider: {
+        triggerCharacters: ["."],
+        resolveProvider: true
+      }
     },
     serverInfo: {
       name: "D2 Language Server",
@@ -75,6 +82,20 @@ connection.onInitialize((params: InitializeParams) => {
   return result;
 });
 
+connection.onCompletion((params: CompletionParams): CompletionList => {
+  console.log("onCompletion: " + JSON.stringify(params, null, 2));
+
+  return CompletionList.create();
+});
+
+connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
+  console.log("onCompletionResolve: " + JSON.stringify(item, null, 2));
+  return item;
+});
+
+/**
+ * Request for all document links
+ */
 connection.onDocumentLinks((): DocumentLink[] => {
   const retLinks: DocumentLink[] = [];
 
@@ -100,7 +121,8 @@ connection.onDocumentLinks((): DocumentLink[] => {
 connection.onDidChangeConfiguration((change) => {
   // We'll use the path to D2 so we don't get divergent
   // functionality
-  d2ExePath = change.settings.execPath;
+  d2ExePath = change.settings.D2.execPath;
+  connection.console.info(`Language Server D2 path: ${d2ExePath}`)
 });
 
 /**
@@ -115,16 +137,17 @@ documents.onDidChangeContent((change) => {
   /**
    * Run D2 in the special "D2_LSP_MODE" mode.
    */
+  debugger;
   const proc = spawnSync(d2ExePath, args, {
     input: change.document.getText(),
     encoding: "utf-8",
     maxBuffer: 1024 * 1024 * 2,
-    env: { D2_LSP_MODE: "1" },
+    env: { ...process.env, D2_LSP_MODE: "1" },
   });
 
   // Pass error back to the client
   if (proc.pid === 0) {
-    connection.window.showErrorMessage("Could not find D2 executable!");
+    connection.window.showErrorMessage(`Could not find D2 executable! Path: '${d2ExePath}'`);
     return;
   }
 
