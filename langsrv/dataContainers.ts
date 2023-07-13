@@ -89,6 +89,10 @@ export class d2Error extends d2Range {
 
   msg: string;
   severity: DiagnosticSeverity;
+
+  public toString(): string {
+    return `Err: ${this.msg} - ${super.toString()}`;
+  }
 }
 
 /**

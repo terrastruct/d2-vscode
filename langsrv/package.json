@@ -24,6 +24,7 @@
     "resolve-cwd": "^2.0.0",
     "ts-loader": "^9.4.2",
     "typescript": "^4.9.4",
+    "vscode-uri": "^1.0.0",
     "vscode-languageserver": "^8.1.0",
     "vscode-languageserver-textdocument": "^1.0.8",
     "webpack": "^5.74.0",

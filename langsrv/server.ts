@@ -32,6 +32,7 @@ import path = require("path");
 
 import { AstContainer } from "./d2Ast";
 import { d2StringAndRange } from "./dataContainers";
+import { CompletionHelper } from "./completionHelpers";
 
 // Holder of all parsed output from the D2 program
 //
@@ -69,7 +70,7 @@ connection.onInitialize((params: InitializeParams) => {
         resolveProvider: false,
       },
       completionProvider: {
-        triggerCharacters: ["."],
+        triggerCharacters: [".", ":", "@"],
         resolveProvider: true
       }
     },
@@ -82,14 +83,32 @@ connection.onInitialize((params: InitializeParams) => {
   return result;
 });
 
+/**
+ *
+ */
 connection.onCompletion((params: CompletionParams): CompletionList => {
-  console.log("onCompletion: " + JSON.stringify(params, null, 2));
+  console.log(`onCompletion (${params.context?.triggerCharacter}): ` + JSON.stringify(params));
+
+  switch (params.context?.triggerCharacter) {
+    case "@":
+      return CompletionHelper.doImport(cwd, params.textDocument.uri);
+
+    case ".": {
+      return CompletionHelper.doDot(astData, params.position);
+    }
+    case ":":
+      return CompletionHelper.doAttribute();
+  }
 
   return CompletionList.create();
 });
 
+/**
+ * May not need this
+ */
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-  console.log("onCompletionResolve: " + JSON.stringify(item, null, 2));
+  console.log("\nonCompletionResolve: " + JSON.stringify(item, null, 2) + "\n");
+
   return item;
 });
 
@@ -120,7 +139,7 @@ connection.onDocumentLinks((): DocumentLink[] => {
  */
 connection.onDidChangeConfiguration((change) => {
   // We'll use the path to D2 so we don't get divergent
-  // functionality
+  // functionality using two different d2 binaries.
   d2ExePath = change.settings.D2.execPath;
   connection.console.info(`Language Server D2 path: ${d2ExePath}`)
 });
@@ -137,7 +156,6 @@ documents.onDidChangeContent((change) => {
   /**
    * Run D2 in the special "D2_LSP_MODE" mode.
    */
-  debugger;
   const proc = spawnSync(d2ExePath, args, {
     input: change.document.getText(),
     encoding: "utf-8",

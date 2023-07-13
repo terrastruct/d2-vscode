@@ -57,15 +57,16 @@ export class AstContainer {
    * Adds a d2StringAndRange to the list of nodes
    */
   private addNode(rawNode: d2StringAndRange): void {
+    console.log("NODE -> " + rawNode.toString());
     this.nodes.push(rawNode);
   }
 
   /**
    * Prints out a comment as seen by D2 (not needed now) 
+   */
   doComment(comment: LSPAny) {
     console.log("Comment: (" + comment.range + ")\n" + comment.value);
   }
-  */
 
   /**
    * Takes the multiple representations of a string as described in
@@ -103,11 +104,20 @@ export class AstContainer {
    * Breaks apart the D2 AST PATH branch
    */
   doPath(path: LSPAny[]): d2StringAndRange[] {
+    if (!path) {
+      return [];
+    }
+
     const arr: d2StringAndRange[] = [];
     path.forEach((p) => {
       const strAndR = this.getStringAndRange(p);
       arr.push(strAndR);
     });
+
+    arr.forEach((sr) => {
+      console.log("PATH   -> " + sr.toString())
+    });
+
     return arr;
   }
 
@@ -119,6 +129,7 @@ export class AstContainer {
     if (mapkey.value?.import) {
       if (mapkey.value.import.path) {
         const strAndR: d2StringAndRange[] = this.doPath(mapkey.value.import.path);
+        console.log(`LINK    -> ${strAndR}`);
         this.links.push(strAndR[0]);
       }
     } else {
@@ -131,20 +142,18 @@ export class AstContainer {
       if (mapkey.value) {
         /**
          * This will get a string_block, not needed now
-         * 
+         */
         if (typeof mapkey.value === "string" || mapkey.value?.block_string) {
           const strAndR: d2StringAndRange = this.getStringAndRange(
             mapkey.value
           );
           console.log(`SB    -> ${strAndR}`);
-        } else 
-        */
-        if (typeof mapkey.value === "object" && mapkey.value?.map) {
+        } else if (typeof mapkey.value === "object" && mapkey.value?.map) {
           this.doNodes(mapkey.value.map.nodes);
         }
         /**
          * These will get values from nodes, not needed now
-         * 
+         */
         if (mapkey.value?.boolean) {
           const val: d2StringAndRange = new d2StringAndRange(
             mapkey.value.boolean.range,
@@ -166,14 +175,21 @@ export class AstContainer {
           );
           console.log(`VAL   -> ${val}`);
         }
-        */
       }
       // EDGES //
       if (mapkey.edges) {
         const strAndRSrc: d2StringAndRange[] = this.doPath(mapkey.edges[0].src.path);
         this.addNode(strAndRSrc[0]);
-        const strAndRDst: d2StringAndRange[] = this.doPath(mapkey.edges[0].dst.path);
-        this.addNode(strAndRDst[0]);
+
+        /**
+         * COMPLETION NOTE: If path is null, then we need to complete the edge with a node
+         */
+        if (mapkey.edges[0].dst !== null) {
+          const strAndRDst: d2StringAndRange[] = this.doPath(mapkey.edges[0].dst.path);
+          this.addNode(strAndRDst[0]);
+        } else {
+          console.log(`Incomplete Edge (${strAndRSrc[0]}): Save for completion??`)
+        }
       }
     }
   }
@@ -181,7 +197,7 @@ export class AstContainer {
   /**
    * Iterate the list of nodes from the AST generation from D2 cli.
    */
-  doNodes(nodes: LSPAny[]) {
+  doNodes(nodes: LSPAny[]): void {
     nodes.forEach((node) => {
       /**
        * Comment node, no need for it now
