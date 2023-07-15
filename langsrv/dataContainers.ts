@@ -39,6 +39,16 @@ export class d2Range {
   endColumn = 0;
   endByte = 0;
 
+  public isRangeEqual(r: d2Range): boolean {
+    if (r.startLine === this.startLine &&
+        r.endLine === this.endLine &&
+        r.startColumn === this.startColumn &&
+        r.endColumn === this.endColumn) {
+      return true;
+    }
+    return false;
+  }
+
   public toString(): string {
     return `${this.fileName} -> (${this.startLine},${this.startColumn},${this.startByte}):(${this.endLine},${this.endColumn},${this.endByte})`;
   }

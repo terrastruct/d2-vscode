@@ -1,5 +1,8 @@
 /**
  * Class to extract useful information from the D2 AST
+ *
+ * Edges need to go in node list, find all references doesn't work otherwise
+ * links need to go in import/link list
  */
 
 import {
@@ -13,6 +16,7 @@ import {
   TextDocumentIdentifier,
 } from "vscode-languageserver/node";
 import { d2Range, d2StringAndRange } from "./dataContainers";
+import { DataCollector } from "./dataCollector";
 
 /**
  * Class that takes the returned string from the D2 cli
@@ -21,20 +25,30 @@ import { d2Range, d2StringAndRange } from "./dataContainers";
 export class AstContainer {
   constructor(astStr: string) {
     this.d2Info = JSON.parse(astStr);
+    console.log(JSON.stringify(this.d2Info, null, 2));
     this.doNodes(this.d2Info.Ast.nodes);
   }
 
-  // Full AST/IR/ERRORS
+  // Full AST/ERRORS
   d2Info: LSPAny = undefined;
+  d2Collector: DataCollector = new DataCollector();
 
   // Extracted Information from the AST
   private links: d2StringAndRange[] = [];
   nodes: d2StringAndRange[] = [];
 
+  private depth = 0;
+
+  /**
+   * Get the list of links (linked files and import files)
+   */
   get Links(): d2StringAndRange[] {
     return this.links;
   }
 
+  /**
+   * Gets the list of errors, or undefined if there is none
+   */
   get Errors(): PublishDiagnosticsParams | undefined {
     const diags: Diagnostic[] = [];
 
@@ -57,15 +71,16 @@ export class AstContainer {
    * Adds a d2StringAndRange to the list of nodes
    */
   private addNode(rawNode: d2StringAndRange): void {
-    console.log("NODE -> " + rawNode.toString());
+    console.log(`(${this.depth}) NODE     -> ` + rawNode.toString() + "\n");
     this.nodes.push(rawNode);
+    this.d2Collector.addNode(rawNode);
   }
 
   /**
    * Prints out a comment as seen by D2 (not needed now) 
    */
-  doComment(comment: LSPAny) {
-    console.log("Comment: (" + comment.range + ")\n" + comment.value);
+  doComment(comment: LSPAny): void {
+    console.log(`(${this.depth}) Comment: (` + comment.range + ")\n" + comment.value);
   }
 
   /**
@@ -111,85 +126,105 @@ export class AstContainer {
     const arr: d2StringAndRange[] = [];
     path.forEach((p) => {
       const strAndR = this.getStringAndRange(p);
+      console.log(`(${this.depth}) PATH     -> ` + strAndR.toString())
+
       arr.push(strAndR);
+      this.d2Collector.addPath(strAndR);
     });
-
-    arr.forEach((sr) => {
-      console.log("PATH   -> " + sr.toString())
-    });
-
     return arr;
+  }
+
+  /**
+   * These will get values from node
+   */
+  doValue(value: LSPAny): void {
+    /**
+     * This will get a string_block, not needed now
+     */
+    if (typeof value === "string" || value?.block_string) {
+      const strAndR: d2StringAndRange = this.getStringAndRange(value);
+      console.log(`SB      -> ${strAndR}`);
+    } else if (typeof value === "object" && value?.map) {
+      this.doNodes(value.map.nodes);
+    }
+
+    let valRet;
+
+    if (value?.boolean) {
+      valRet = new d2StringAndRange(
+        value.boolean.range,
+        value.boolean.value
+      );
+    }
+    if (value?.unquoted_string) {
+      valRet = new d2StringAndRange(
+        value.unquoted_string.range,
+        value.unquoted_string.value[0].string
+      );
+    }
+    if (value?.single_quoted_string) {
+      valRet = new d2StringAndRange(
+        value.single_quoted_string.range,
+        value.single_quoted_string.value[0].string
+      );
+    }
+
+    if (valRet) {
+      console.log(`(${this.depth}) VAL      -> ${valRet}`);
+      this.d2Collector.addValue(valRet);
+    }
   }
 
   /**
    * Breaks apart the D2 AST MAP_KEY branch
    */
-  doMapKey(mapkey: LSPAny) {
+  doMapKey(mapkey: LSPAny): void { 
+    // NODE //
+    if (mapkey.key?.path) {
+      const strAndR: d2StringAndRange[] = this.doPath(mapkey.key.path);
+      this.addNode(strAndR[0]);
+    }
+    // VALUE //
+    if (mapkey.value) {
+
+      this.doValue(mapkey.value);
+
+      console.log("");
+    }
+    // EDGES //
+    if (mapkey.edges) {
+      mapkey.edges.forEach((edge: LSPAny) => {
+        let src = new d2StringAndRange("", "");
+        let dst = new d2StringAndRange("", "");
+
+        const strAndRSrc: d2StringAndRange[] = this.doPath(edge.src.path);
+        src = strAndRSrc[0];
+        this.addNode(src);
+        /**
+         * COMPLETION NOTE: If path is null, then we need to complete the edge with a node
+         */
+        if (edge.dst !== null) {
+          const strAndRDst: d2StringAndRange[] = this.doPath(edge.dst.path);
+          dst = strAndRDst[0];
+          this.addNode(dst);
+        } else {
+          console.log(`Incomplete Edge (${strAndRSrc[0]}): Save for completion??`)
+        }
+
+        console.log(`(${this.depth}) EDGENODE -> ${src} :: ${dst}\n`)
+
+        this.d2Collector.addEdge(src, dst);
+      });
+    }
     // IMPORT //
     if (mapkey.value?.import) {
       if (mapkey.value.import.path) {
         const strAndR: d2StringAndRange[] = this.doPath(mapkey.value.import.path);
-        console.log(`LINK    -> ${strAndR}`);
+        console.log(`(${this.depth}) IMPORT   -> ${strAndR}`);
+        strAndR.forEach((sr) => {
+          this.d2Collector.addImport(sr)
+        });
         this.links.push(strAndR[0]);
-      }
-    } else {
-      // NODE //
-      if (mapkey.key?.path) {
-        const strAndR: d2StringAndRange[] = this.doPath(mapkey.key.path);
-        this.addNode(strAndR[0]);
-      }
-      // MORE COMPLEX NODES //
-      if (mapkey.value) {
-        /**
-         * This will get a string_block, not needed now
-         */
-        if (typeof mapkey.value === "string" || mapkey.value?.block_string) {
-          const strAndR: d2StringAndRange = this.getStringAndRange(
-            mapkey.value
-          );
-          console.log(`SB    -> ${strAndR}`);
-        } else if (typeof mapkey.value === "object" && mapkey.value?.map) {
-          this.doNodes(mapkey.value.map.nodes);
-        }
-        /**
-         * These will get values from nodes, not needed now
-         */
-        if (mapkey.value?.boolean) {
-          const val: d2StringAndRange = new d2StringAndRange(
-            mapkey.value.boolean.range,
-            mapkey.value.boolean.value
-          );
-          console.log(`VAL   -> ${val}`);
-        }
-        if (mapkey.value?.unquoted_string) {
-          const val: d2StringAndRange = new d2StringAndRange(
-            mapkey.value.unquoted_string.range,
-            mapkey.value.unquoted_string.value[0].string
-          );
-          console.log(`VAL   -> ${val}`);
-        }
-        if (mapkey.value?.single_quoted_string) {
-          const val: d2StringAndRange = new d2StringAndRange(
-            mapkey.value.single_quoted_string.range,
-            mapkey.value.single_quoted_string.value[0].string
-          );
-          console.log(`VAL   -> ${val}`);
-        }
-      }
-      // EDGES //
-      if (mapkey.edges) {
-        const strAndRSrc: d2StringAndRange[] = this.doPath(mapkey.edges[0].src.path);
-        this.addNode(strAndRSrc[0]);
-
-        /**
-         * COMPLETION NOTE: If path is null, then we need to complete the edge with a node
-         */
-        if (mapkey.edges[0].dst !== null) {
-          const strAndRDst: d2StringAndRange[] = this.doPath(mapkey.edges[0].dst.path);
-          this.addNode(strAndRDst[0]);
-        } else {
-          console.log(`Incomplete Edge (${strAndRSrc[0]}): Save for completion??`)
-        }
       }
     }
   }
@@ -198,6 +233,8 @@ export class AstContainer {
    * Iterate the list of nodes from the AST generation from D2 cli.
    */
   doNodes(nodes: LSPAny[]): void {
+    debugger;
+    this.depth++;
     nodes.forEach((node) => {
       /**
        * Comment node, no need for it now
@@ -209,6 +246,7 @@ export class AstContainer {
         this.doMapKey(node.map_key);
       }
     });
+    this.depth--;
   }
 
   /**
@@ -264,7 +302,16 @@ export class AstContainer {
         return n.Range;
       }
     }
-
     return undefined;
   }
+
+  /**
+   * 
+   */
+  dump(): void {
+    console.log("\n\nCOLLECTOR\n---------\n");
+    this.d2Collector.dump();
+
+  }
+
 }

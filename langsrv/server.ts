@@ -100,7 +100,7 @@ connection.onCompletion((params: CompletionParams): CompletionList => {
       return CompletionHelper.doAttribute();
   }
 
-  return CompletionList.create();
+  return CompletionList.create([], false);
 });
 
 /**
@@ -171,6 +171,8 @@ documents.onDidChangeContent((change) => {
 
   // Reset Document Data and Parse out the json from the D2 program
   astData = new AstContainer(proc.stdout);
+  // Debug
+  astData.dump();
 
   /**
    * Handle any errors.

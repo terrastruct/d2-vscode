@@ -108,12 +108,166 @@ export const optArrowHeadTarget =
     ]
 };
 
+export const namedRgbMap =
+{
+    "color": [
+        "aliceblue",
+        "antiquewhite",
+        "aqua",
+        "aquamarine",
+        "azure",
+        "beige",
+        "bisque",
+        "black",
+        "blanchedalmond",
+        "blue",
+        "blueviolet",
+        "brown",
+        "burlywood",
+        "cadetblue",
+        "chartreuse",
+        "chocolate",
+        "coral",
+        "cornflowerblue",
+        "cornsilk",
+        "crimson",
+        "cyan",
+        "darkblue",
+        "darkcyan",
+        "darkgoldenrod",
+        "darkgray",
+        "darkgreen",
+        "darkgrey",
+        "darkkhaki",
+        "darkmagenta",
+        "darkolivegreen",
+        "darkorange",
+        "darkorchid",
+        "darkred",
+        "darksalmon",
+        "darkseagreen",
+        "darkslateblue",
+        "darkslategray",
+        "darkslategrey",
+        "darkturquoise",
+        "darkviolet",
+        "deeppink",
+        "deepskyblue",
+        "dimgray",
+        "dimgrey",
+        "dodgerblue",
+        "firebrick",
+        "floralwhite",
+        "forestgreen",
+        "fuchsia",
+        "gainsboro",
+        "ghostwhite",
+        "gold",
+        "goldenrod",
+        "gray",
+        "green",
+        "greenyellow",
+        "grey",
+        "honeydew",
+        "hotpink",
+        "indianred",
+        "indigo",
+        "ivory",
+        "khaki",
+        "lavender",
+        "lavenderblush",
+        "lawngreen",
+        "lemonchiffon",
+        "lightblue",
+        "lightcoral",
+        "lightcyan",
+        "lightgoldenrodyellow",
+        "lightgray",
+        "lightgreen",
+        "lightgrey",
+        "lightpink",
+        "lightsalmon",
+        "lightseagreen",
+        "lightskyblue",
+        "lightslategray",
+        "lightslategrey",
+        "lightsteelblue",
+        "lightyellow",
+        "lime",
+        "limegreen",
+        "linen",
+        "magenta",
+        "maroon",
+        "mediumaquamarine",
+        "mediumblue",
+        "mediumorchid",
+        "mediumpurple",
+        "mediumseagreen",
+        "mediumslateblue",
+        "mediumspringgreen",
+        "mediumturquoise",
+        "mediumvioletred",
+        "midnightblue",
+        "muintcream",
+        "mistyrose",
+        "moccasin",
+        "navajowhite",
+        "navy",
+        "oldlace",
+        "olive",
+        "olivedrab",
+        "orange",
+        "orangered",
+        "orchid",
+        "palegoldenrod",
+        "palegreen",
+        "paleturquoise",
+        "palevioletred",
+        "papayawhip",
+        "peachpuff",
+        "peru",
+        "pink",
+        "plum",
+        "powderblue",
+        "purple",
+        "red",
+        "rebeccapurple",
+        "rosybrown",
+        "royalblue",
+        "saddlebrown",
+        "salmon",
+        "sandybrown",
+        "seagreen",
+        "seashell",
+        "sienna",
+        "silver",
+        "skyblue",
+        "slateblue",
+        "slategray",
+        "slategrey",
+        "snow",
+        "springgreen",
+        "steelblue",
+        "tan",
+        "teal",
+        "thistle",
+        "tomato",
+        "turquoise",
+        "violet",
+        "wheat",
+        "white",
+        "whitesmoke",
+        "yellow",
+        "yellowgreen"
+    ]
+};
+
 /**
  * 
  */
 export class CompletionHelper {
     static doImport(dir: string, currentFile: string): CompletionList {
-       
+
         console.log("Current File : " + currentFile);
         const dirToScan = URI.parse(dir).fsPath;
         const curFileShort = path.parse(URI.parse(currentFile).fsPath).name;
@@ -141,7 +295,7 @@ export class CompletionHelper {
                 value: [
                     '|File Date|Size|',
                     '|:----|----:|',
-                   `|${fiDate}|${fiSize}|`
+                    `|${fiDate}|${fiSize}|`
                 ].join('\n')
             };
 
@@ -163,7 +317,7 @@ export class CompletionHelper {
     static doDot(astData: AstContainer, pos: Position): CompletionList {
         // Move position back one character to get node *before* trigger character
         // const charPos = Math.max(0, pos.character - 1);
-        
+
 
         const ref = astData.GetRangeFromLocation(pos);
         let sr: d2StringAndRange | undefined = new d2StringAndRange("", "");
@@ -174,7 +328,7 @@ export class CompletionHelper {
         } else {
             console.log("  REF -> Nothing Found");
         }
-        
+
         const ci1 = CompletionItem.create("Good");
         ci1.kind = CompletionItemKind.Property;
 
@@ -182,10 +336,10 @@ export class CompletionHelper {
         ci2.kind = CompletionItemKind.Field;
 
         return CompletionList.create(
-        [
-            ci1,
-            ci2,
-            CompletionItem.create("Indifferent")], false);
+            [
+                ci1,
+                ci2,
+                CompletionItem.create("Indifferent")], false);
     }
 }
 
