@@ -13,7 +13,7 @@ import {
   ReferenceParams,
   Location,
   RenameParams,
-  TextEdit,
+  // TextEdit,
   WorkspaceEdit,
   PrepareRenameParams,
   Range,
@@ -30,13 +30,12 @@ import { spawnSync } from "child_process";
 
 import path = require("path");
 
-import { AstContainer } from "./d2Ast";
-import { d2StringAndRange } from "./dataContainers";
+import { AstReader } from "./d2Ast";
 import { CompletionHelper } from "./completionHelpers";
 
 // Holder of all parsed output from the D2 program
 //
-let astData: AstContainer;
+let astData: AstReader;
 let cwd: string;
 
 export let d2ExePath = "d2";
@@ -71,8 +70,8 @@ connection.onInitialize((params: InitializeParams) => {
       },
       completionProvider: {
         triggerCharacters: [".", ":", "@"],
-        resolveProvider: true
-      }
+        resolveProvider: true,
+      },
     },
     serverInfo: {
       name: "D2 Language Server",
@@ -87,15 +86,21 @@ connection.onInitialize((params: InitializeParams) => {
  *
  */
 connection.onCompletion((params: CompletionParams): CompletionList => {
-  console.log(`onCompletion (${params.context?.triggerCharacter}): ` + JSON.stringify(params));
+  console.log(
+    `onCompletion (${params.context?.triggerCharacter}): ` +
+    JSON.stringify(params)
+  );
 
   switch (params.context?.triggerCharacter) {
     case "@":
       return CompletionHelper.doImport(cwd, params.textDocument.uri);
 
-    case ".": {
-      return CompletionHelper.doDot(astData, params.position);
-    }
+    case ".":
+      console.log("!!!!!!!! Uncomment !!!!!!!!!!!!");
+      // return CompletionHelper.doDot(astData, params.position);
+    
+    break;
+
     case ":":
       return CompletionHelper.doAttribute();
   }
@@ -118,7 +123,8 @@ connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
 connection.onDocumentLinks((): DocumentLink[] => {
   const retLinks: DocumentLink[] = [];
 
-  astData.Links.forEach((link: d2StringAndRange) => {
+  /*
+  for (const link of astData.Links) {
     const docLink = DocumentLink.create(link.Range);
 
     let docPath = link.str.replace(/['|"]/g, "");
@@ -129,19 +135,20 @@ connection.onDocumentLinks((): DocumentLink[] => {
     docLink.target = path.join(cwd, docPath + ".d2");
 
     retLinks.push(docLink);
-  });
+  }
+  */
 
   return retLinks;
 });
 
-/**
+/*
  * Pickup on configuration changes of the client
  */
 connection.onDidChangeConfiguration((change) => {
   // We'll use the path to D2 so we don't get divergent
   // functionality using two different d2 binaries.
   d2ExePath = change.settings.D2.execPath;
-  connection.console.info(`Language Server D2 path: ${d2ExePath}`)
+  connection.console.info(`Language Server D2 path: ${d2ExePath}`);
 });
 
 /**
@@ -165,18 +172,27 @@ documents.onDidChangeContent((change) => {
 
   // Pass error back to the client
   if (proc.pid === 0) {
-    connection.window.showErrorMessage(`Could not find D2 executable! Path: '${d2ExePath}'`);
+    connection.window.showErrorMessage(
+      `Could not find D2 executable! Path: '${d2ExePath}'`
+    );
     return;
   }
 
+  const start = Date.now();
+
   // Reset Document Data and Parse out the json from the D2 program
-  astData = new AstContainer(proc.stdout);
+  astData = new AstReader(proc.stdout);
+
+  const end = Date.now();
+  console.log(`\n\nAST Read Time: ${end - start} ms`);
+
   // Debug
   astData.dump();
 
   /**
    * Handle any errors.
    */
+  /*
   const eret = astData.Errors;
 
   // Clear Errors
@@ -185,6 +201,7 @@ documents.onDidChangeContent((change) => {
     eret.uri = change.document.uri;
     connection.sendDiagnostics(eret);
   }
+  */
 
   cwd = path.dirname(change.document.uri);
 });
@@ -193,7 +210,10 @@ documents.onDidChangeContent((change) => {
  * Produce the edits needed to rename a node
  */
 connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
-  const locs = astData.FindReferencesAtLocation(params.position, params.textDocument);
+  // const locs  = astData.FindReferencesAtLocation(
+  //   params.position,
+  //   params.textDocument
+  // );
 
   const workspaceChanges: WorkspaceEdit = {};
   workspaceChanges.documentChanges = [];
@@ -204,13 +224,14 @@ connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
   );
   ed.edits = [];
 
-  locs.forEach((l: Location) => {
-    ed.edits.push(TextEdit.replace(l.range, params.newName));
-  });
+  // for (const l of locs) {
+  //   ed.edits.push(TextEdit.replace(l.range, params.newName));
+  // }
 
   workspaceChanges.documentChanges = [ed];
-
+  
   return workspaceChanges;
+
 });
 
 /**
@@ -218,10 +239,10 @@ connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
  */
 connection.onPrepareRename(
   (params: PrepareRenameParams): Range | { defaultBehavior: boolean } => {
-    const r = astData.GetRangeFromLocation(params.position);
-    if (r) {
-      return r;
-    }
+    // const r = astData.GetRangeFromLocation(params.position);
+    // if (r) {
+    //   return r;
+    // }
 
     // This is where the edit control will be placed for
     // the rename parameter.  It appears to only work when the
@@ -236,7 +257,9 @@ connection.onPrepareRename(
  * for the symbol under the caret
  */
 connection.onReferences((params: ReferenceParams): Location[] => {
-  return astData.FindReferencesAtLocation(params.position, params.textDocument);
+  console.log(JSON.stringify(params, null, 2));
+  // return astData.FindReferencesAtLocation(params.position, params.textDocument);
+  return [];
 });
 
 /**

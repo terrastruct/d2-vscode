@@ -1,317 +1,294 @@
-/**
- * Class to extract useful information from the D2 AST
- *
- * Edges need to go in node list, find all references doesn't work otherwise
- * links need to go in import/link list
- */
-
-import {
-  Diagnostic,
-  DiagnosticSeverity,
-  LSPAny,
-  Location,
-  Position,
-  PublishDiagnosticsParams,
-  Range,
-  TextDocumentIdentifier,
-} from "vscode-languageserver/node";
+import { LSPAny } from "vscode-languageserver";
 import { d2Range, d2StringAndRange } from "./dataContainers";
-import { DataCollector } from "./dataCollector";
 
-/**
- * Class that takes the returned string from the D2 cli
- * and makes sense out of it.
- */
-export class AstContainer {
-  constructor(astStr: string) {
-    this.d2Info = JSON.parse(astStr);
-    console.log(JSON.stringify(this.d2Info, null, 2));
-    this.doNodes(this.d2Info.Ast.nodes);
-  }
+export class AstReader {
+    constructor(astStr: LSPAny) {
+        debugger;
+        this.d2Info = JSON.parse(astStr);
+        this.range = this.d2Info.Ast.range;
+        // console.log(JSON.stringify(this.d2Info, null, 2));
+        this.doNodes(this.d2Info.Ast.nodes);
 
-  // Full AST/ERRORS
-  d2Info: LSPAny = undefined;
-  d2Collector: DataCollector = new DataCollector();
-
-  // Extracted Information from the AST
-  private links: d2StringAndRange[] = [];
-  nodes: d2StringAndRange[] = [];
-
-  private depth = 0;
-
-  /**
-   * Get the list of links (linked files and import files)
-   */
-  get Links(): d2StringAndRange[] {
-    return this.links;
-  }
-
-  /**
-   * Gets the list of errors, or undefined if there is none
-   */
-  get Errors(): PublishDiagnosticsParams | undefined {
-    const diags: Diagnostic[] = [];
-
-    let hasErrors = false;
-    if (this.d2Info.Err?.errs?.length > 0) {
-      hasErrors = true;
-      this.d2Info.Err.errs.forEach((e: LSPAny) => {
-        const rg = new RegExp(/^(.*?):(\d+):(\d+):(\s+)(.*)$/g).exec(e.errmsg);
-        const msg = rg !== null ? rg[5] : "Unknown Error";
-
-        diags.push(
-          Diagnostic.create(new d2Range(e.range).Range, msg, DiagnosticSeverity.Error)
-        );
-      });
-    }
-    return hasErrors ? { uri: "", diagnostics: diags } : undefined;
-  }
-
-  /**
-   * Adds a d2StringAndRange to the list of nodes
-   */
-  private addNode(rawNode: d2StringAndRange): void {
-    console.log(`(${this.depth}) NODE     -> ` + rawNode.toString() + "\n");
-    this.nodes.push(rawNode);
-    this.d2Collector.addNode(rawNode);
-  }
-
-  /**
-   * Prints out a comment as seen by D2 (not needed now) 
-   */
-  doComment(comment: LSPAny): void {
-    console.log(`(${this.depth}) Comment: (` + comment.range + ")\n" + comment.value);
-  }
-
-  /**
-   * Takes the multiple representations of a string as described in
-   * the D2 AST and stores it as just a string and range.
-   */
-  getStringAndRange(so: LSPAny): d2StringAndRange {
-    if (so.single_quoted_string) {
-      return new d2StringAndRange(
-        so.single_quoted_string.range,
-        so.single_quoted_string.value
-      );
-    }
-    if (so.double_quoted_string) {
-      return new d2StringAndRange(
-        so.double_quoted_string.range,
-        so.double_quoted_string.value[0].string
-      );
-    }
-    if (so.unquoted_string) {
-      return new d2StringAndRange(
-        so.unquoted_string.range,
-        so.unquoted_string.value[0].string
-      );
-    }
-    if (so.block_string) {
-      return new d2StringAndRange(
-        so.block_string.range,
-        `Tag: ${so.block_string.tag} -> ${so.block_string.value}`
-      );
-    }
-    return new d2StringAndRange(null, "");
-  }
-
-  /**
-   * Breaks apart the D2 AST PATH branch
-   */
-  doPath(path: LSPAny[]): d2StringAndRange[] {
-    if (!path) {
-      return [];
     }
 
-    const arr: d2StringAndRange[] = [];
-    path.forEach((p) => {
-      const strAndR = this.getStringAndRange(p);
-      console.log(`(${this.depth}) PATH     -> ` + strAndR.toString())
+    range: d2Range;
+    d2Info: LSPAny;
+    nodes: d2Node[] = [];
 
-      arr.push(strAndR);
-      this.d2Collector.addPath(strAndR);
-    });
-    return arr;
-  }
+    doNodes(nodes: LSPAny[]) {
+        for (const node of nodes) {
+            // console.log("---------------------------------")
+            // console.log(JSON.stringify(node, null, 2));
+            // console.log("---------------------------------")
+            const n = new d2Node(node);
+            this.nodes.push(n);
+        }
+    }
 
-  /**
-   * These will get values from node
-   */
-  doValue(value: LSPAny): void {
+    dump(): void {
+        console.log(`\n---------\nASTREADER: ${this.range.toString()}\n---------\n`);
+
+        for (const n of this.nodes) {
+            console.log(n.toString());
+        }
+    }
+}
+
+class d2Path {
+    constructor(paths: LSPAny[]) {
+        for (const path of paths) {
+            this.pathList.push(new d2Value(path));
+        }
+    }
+
+    pathList: d2Value[] = [];
+
+    public toString(): string {
+        const s: string[] = [];
+        for (const path of this.pathList) {
+            s.push(path.value?.strValue || "-");
+        }
+        return `${s.join(".")}`;
+    }
+}
+
+class d2Primary {
+    constructor(p: LSPAny) {
+        this.primary = new d2Value(p);
+    }
+
+    primary: d2Value;
+
+    public get hasValue() {
+        if (this.primary.value) {
+            return true;
+        }
+        return false;
+    }
+
+    public toString(): string {
+        return `PRIMARY: ${this.primary}`
+    }
+}
+
+class d2Key extends d2Range {
+    constructor(k: LSPAny) {
+        super(k.range);
+        this.path = new d2Path(k.path);
+    }
+
+    path: d2Path;
+
+    public toString(): string {
+        return `KEY: ${this.path.toString()} : ${super.toString()}`;
+    }
+}
+
+class d2Value extends d2Range {
+    constructor(v: LSPAny) {
+        super(v?.range || null);
+        this.value = this.doValue(v);
+    }
+
+    value: d2StringAndRange | undefined;
+
     /**
-     * This will get a string_block, not needed now
-     */
-    if (typeof value === "string" || value?.block_string) {
-      const strAndR: d2StringAndRange = this.getStringAndRange(value);
-      console.log(`SB      -> ${strAndR}`);
-    } else if (typeof value === "object" && value?.map) {
-      this.doNodes(value.map.nodes);
-    }
-
-    let valRet;
-
-    if (value?.boolean) {
-      valRet = new d2StringAndRange(
-        value.boolean.range,
-        value.boolean.value
-      );
-    }
-    if (value?.unquoted_string) {
-      valRet = new d2StringAndRange(
-        value.unquoted_string.range,
-        value.unquoted_string.value[0].string
-      );
-    }
-    if (value?.single_quoted_string) {
-      valRet = new d2StringAndRange(
-        value.single_quoted_string.range,
-        value.single_quoted_string.value[0].string
-      );
-    }
-
-    if (valRet) {
-      console.log(`(${this.depth}) VAL      -> ${valRet}`);
-      this.d2Collector.addValue(valRet);
-    }
-  }
-
-  /**
-   * Breaks apart the D2 AST MAP_KEY branch
-   */
-  doMapKey(mapkey: LSPAny): void { 
-    // NODE //
-    if (mapkey.key?.path) {
-      const strAndR: d2StringAndRange[] = this.doPath(mapkey.key.path);
-      this.addNode(strAndR[0]);
-    }
-    // VALUE //
-    if (mapkey.value) {
-
-      this.doValue(mapkey.value);
-
-      console.log("");
-    }
-    // EDGES //
-    if (mapkey.edges) {
-      mapkey.edges.forEach((edge: LSPAny) => {
-        let src = new d2StringAndRange("", "");
-        let dst = new d2StringAndRange("", "");
-
-        const strAndRSrc: d2StringAndRange[] = this.doPath(edge.src.path);
-        src = strAndRSrc[0];
-        this.addNode(src);
+    * These will get values from node
+    */
+    private doValue(value: LSPAny): d2StringAndRange | undefined {
         /**
-         * COMPLETION NOTE: If path is null, then we need to complete the edge with a node
+         * This will get a string_block, not needed now
          */
-        if (edge.dst !== null) {
-          const strAndRDst: d2StringAndRange[] = this.doPath(edge.dst.path);
-          dst = strAndRDst[0];
-          this.addNode(dst);
-        } else {
-          console.log(`Incomplete Edge (${strAndRSrc[0]}): Save for completion??`)
+        // if (typeof value === "string" || value?.block_string) {
+        //     const strAndR: d2StringAndRange = this.getStringAndRange(value);
+        //     console.log(`SB      -> ${strAndR}`);
+        // }
+
+        let valRet;
+
+        if (value?.number) {
+            valRet = new d2StringAndRange(value.number.range, value.number.value);
+        }
+        if (value?.boolean) {
+            valRet = new d2StringAndRange(value.boolean.range, value.boolean.value);
+        }
+        if (value?.unquoted_string) {
+            valRet = new d2StringAndRange(
+                value.unquoted_string.range,
+                value.unquoted_string.value[0].string
+            );
+        }
+        if (value?.single_quoted_string) {
+            valRet = new d2StringAndRange(
+                value.single_quoted_string.range,
+                value.single_quoted_string.value[0].string
+            );
         }
 
-        console.log(`(${this.depth}) EDGENODE -> ${src} :: ${dst}\n`)
-
-        this.d2Collector.addEdge(src, dst);
-      });
-    }
-    // IMPORT //
-    if (mapkey.value?.import) {
-      if (mapkey.value.import.path) {
-        const strAndR: d2StringAndRange[] = this.doPath(mapkey.value.import.path);
-        console.log(`(${this.depth}) IMPORT   -> ${strAndR}`);
-        strAndR.forEach((sr) => {
-          this.d2Collector.addImport(sr)
-        });
-        this.links.push(strAndR[0]);
-      }
-    }
-  }
-
-  /**
-   * Iterate the list of nodes from the AST generation from D2 cli.
-   */
-  doNodes(nodes: LSPAny[]): void {
-    debugger;
-    this.depth++;
-    nodes.forEach((node) => {
-      /**
-       * Comment node, no need for it now
-      if (node.comment) {
-        this.doComment(node.comment);
-      }
-      */
-      if (node.map_key) {
-        this.doMapKey(node.map_key);
-      }
-    });
-    this.depth--;
-  }
-
-  /**
-   * Returns all the locations for references to the object below
-   * the Position parameter
-   */
-  FindReferencesAtLocation(pos: Position, td: TextDocumentIdentifier): Location[] {
-    const results: Location[] = [];
-
-    const rNode = this.GetRangeFromLocation(pos);
-    if (rNode) {
-      const node = this.GetNodeFromRange(rNode);
-      if (node) {
-        this.nodes.forEach((n: d2StringAndRange) => {
-          if (n.str === node.str) {
-            results.push(
-              Location.create(td.uri, Range.create(n.StartPosition, n.EndPosition))
+        if (value?.import) {
+            valRet = new d2StringAndRange(
+                value.import.range,
+                value.import.value
             );
-          }
-        });
-      }
+        }
+
+        return valRet;
     }
-    return results;
-  }
 
-  /**
-   * Given a range, get the node that it contains
-   */
-  GetNodeFromRange(r: Range): d2StringAndRange | undefined {
-    for (const n of this.nodes) {
-      if (
-        n.Range.end.line === r.end.line &&
-        n.Range.end.character === r.end.character &&
-        n.Range.start.line === r.start.line &&
-        n.Range.start.character === r.start.character
-      ) {
-        return n;
-      }
+    public toString(): string {
+        return `VALUE: ${this.value}`;
     }
-    return undefined;
-  }
+}
 
-  /**
-   * Returns the range of the object below the Position parameter
-   */
-  GetRangeFromLocation(pos: Position): Range | undefined {
-    for (const n of this.nodes) {
-      if (
-        pos.line === n.StartPosition.line &&
-        pos.character >= n.StartPosition.character &&
-        pos.character <= n.EndPosition.character
-      ) {
-        return n.Range;
-      }
+class d2NodeValue extends d2Range {
+    constructor(nv: LSPAny) {
+        super(nv.range);
+        for (const node of nv.nodes) {
+            this.nodes.push(new d2Node(node))
+        }
     }
-    return undefined;
-  }
 
-  /**
-   * 
-   */
-  dump(): void {
-    console.log("\n\nCOLLECTOR\n---------\n");
-    this.d2Collector.dump();
+    nodes: d2Node[] = [];
 
-  }
+    public toString(): string {
+        let strRet = ""
+        for (const n of this.nodes) {
+            strRet += n.toString() + "\n";
+        }
+        return `${strRet}`;
+    }
+}
 
+class d2Import extends d2Range {
+    constructor(i: LSPAny) {
+        super(i.range);
+        this.path = new d2Path(i.path);
+    }
+
+    path: d2Path;
+
+    public toString(): string {
+        return `IMPORT: ${this.path} : ${super.toString()}`;
+    }
+}
+
+class d2EdgeEndpoint extends d2Range {
+    constructor(ep: LSPAny) {
+        super(ep.range);
+        this.path = new d2Path(ep.path);
+    }
+
+    path: d2Path;
+
+    public toString(): string {
+        return `${this.path}`;
+    }
+}
+
+class d2Edge extends d2Range {
+    constructor(edge: LSPAny) {
+        super(edge?.range);
+        this.srcArrow = edge.src_arrow;
+        this.dstArrow = edge.dst_arrow;
+
+        this.srcEndPt = new d2EdgeEndpoint(edge.src);
+        this.dstEndPt = new d2EdgeEndpoint(edge.dst);
+    }
+
+    srcArrow: string;
+    dstArrow: string;
+
+    srcEndPt: d2EdgeEndpoint;
+    dstEndPt: d2EdgeEndpoint;
+
+    public toString(): string {
+        return `${this.srcEndPt} ${this.srcArrow}-${this.dstArrow} ${this.dstEndPt} : ${super.toString()}`;
+    }
+}
+
+class d2Edges {
+    constructor(edges: LSPAny) {
+        for (const edge of edges) {
+            this.edges.push(new d2Edge(edge));
+        }
+    }
+
+    edges: d2Edge[] = [];
+
+    public toString(): string {
+        let strRet = "";
+        for (const e of this.edges) {
+            strRet += e.toString() + "\n";
+        }
+        return strRet;
+    }
+}
+
+class d2Node extends d2Range {
+    constructor(n: LSPAny) {
+        super(n.map_key.range);
+
+        if (n.map_key.key) {
+            this.key = new d2Key(n.map_key.key);
+        } else if (n.map_key.edges) {
+            this.edges = new d2Edges(n.map_key.edges);
+        }
+
+        this.primary = new d2Primary(n.map_key.primary);
+
+        if (n.map_key.value?.map?.nodes) {
+            this.value = new d2NodeValue(n.map_key.value.map);
+        } else if (n.map_key.value?.import) {
+            this.value = new d2Import(n.map_key.value.import);
+        } else if (n.map_key.value) {
+            this.value = new d2Value(n.map_key.value);
+        }
+    }
+
+    key: d2Key | undefined;
+    primary: d2Primary | undefined;
+    value: d2NodeValue | d2Value | d2Import | undefined;
+
+    edges: d2Edges | undefined;
+
+    get isEdge(): boolean {
+        return Boolean(this.edges);
+    }
+
+    get isKeyVal(): boolean {
+        return Boolean(this.key);
+    }
+
+    get hasPrimary(): boolean {
+        return Boolean(this.primary?.hasValue);
+    }
+
+    get hasValue(): boolean {
+        if (!this.value) {
+            return false;
+        }
+
+        if ('path' in this.value) {
+            return Boolean(this.value.path);
+        }
+
+        if ('nodes' in this.value) {
+            return Boolean(this.value.nodes);
+        }
+
+        if ('value' in this.value) {
+            return Boolean(this.value.value);
+        }
+
+        return false;
+    }
+
+    public toString(): string {
+        let strRet = `\nNODE: ${super.toString()}\n----\n`;
+        strRet += this.isKeyVal ? `${this.key?.toString()}\n` : `${this.edges?.toString()}\n`;
+        strRet += this.hasPrimary ? `${this.primary?.toString()}\n` : "";
+        strRet += this.hasValue ? `${this.value?.toString()}\n` : "\n";
+        strRet += "\n";
+        return strRet;
+    }
 }

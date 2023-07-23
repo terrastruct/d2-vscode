@@ -278,14 +278,14 @@
     },
     "themes": [
       {
-        "label": "D2 Light",
-        "uiTheme": "vs",
-        "path": "./themes/light-color-theme.json"
-      },
-      {
         "label": "D2 Dark",
         "uiTheme": "vs-dark",
         "path": "./themes/dark-color-theme.json"
+      },
+      {
+        "label": "D2 Light",
+        "uiTheme": "vs",
+        "path": "./themes/light-color-theme.json"
       }
     ]
   },

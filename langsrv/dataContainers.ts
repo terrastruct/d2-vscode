@@ -2,7 +2,12 @@
  * Various data holder classes, conversions and coercion
  */
 
-import { DiagnosticSeverity, LSPAny, Position, Range } from "vscode-languageserver/node";
+import {
+  DiagnosticSeverity,
+  LSPAny,
+  Position,
+  Range,
+} from "vscode-languageserver/node";
 
 /**
  * Represents a document range as converted from D2
@@ -39,18 +44,21 @@ export class d2Range {
   endColumn = 0;
   endByte = 0;
 
-  public isRangeEqual(r: d2Range): boolean {
-    if (r.startLine === this.startLine &&
-        r.endLine === this.endLine &&
-        r.startColumn === this.startColumn &&
-        r.endColumn === this.endColumn) {
+  public isRangeEqual(r: d2Range | undefined): boolean {
+    if (
+      r &&
+      r.startLine === this.startLine &&
+      r.endLine === this.endLine &&
+      r.startColumn === this.startColumn &&
+      r.endColumn === this.endColumn
+    ) {
       return true;
     }
     return false;
   }
 
   public toString(): string {
-    return `${this.fileName} -> (${this.startLine},${this.startColumn},${this.startByte}):(${this.endLine},${this.endColumn},${this.endByte})`;
+    return `${this.fileName} : (${this.startLine},${this.startColumn},${this.startByte}):(${this.endLine},${this.endColumn},${this.endByte})`;
   }
 
   get FileName(): string {
@@ -111,12 +119,12 @@ export class d2Error extends d2Range {
 export class d2StringAndRange extends d2Range {
   constructor(r: string | null, s: string) {
     super(r);
-    this.str = s;
+    this.strValue = s || "";
   }
 
-  str: string;
+  strValue: string;
 
   public toString(): string {
-    return `${this.str} -> ${super.toString()}`;
+    return `${this.strValue.toString()} : ${super.toString()}`;
   }
 }
