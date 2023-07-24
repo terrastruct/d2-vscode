@@ -9,6 +9,7 @@ import {
   MarkupKind,
   // Position,
 } from "vscode-languageserver";
+
 import { getD2Files } from "./utility";
 // import { AstReader } from "./d2Ast";
 // import { d2StringAndRange } from "./dataContainers";
@@ -281,11 +282,7 @@ export class CompletionHelper {
 
       ci.documentation = {
         kind: MarkupKind.Markdown,
-        value: [
-          "|File Date|Size|",
-          "|:----|----:|",
-          `|${fiDate}|${fiSize}|`,
-        ].join("\n"),
+        value: ["|File Date|Size|", "|:----|----:|", `|${fiDate}|${fiSize}|`].join("\n"),
       };
 
       compFiles.push(ci);
@@ -334,7 +331,6 @@ export class CompletionHelper {
   }
   */
 }
-
 
 /**
  // Non Style/Holder keywords.
@@ -503,4 +499,3 @@ var BoardKeywords = map[string]struct{}{
 }
 
  */
-

@@ -27,6 +27,7 @@ import {
 
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { spawnSync } from "child_process";
+import URI from "vscode-uri";
 
 import path = require("path");
 
@@ -87,8 +88,7 @@ connection.onInitialize((params: InitializeParams) => {
  */
 connection.onCompletion((params: CompletionParams): CompletionList => {
   console.log(
-    `onCompletion (${params.context?.triggerCharacter}): ` +
-    JSON.stringify(params)
+    `onCompletion (${params.context?.triggerCharacter}): ` + JSON.stringify(params)
   );
 
   switch (params.context?.triggerCharacter) {
@@ -98,8 +98,8 @@ connection.onCompletion((params: CompletionParams): CompletionList => {
     case ".":
       console.log("!!!!!!!! Uncomment !!!!!!!!!!!!");
       // return CompletionHelper.doDot(astData, params.position);
-    
-    break;
+
+      break;
 
     case ":":
       return CompletionHelper.doAttribute();
@@ -123,11 +123,10 @@ connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
 connection.onDocumentLinks((): DocumentLink[] => {
   const retLinks: DocumentLink[] = [];
 
-  /*
-  for (const link of astData.Links) {
+  for (const link of astData.LinksAndImports) {
     const docLink = DocumentLink.create(link.Range);
 
-    let docPath = link.str.replace(/['|"]/g, "");
+    let docPath = link.strValue.replace(/['|"]/g, "");
 
     // If '.d2' is there, get rid of it.
     docPath = path.basename(docPath, ".d2");
@@ -136,7 +135,6 @@ connection.onDocumentLinks((): DocumentLink[] => {
 
     retLinks.push(docLink);
   }
-  */
 
   return retLinks;
 });
@@ -158,6 +156,10 @@ connection.onDidChangeConfiguration((change) => {
 documents.onDidChangeContent((change) => {
   console.log(`Change: ${change.document.uri}`);
 
+
+  cwd = path.dirname(change.document.uri);
+  const baseDir = URI.parse(cwd).fsPath;
+
   const args: string[] = ["-"];
 
   /**
@@ -167,6 +169,7 @@ documents.onDidChangeContent((change) => {
     input: change.document.getText(),
     encoding: "utf-8",
     maxBuffer: 1024 * 1024 * 2,
+    cwd: baseDir,
     env: { ...process.env, D2_LSP_MODE: "1" },
   });
 
@@ -184,15 +187,13 @@ documents.onDidChangeContent((change) => {
   astData = new AstReader(proc.stdout);
 
   const end = Date.now();
-  console.log(`\n\nAST Read Time: ${end - start} ms`);
-
   // Debug
   astData.dump();
+  console.log(`\n\nAST Read Time: ${end - start} ms`);
 
   /**
    * Handle any errors.
    */
-  /*
   const eret = astData.Errors;
 
   // Clear Errors
@@ -201,9 +202,6 @@ documents.onDidChangeContent((change) => {
     eret.uri = change.document.uri;
     connection.sendDiagnostics(eret);
   }
-  */
-
-  cwd = path.dirname(change.document.uri);
 });
 
 /**
@@ -229,9 +227,8 @@ connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
   // }
 
   workspaceChanges.documentChanges = [ed];
-  
-  return workspaceChanges;
 
+  return workspaceChanges;
 });
 
 /**

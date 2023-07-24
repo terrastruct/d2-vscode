@@ -262,7 +262,7 @@ export function activate(context: ExtensionContext): any {
 function startLanguageServer(): void {
   // The server is implemented in node
   const serverModule = extContext.asAbsolutePath(
-    path.join("langsrv", "dist", "server.js")
+    path.join("server", "dist", "server.js")
   );
   // The debug options for the server
   // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging

@@ -5,7 +5,11 @@
     "lib": ["ES2022"],
     "esModuleInterop": false,
     "sourceMap": true,
-    "rootDir": "../langsrv",
+    "outDir": "dist",
+    "rootDir": "src",
     "strict": true
-  }
+  },
+	"include": ["src"],
+	"exclude": ["node_modules"]
+
 }

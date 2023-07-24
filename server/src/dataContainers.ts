@@ -2,12 +2,7 @@
  * Various data holder classes, conversions and coercion
  */
 
-import {
-  DiagnosticSeverity,
-  LSPAny,
-  Position,
-  Range,
-} from "vscode-languageserver/node";
+import { DiagnosticSeverity, LSPAny, Position, Range } from "vscode-languageserver/node";
 
 /**
  * Represents a document range as converted from D2
