@@ -6,19 +6,23 @@ import {
   CompletionItem,
   CompletionItemKind,
   CompletionList,
-  MarkupKind,
-  // Position,
+  InsertTextFormat,
+  InsertTextMode,
+  Position
 } from "vscode-languageserver";
 
-import { getD2Files } from "./utility";
-// import { AstReader } from "./d2Ast";
-// import { d2StringAndRange } from "./dataContainers";
-import { statSync } from "fs";
-import URI from "vscode-uri";
 import path = require("path");
+import URI from "vscode-uri";
+
+import { getD2Files } from "./utility";
+import { statSync } from "fs";
+import { AstReader } from "./d2Ast";
 
 export const optBoolean = {
-  boolean: ["true", "false"],
+  boolean: [
+    "true", 
+    "false"
+  ],
 };
 
 export const optStyle = {
@@ -46,11 +50,16 @@ export const optStyle = {
 };
 
 export const optTextTransform = {
-  "text-transform": ["uppercase", "lowercase", "title", "none"],
+  "text-transform": [
+    "uppercase", 
+    "lowercase", 
+    "title", 
+    "none"
+  ],
 };
 
 export const optShape = {
-  shape: [
+  "shape": [
     "rectangle",
     "square",
     "page",
@@ -74,8 +83,18 @@ export const optShape = {
     "sql_table",
     "image",
     "sequence_diagram",
-  ],
+  ]
 };
+
+
+export const optFillPatterns = {
+  "fill-pattern": [
+    "dots",
+    "lines",
+    "grain",
+    "paper"
+  ]
+}
 
 export const optArrowHeadSource = {
   "source-arrowhead": [
@@ -86,7 +105,7 @@ export const optArrowHeadSource = {
     "filled-diamond",
     "circle",
     "filled-circle",
-  ],
+  ]
 };
 
 export const optArrowHeadTarget = {
@@ -102,7 +121,7 @@ export const optArrowHeadTarget = {
 };
 
 export const namedRgbMap = {
-  color: [
+  "fill": [
     "aliceblue",
     "antiquewhite",
     "aqua",
@@ -251,13 +270,19 @@ export const namedRgbMap = {
     "whitesmoke",
     "yellow",
     "yellowgreen",
-  ],
+  ]
 };
 
 /**
  *
  */
 export class CompletionHelper {
+  /**
+   * 
+   * @param dir 
+   * @param currentFile 
+   * @returns 
+   */
   static doImport(dir: string, currentFile: string): CompletionList {
     console.log("Current File : " + currentFile);
     const dirToScan = URI.parse(dir).fsPath;
@@ -274,16 +299,13 @@ export class CompletionHelper {
         continue;
       }
 
-      const ci = CompletionItem.create(file);
-      ci.kind = CompletionItemKind.File;
-      ci.commitCharacters = ["\t"];
       const fiDate = fst.atime.toLocaleDateString();
       const fiSize = fst.size.toString() + " bytes";
 
-      ci.documentation = {
-        kind: MarkupKind.Markdown,
-        value: ["|File Date|Size|", "|:----|----:|", `|${fiDate}|${fiSize}|`].join("\n"),
-      };
+      const ci = CompletionItem.create(file);
+      ci.kind = CompletionItemKind.File;
+      ci.commitCharacters = ["\t"];
+      ci.labelDetails = { description: `${fiSize}  ${fiDate}` }
 
       compFiles.push(ci);
     }
@@ -291,211 +313,239 @@ export class CompletionHelper {
     return CompletionList.create(compFiles);
   }
 
-  static doAttribute(): CompletionList {
-    console.log("Trigger on :");
-    return CompletionList.create(
-      [
-        CompletionItem.create("Style"),
-        CompletionItem.create("{}"),
-        CompletionItem.create("Indifferent"),
-      ],
-      true
-    );
-  }
-
-  /*
-  static doDot(astData: AstReader, pos: Position): CompletionList {
+  /**
+   * 
+   */
+  static doAttribute(astData: AstReader, pos: Position): CompletionList {
     // Move position back one character to get node *before* trigger character
-    // const charPos = Math.max(0, pos.character - 1);
+    const charPos = Math.max(0, pos.character - 1);
 
-    const ref = astData.GetRangeFromLocation(pos);
-    let sr: d2StringAndRange | undefined = new d2StringAndRange("", "");
+    const ref = astData.refAtPosition({ line: pos.line, character: charPos });
 
     if (ref) {
-      sr = astData.GetNodeFromRange(ref);
-      console.log("  REF -> " + sr?.str + " " + JSON.stringify(ref));
+      console.log("  REF -> " + ref.strValue + " " + JSON.stringify(ref));
     } else {
       console.log("  REF -> Nothing Found");
     }
 
-    const ci1 = CompletionItem.create("Good");
-    ci1.kind = CompletionItemKind.Property;
-
-    const ci2 = CompletionItem.create("Bad");
-    ci2.kind = CompletionItemKind.Field;
+    const ci = CompletionItem.create("{}");
+    // eslint-disable-next-line no-template-curly-in-string
+    ci.insertText = " {\n\t${0}\n}";
+    ci.kind = CompletionItemKind.Snippet;
+    ci.insertTextFormat = InsertTextFormat.Snippet
+    ci.insertTextMode = InsertTextMode.adjustIndentation;
 
     return CompletionList.create(
-      [ci1, ci2, CompletionItem.create("Indifferent")],
+      [
+        ci
+      ],
       false
     );
   }
-  */
+
+  /**
+   * 
+   */
+  static doDot(astData: AstReader, pos: Position): CompletionList {
+
+    // Move position back one character to get node *before* trigger character
+    const charPos = Math.max(0, pos.character - 1);
+
+    const ref = astData.refAtPosition({line: pos.line, character: charPos});
+    
+    if (ref) {
+      console.log("  REF -> " + ref.strValue + " " + JSON.stringify(ref));
+    } else {
+      console.log("  REF -> Nothing Found");
+    }
+
+    return CompletionList.create(
+      [
+        CompletionItem.create("You hit period")
+      ],
+      false
+    );
+  }
+
+  /**
+   *
+   * 
+   */
+  static doOpenSpace(): CompletionList {
+
+    return CompletionList.create(
+      [
+        CompletionItem.create("Your in open space")
+      ],
+      false
+    );
+  }
 }
 
 /**
  // Non Style/Holder keywords.
 var SimpleReservedKeywords = map[string]struct{}{
-	"label":          {},
-	"desc":           {},
-	"shape":          {},
-	"icon":           {},
-	"constraint":     {},
-	"tooltip":        {},
-	"link":           {},
-	"near":           {},
-	"width":          {},
-	"height":         {},
-	"direction":      {},
-	"top":            {},
-	"left":           {},
-	"grid-rows":      {},
-	"grid-columns":   {},
-	"grid-gap":       {},
-	"vertical-gap":   {},
-	"horizontal-gap": {},
-	"class":          {},
+  "label":          {},
+  "desc":           {},
+  "shape":          {},
+  "icon":           {},
+  "constraint":     {},
+  "tooltip":        {},
+  "link":           {},
+  "near":           {},
+  "width":          {},
+  "height":         {},
+  "direction":      {},
+  "top":            {},
+  "left":           {},
+  "grid-rows":      {},
+  "grid-columns":   {},
+  "grid-gap":       {},
+  "vertical-gap":   {},
+  "horizontal-gap": {},
+  "class":          {},
 }
 
 // ReservedKeywordHolders are reserved keywords that are meaningless on its own and must hold composites
 var ReservedKeywordHolders = map[string]struct{}{
-	"style":            {},
-	"source-arrowhead": {},
-	"target-arrowhead": {},
+  "style":            {},
+  "source-arrowhead": {},
+  "target-arrowhead": {},
 }
 
 // CompositeReservedKeywords are reserved keywords that can hold composites
 var CompositeReservedKeywords = map[string]struct{}{
-	"classes":    {},
-	"constraint": {},
-	"label":      {},
-	"icon":       {},
+  "classes":    {},
+  "constraint": {},
+  "label":      {},
+  "icon":       {},
 }
 
 // StyleKeywords are reserved keywords which cannot exist outside of the "style" keyword
 var StyleKeywords = map[string]struct{}{
-	"opacity":       {},
-	"stroke":        {},
-	"fill":          {},
-	"fill-pattern":  {},
-	"stroke-width":  {},
-	"stroke-dash":   {},
-	"border-radius": {},
+  "opacity":       {},
+  "stroke":        {},
+  "fill":          {},
+  "fill-pattern":  {},
+  "stroke-width":  {},
+  "stroke-dash":   {},
+  "border-radius": {},
 
-	// Only for text
-	"font":           {},
-	"font-size":      {},
-	"font-color":     {},
-	"bold":           {},
-	"italic":         {},
-	"underline":      {},
-	"text-transform": {},
+  // Only for text
+  "font":           {},
+  "font-size":      {},
+  "font-color":     {},
+  "bold":           {},
+  "italic":         {},
+  "underline":      {},
+  "text-transform": {},
 
-	// Only for shapes
-	"shadow":        {},
-	"multiple":      {},
-	"double-border": {},
+  // Only for shapes
+  "shadow":        {},
+  "multiple":      {},
+  "double-border": {},
 
-	// Only for squares
-	"3d": {},
+  // Only for squares
+  "3d": {},
 
-	// Only for edges
-	"animated": {},
-	"filled":   {},
+  // Only for edges
+  "animated": {},
+  "filled":   {},
 }
 
 // TODO maybe autofmt should allow other values, and transform them to conform
 // e.g. left-center becomes center-left
 var NearConstantsArray = []string{
-	"top-left",
-	"top-center",
-	"top-right",
+  "top-left",
+  "top-center",
+  "top-right",
 
-	"center-left",
-	"center-right",
+  "center-left",
+  "center-right",
 
-	"bottom-left",
-	"bottom-center",
-	"bottom-right",
+  "bottom-left",
+  "bottom-center",
+  "bottom-right",
 }
 var NearConstants map[string]struct{}
 
 // LabelPositionsArray are the values that labels and icons can set `near` to
 var LabelPositionsArray = []string{
-	"top-left",
-	"top-center",
-	"top-right",
+  "top-left",
+  "top-center",
+  "top-right",
 
-	"center-left",
-	"center-center",
-	"center-right",
+  "center-left",
+  "center-center",
+  "center-right",
 
-	"bottom-left",
-	"bottom-center",
-	"bottom-right",
+  "bottom-left",
+  "bottom-center",
+  "bottom-right",
 
-	"outside-top-left",
-	"outside-top-center",
-	"outside-top-right",
+  "outside-top-left",
+  "outside-top-center",
+  "outside-top-right",
 
-	"outside-left-top",
-	"outside-left-center",
-	"outside-left-bottom",
+  "outside-left-top",
+  "outside-left-center",
+  "outside-left-bottom",
 
-	"outside-right-top",
-	"outside-right-center",
-	"outside-right-bottom",
+  "outside-right-top",
+  "outside-right-center",
+  "outside-right-bottom",
 
-	"outside-bottom-left",
-	"outside-bottom-center",
-	"outside-bottom-right",
+  "outside-bottom-left",
+  "outside-bottom-center",
+  "outside-bottom-right",
 }
 var LabelPositions map[string]struct{}
 
 // convert to label.Position
 var LabelPositionsMapping = map[string]label.Position{
-	"top-left":   label.InsideTopLeft,
-	"top-center": label.InsideTopCenter,
-	"top-right":  label.InsideTopRight,
+  "top-left":   label.InsideTopLeft,
+  "top-center": label.InsideTopCenter,
+  "top-right":  label.InsideTopRight,
 
-	"center-left":   label.InsideMiddleLeft,
-	"center-center": label.InsideMiddleCenter,
-	"center-right":  label.InsideMiddleRight,
+  "center-left":   label.InsideMiddleLeft,
+  "center-center": label.InsideMiddleCenter,
+  "center-right":  label.InsideMiddleRight,
 
-	"bottom-left":   label.InsideBottomLeft,
-	"bottom-center": label.InsideBottomCenter,
-	"bottom-right":  label.InsideBottomRight,
+  "bottom-left":   label.InsideBottomLeft,
+  "bottom-center": label.InsideBottomCenter,
+  "bottom-right":  label.InsideBottomRight,
 
-	"outside-top-left":   label.OutsideTopLeft,
-	"outside-top-center": label.OutsideTopCenter,
-	"outside-top-right":  label.OutsideTopRight,
+  "outside-top-left":   label.OutsideTopLeft,
+  "outside-top-center": label.OutsideTopCenter,
+  "outside-top-right":  label.OutsideTopRight,
 
-	"outside-left-top":    label.OutsideLeftTop,
-	"outside-left-center": label.OutsideLeftMiddle,
-	"outside-left-bottom": label.OutsideLeftBottom,
+  "outside-left-top":    label.OutsideLeftTop,
+  "outside-left-center": label.OutsideLeftMiddle,
+  "outside-left-bottom": label.OutsideLeftBottom,
 
-	"outside-right-top":    label.OutsideRightTop,
-	"outside-right-center": label.OutsideRightMiddle,
-	"outside-right-bottom": label.OutsideRightBottom,
+  "outside-right-top":    label.OutsideRightTop,
+  "outside-right-center": label.OutsideRightMiddle,
+  "outside-right-bottom": label.OutsideRightBottom,
 
-	"outside-bottom-left":   label.OutsideBottomLeft,
-	"outside-bottom-center": label.OutsideBottomCenter,
-	"outside-bottom-right":  label.OutsideBottomRight,
+  "outside-bottom-left":   label.OutsideBottomLeft,
+  "outside-bottom-center": label.OutsideBottomCenter,
+  "outside-bottom-right":  label.OutsideBottomRight,
 }
 
 var FillPatterns = []string{
-	"dots",
-	"lines",
-	"grain",
-	"paper",
+  "dots",
+  "lines",
+  "grain",
+  "paper",
 }
 
 var textTransforms = []string{"none", "uppercase", "lowercase", "capitalize"}
 
 // BoardKeywords contains the keywords that create new boards.
 var BoardKeywords = map[string]struct{}{
-	"layers":    {},
-	"scenarios": {},
-	"steps":     {},
+  "layers":    {},
+  "scenarios": {},
+  "steps":     {},
 }
 
  */

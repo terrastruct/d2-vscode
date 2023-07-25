@@ -52,6 +52,16 @@ export class d2Range {
     return false;
   }
 
+  public isPositionInRange(pos: Position): boolean {
+    if (pos.line >= this.startLine &&
+      pos.line <= this.endLine &&
+      pos.character >= this.startColumn &&
+      pos.character <= this.endColumn) {
+      return true;
+    }
+    return false;
+  }
+
   public toString(): string {
     return `${this.fileName} : (${this.startLine},${this.startColumn},${this.startByte}):(${this.endLine},${this.endColumn},${this.endByte})`;
   }

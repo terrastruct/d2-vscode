@@ -96,13 +96,14 @@ connection.onCompletion((params: CompletionParams): CompletionList => {
       return CompletionHelper.doImport(cwd, params.textDocument.uri);
 
     case ".":
-      console.log("!!!!!!!! Uncomment !!!!!!!!!!!!");
-      // return CompletionHelper.doDot(astData, params.position);
-
-      break;
+      return CompletionHelper.doDot(astData, params.position);
 
     case ":":
-      return CompletionHelper.doAttribute();
+      return CompletionHelper.doAttribute(astData, params.position);
+
+    case undefined:
+      return CompletionHelper.doOpenSpace();
+
   }
 
   return CompletionList.create([], false);

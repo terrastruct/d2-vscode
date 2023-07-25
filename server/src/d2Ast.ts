@@ -7,16 +7,18 @@ import {
   LSPAny,
   PublishDiagnosticsParams,
 } from "vscode-languageserver";
-import { 
-  d2Range, 
-  d2StringAndRange 
+
+import {
+  d2Range,
+  d2StringAndRange
 } from "./dataContainers";
+import { Position } from "vscode-languageserver-textdocument";
 
 /**
  * 
  */
 export class AstReader {
-  constructor(astStr: LSPAny) {
+  constructor(astStr: string) {
     this.d2Info = JSON.parse(astStr);
     this.range = this.d2Info.Ast.range;
     // console.log(JSON.stringify(this.d2Info, null, 2));
@@ -52,6 +54,9 @@ export class AstReader {
     return hasErrors ? { uri: "", diagnostics: diags } : undefined;
   }
 
+  /**
+   * 
+   */
   get LinksAndImports(): d2StringAndRange[] {
     const rngRet: d2StringAndRange[] = [];
 
@@ -66,8 +71,61 @@ export class AstReader {
     return rngRet;
   }
 
-  doNodes(nodes: LSPAny[]) {
-    for (const node of nodes) {
+  private references: d2StringAndRange[] | undefined;
+
+  /**
+   * 
+   */
+  get References(): d2StringAndRange[] {
+    if (!this.references) {
+      this.references = [];
+
+      for (const node of this.nodes) {
+
+        // Edges
+        //
+        if (node.hasEdges) {
+          for (const edge of node.Edges) {
+            if (edge.src.edgeNode) {
+              this.references.push(edge.src.edgeNode);
+            }
+            if (edge.dst.edgeNode) {
+              this.references.push(edge.dst.edgeNode);
+            }
+          }
+        }
+
+        if (node.hasKey) {
+          if (node.Key?.key) {
+            this.references.push(node.Key.key);
+          }
+        }
+      }
+    }
+
+    return this.references;
+  }
+
+  /**
+   * 
+   * @param pos 
+   * @returns 
+   */
+  public refAtPosition(pos: Position): d2StringAndRange | undefined {
+    for (const r of this.References) {
+      if (r.isPositionInRange(pos)) {
+        return r;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * 
+   * @param nodes 
+   */
+  private doNodes(nodes: LSPAny[]) {
+    for (const node of nodes || []) {
       // console.log("---------------------------------")
       // console.log(JSON.stringify(node, null, 2));
       // console.log("---------------------------------")
@@ -85,9 +143,12 @@ export class AstReader {
   }
 }
 
+/**
+ * 
+ */
 class d2Path {
   constructor(paths: LSPAny[]) {
-    for (const path of paths) {
+    for (const path of paths || []) {
       this.pathList.push(new d2Value(path));
     }
   }
@@ -121,6 +182,9 @@ class d2Path {
   }
 }
 
+/**
+ * 
+ */
 class d2Primary {
   constructor(p: LSPAny) {
     this.primary = new d2Value(p);
@@ -136,10 +200,13 @@ class d2Primary {
   }
 
   public toString(): string {
-    return `PRIMARY: ${this.primary}`;
+    return `${this.primary}`;
   }
 }
 
+/**
+ * 
+ */
 class d2Key extends d2Range {
   constructor(k: LSPAny) {
     super(k.range);
@@ -155,11 +222,18 @@ class d2Key extends d2Range {
     return false;
   }
 
+  get key(): d2StringAndRange | undefined {
+    return this.path.first?.value;
+  }
+
   public toString(): string {
     return `KEY: ${this.path.toString()} : ${super.toString()}`;
   }
 }
 
+/**
+ * 
+ */
 class d2Value extends d2Range {
   constructor(v: LSPAny) {
     super(v?.range || null);
@@ -169,7 +243,7 @@ class d2Value extends d2Range {
   value: d2StringAndRange | undefined;
 
   /**
-   * These will get values from node
+   * These will get values from a node
    */
   private doValue(value: LSPAny): d2StringAndRange | undefined {
     /**
@@ -209,10 +283,13 @@ class d2Value extends d2Range {
   }
 
   public toString(): string {
-    return `VALUE: ${this.value}`;
+    return `VALUE: ${this.value} : ${super.toString()}`;
   }
 }
 
+/**
+ * 
+ */
 class d2NodeValue extends d2Range {
   constructor(nv: LSPAny) {
     super(nv.range);
@@ -228,10 +305,13 @@ class d2NodeValue extends d2Range {
     for (const n of this.nodes) {
       strRet += n.toString() + "\n";
     }
-    return `${strRet}`;
+    return `${strRet} : ${super.toString()}`;
   }
 }
 
+/**
+ * 
+ */
 class d2Import extends d2Range {
   constructor(i: LSPAny) {
     super(i.range);
@@ -245,19 +325,29 @@ class d2Import extends d2Range {
   }
 }
 
+/**
+ * 
+ */
 class d2EdgeEndpoint extends d2Range {
   constructor(ep: LSPAny) {
-    super(ep.range);
-    this.path = new d2Path(ep.path);
+    super(ep?.range);
+    this.path = new d2Path(ep?.path);
   }
 
-  path: d2Path;
+  private path: d2Path;
+
+  get edgeNode(): d2StringAndRange | undefined {
+    return this.path.first?.value;
+  }
 
   public toString(): string {
-    return `${this.path}`;
+    return `${this.path} : ${super.toString()}`;
   }
 }
 
+/**
+ * 
+ */
 class d2Edge extends d2Range {
   constructor(edge: LSPAny) {
     super(edge?.range);
@@ -268,11 +358,19 @@ class d2Edge extends d2Range {
     this.dstEndPt = new d2EdgeEndpoint(edge.dst);
   }
 
-  srcArrow: string;
-  dstArrow: string;
+  private srcArrow: string;
+  private dstArrow: string;
 
-  srcEndPt: d2EdgeEndpoint;
-  dstEndPt: d2EdgeEndpoint;
+  private srcEndPt: d2EdgeEndpoint;
+  private dstEndPt: d2EdgeEndpoint;
+
+  get src(): d2EdgeEndpoint {
+    return this.srcEndPt;
+  }
+
+  get dst(): d2EdgeEndpoint {
+    return this.dstEndPt;
+  }
 
   public toString(): string {
     return `${this.srcEndPt} ${this.srcArrow}-${this.dstArrow} ${this.dstEndPt
@@ -280,24 +378,9 @@ class d2Edge extends d2Range {
   }
 }
 
-class d2Edges {
-  constructor(edges: LSPAny) {
-    for (const edge of edges) {
-      this.edges.push(new d2Edge(edge));
-    }
-  }
-
-  edges: d2Edge[] = [];
-
-  public toString(): string {
-    let strRet = "";
-    for (const e of this.edges) {
-      strRet += e.toString() + "\n";
-    }
-    return strRet;
-  }
-}
-
+/**
+ * 
+ */
 class d2Node extends d2Range {
   constructor(n: LSPAny) {
     super(n.map_key.range);
@@ -305,7 +388,9 @@ class d2Node extends d2Range {
     if (n.map_key.key) {
       this.key = new d2Key(n.map_key.key);
     } else if (n.map_key.edges) {
-      this.edges = new d2Edges(n.map_key.edges);
+      for (const edge of n.map_key.edges) {
+        this.edges.push(new d2Edge(edge));
+      }
     }
 
     this.primary = new d2Primary(n.map_key.primary);
@@ -326,7 +411,7 @@ class d2Node extends d2Range {
   private primary: d2Primary | undefined;
   private value: d2NodeValue | d2Value | d2Import | undefined;
 
-  private edges: d2Edges | undefined;
+  private edges: d2Edge[] = [];
 
   /**
    * Properties
@@ -341,12 +426,20 @@ class d2Node extends d2Range {
     return undefined;
   }
 
-  get isEdge(): boolean {
-    return Boolean(this.edges);
+  get hasEdges(): boolean {
+    return Boolean(this.edges.length > 0);
   }
 
-  get isKeyVal(): boolean {
+  get Edges(): d2Edge[] {
+    return this.edges;
+  }
+
+  get hasKey(): boolean {
     return Boolean(this.key);
+  }
+
+  get Key(): d2Key | undefined {
+    return this.key;
   }
 
   get hasPrimary(): boolean {
@@ -383,9 +476,19 @@ class d2Node extends d2Range {
 
   public toString(): string {
     let strRet = `\nNODE: ${super.toString()}\n----\n`;
-    strRet += this.isKeyVal ? `${this.key?.toString()}\n` : `${this.edges?.toString()}\n`;
-    strRet += this.hasPrimary ? `${this.primary?.toString()}\n` : "";
-    strRet += this.hasValue ? `${this.value?.toString()}\n` : "\n";
+    
+    if (this.hasKey) {
+      strRet += `${this.key?.toString()}`;
+    } else if (this.hasEdges) {
+        let s = `\nEdges\n-----\n`;
+        for (const edge of this.edges) {
+          s += `${edge.toString()}\n`;
+        }
+        strRet += s + "\n";
+    }
+
+    strRet += this.hasPrimary ? `Primary: ${this.primary?.toString()}\n` : "";
+    strRet += this.hasValue ? `Value: ${this.value?.toString()}\n` : "\n";
     strRet += "\n";
     return strRet;
   }

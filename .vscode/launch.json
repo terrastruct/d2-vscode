@@ -1,10 +1,23 @@
 {
   "version": "0.2.0",
+
+  "compounds": [
+    {
+      "name": "Server/Client",
+      "configurations": ["Attach to Server", "Launch Extension"],
+      "stopAll": true
+    }
+  ],
   "configurations": [
     {
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}"
-      ],
+      "name": "Attach to Server",
+      "port": 6009,
+      "request": "attach",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "name": "Launch Extension",
       "outFiles": [
         "${workspaceFolder}/dist/**/*.js",
