@@ -13,7 +13,6 @@ import {
   ReferenceParams,
   Location,
   RenameParams,
-  // TextEdit,
   WorkspaceEdit,
   PrepareRenameParams,
   Range,
@@ -23,6 +22,8 @@ import {
   CompletionParams,
   CompletionList,
   CompletionItem,
+  TextEdit,
+  DefinitionParams,
 } from "vscode-languageserver/node";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
@@ -73,6 +74,7 @@ connection.onInitialize((params: InitializeParams) => {
         triggerCharacters: [".", ":", "@"],
         resolveProvider: true,
       },
+      definitionProvider: true,
     },
     serverInfo: {
       name: "D2 Language Server",
@@ -82,6 +84,71 @@ connection.onInitialize((params: InitializeParams) => {
 
   return result;
 });
+/*
+ * Pickup on configuration changes of the client
+ */
+connection.onDidChangeConfiguration((change) => {
+  // We'll use the path to D2 so we don't get divergent
+  // functionality using two different d2 binaries.
+  d2ExePath = change.settings.D2.execPath;
+  connection.console.info(`Language Server D2 path: ${d2ExePath}`);
+});
+
+/**
+ * The content of a text document has changed. This event is emitted
+ * when the text document first opened or when its content has changed.
+ */
+documents.onDidChangeContent((change) => {
+  console.log(`Change: ${change.document.uri}`);
+
+
+  cwd = path.dirname(change.document.uri);
+  const baseDir = URI.parse(cwd).fsPath;
+
+  const args: string[] = ["-"];
+
+  /**
+   * Run D2 in the special "D2_LSP_MODE" mode.
+   */
+  const proc = spawnSync(d2ExePath, args, {
+    input: change.document.getText(),
+    encoding: "utf-8",
+    maxBuffer: 1024 * 1024 * 2,
+    cwd: baseDir,
+    env: { ...process.env, D2_LSP_MODE: "1" },
+  });
+
+  // Pass error back to the client
+  if (proc.pid === 0) {
+    connection.window.showErrorMessage(
+      `Could not find D2 executable! Path: '${d2ExePath}'`
+    );
+    return;
+  }
+
+  const start = Date.now();
+
+  // Reset Document Data and Parse out the json from the D2 program
+  astData = new AstReader(proc.stdout);
+
+  const end = Date.now();
+  // Debug
+  // astData.dump();
+  console.log(`\n\nAST Read Time: ${end - start} ms`);
+
+  /**
+   * Handle any errors.
+   */
+  const eret = astData.Errors;
+
+  // Clear Errors
+  connection.sendDiagnostics({ uri: change.document.uri, diagnostics: [] });
+  if (eret) {
+    eret.uri = change.document.uri;
+    connection.sendDiagnostics(eret);
+  }
+});
+
 
 /**
  *
@@ -140,94 +207,58 @@ connection.onDocumentLinks((): DocumentLink[] => {
   return retLinks;
 });
 
-/*
- * Pickup on configuration changes of the client
- */
-connection.onDidChangeConfiguration((change) => {
-  // We'll use the path to D2 so we don't get divergent
-  // functionality using two different d2 binaries.
-  d2ExePath = change.settings.D2.execPath;
-  connection.console.info(`Language Server D2 path: ${d2ExePath}`);
-});
-
 /**
- * The content of a text document has changed. This event is emitted
- * when the text document first opened or when its content has changed.
+ * 
  */
-documents.onDidChangeContent((change) => {
-  console.log(`Change: ${change.document.uri}`);
+connection.onDefinition((params: DefinitionParams): Location[] => {
+  console.log(`onDefinition: ${JSON.stringify(params)}`);
+  const ref = astData.refAtPosition(params.position);
+  if (ref) {
+    const refs = astData.findAllMatchingReferences(ref);
 
+    const locs: Location[] = [];
 
-  cwd = path.dirname(change.document.uri);
-  const baseDir = URI.parse(cwd).fsPath;
+    for (const r of refs) {
+      if (!r.isRangeEqual(ref)) {
+        locs.push(Location.create(params.textDocument.uri, r.Range));
+      }
+    }
 
-  const args: string[] = ["-"];
-
-  /**
-   * Run D2 in the special "D2_LSP_MODE" mode.
-   */
-  const proc = spawnSync(d2ExePath, args, {
-    input: change.document.getText(),
-    encoding: "utf-8",
-    maxBuffer: 1024 * 1024 * 2,
-    cwd: baseDir,
-    env: { ...process.env, D2_LSP_MODE: "1" },
-  });
-
-  // Pass error back to the client
-  if (proc.pid === 0) {
-    connection.window.showErrorMessage(
-      `Could not find D2 executable! Path: '${d2ExePath}'`
-    );
-    return;
+    return locs;
   }
 
-  const start = Date.now();
-
-  // Reset Document Data and Parse out the json from the D2 program
-  astData = new AstReader(proc.stdout);
-
-  const end = Date.now();
-  // Debug
-  astData.dump();
-  console.log(`\n\nAST Read Time: ${end - start} ms`);
-
-  /**
-   * Handle any errors.
-   */
-  const eret = astData.Errors;
-
-  // Clear Errors
-  connection.sendDiagnostics({ uri: change.document.uri, diagnostics: [] });
-  if (eret) {
-    eret.uri = change.document.uri;
-    connection.sendDiagnostics(eret);
-  }
+  return [];
 });
 
 /**
  * Produce the edits needed to rename a node
  */
 connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
-  // const locs  = astData.FindReferencesAtLocation(
-  //   params.position,
-  //   params.textDocument
-  // );
+  console.log(`Rename: ${JSON.stringify(params)}`);
+  const ref = astData.refAtPosition(params.position);
+  console.log(`  ref: ${JSON.stringify(ref)}`);
 
   const workspaceChanges: WorkspaceEdit = {};
-  workspaceChanges.documentChanges = [];
 
-  const ed = TextDocumentEdit.create(
-    OptionalVersionedTextDocumentIdentifier.create(params.textDocument.uri, 0),
-    []
-  );
-  ed.edits = [];
+  if (ref) {
+    const refs = astData.findAllMatchingReferences(ref);
 
-  // for (const l of locs) {
-  //   ed.edits.push(TextEdit.replace(l.range, params.newName));
-  // }
+    if (refs) {
+      workspaceChanges.documentChanges = [];
 
-  workspaceChanges.documentChanges = [ed];
+      const ed = TextDocumentEdit.create(
+        OptionalVersionedTextDocumentIdentifier.create(params.textDocument.uri, 0),
+        []
+      );
+      ed.edits = [];
+
+      for (const l of refs) {
+        ed.edits.push(TextEdit.replace(l.Range, params.newName));
+      }
+
+      workspaceChanges.documentChanges = [ed];
+    }
+  }
 
   return workspaceChanges;
 });
@@ -237,16 +268,17 @@ connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
  */
 connection.onPrepareRename(
   (params: PrepareRenameParams): Range | { defaultBehavior: boolean } => {
-    // const r = astData.GetRangeFromLocation(params.position);
-    // if (r) {
-    //   return r;
-    // }
-
+    console.log(`onPrepareRename: ${JSON.stringify(params)}`);
+    const ref = astData.refAtPosition(params.position);
+    if (ref) {
     // This is where the edit control will be placed for
     // the rename parameter.  It appears to only work when the
     // symbol to be renamed is selected by this range.  A zero,
     // "length" range will cause onRenameRequest to not be called.
-    return { start: params.position, end: params.position };
+      return ref.Range;
+    }
+
+    return { defaultBehavior: false }
   }
 );
 
@@ -255,8 +287,20 @@ connection.onPrepareRename(
  * for the symbol under the caret
  */
 connection.onReferences((params: ReferenceParams): Location[] => {
-  console.log(JSON.stringify(params, null, 2));
-  // return astData.FindReferencesAtLocation(params.position, params.textDocument);
+  // console.log(JSON.stringify(params, null, 2));
+  const ref = astData.refAtPosition(params.position);
+  if (ref) {
+    const refs = astData.findAllMatchingReferences(ref);
+
+    const locs: Location[] = [];
+
+    for (const r of refs) {
+      locs.push(Location.create(params.textDocument.uri, r.Range));
+    }
+
+    return locs;
+  }
+  
   return [];
 });
 
