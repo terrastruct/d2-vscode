@@ -1,6 +1,5 @@
 /**
  * D2 Language Server
- *
  */
 
 import {
@@ -26,18 +25,19 @@ import {
   DefinitionParams,
 } from "vscode-languageserver/node";
 
-import { TextDocument } from "vscode-languageserver-textdocument";
-import { spawnSync } from "child_process";
 import URI from "vscode-uri";
-
 import path = require("path");
 
+import { TextDocument } from "vscode-languageserver-textdocument";
+import { spawnSync } from "child_process";
 import { AstReader } from "./d2Ast";
 import { CompletionHelper } from "./completionHelpers";
 
 // Holder of all parsed output from the D2 program
 //
 let astData: AstReader;
+
+// Current Working Directory
 let cwd: string;
 
 export let d2ExePath = "d2";
@@ -52,7 +52,7 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 /**
  * Called when the server starts
  */
-connection.onInitialize((params: InitializeParams) => {
+connection.onInitialize((params: InitializeParams): InitializeResult => {
   connection.console.log("\n***************************");
   connection.console.log("D2 Language Server Starting\n");
   connection.console.log(`Client:  ${params.clientInfo?.name}`);
@@ -60,6 +60,8 @@ connection.onInitialize((params: InitializeParams) => {
   connection.console.log(`PID:     ${params.processId}`);
   connection.console.log("***************************\n");
 
+  // This is what the server supports
+  //
   const result: InitializeResult = {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Full,
@@ -84,10 +86,11 @@ connection.onInitialize((params: InitializeParams) => {
 
   return result;
 });
+
 /*
  * Pickup on configuration changes of the client
  */
-connection.onDidChangeConfiguration((change) => {
+connection.onDidChangeConfiguration((change): void => {
   // We'll use the path to D2 so we don't get divergent
   // functionality using two different d2 binaries.
   d2ExePath = change.settings.D2.execPath;
@@ -98,14 +101,17 @@ connection.onDidChangeConfiguration((change) => {
  * The content of a text document has changed. This event is emitted
  * when the text document first opened or when its content has changed.
  */
-documents.onDidChangeContent((change) => {
-  console.log(`Change: ${change.document.uri}`);
-
-
+documents.onDidChangeContent((change): void => {
+  // Save the current working directory, which is where
+  // the D2 document is
   cwd = path.dirname(change.document.uri);
-  const baseDir = URI.parse(cwd).fsPath;
+  const cwDir = URI.parse(cwd).fsPath;
 
+  // Run D2 in the stdin/stdout mode
+  //
   const args: string[] = ["-"];
+
+  const startHr = performance.now();
 
   /**
    * Run D2 in the special "D2_LSP_MODE" mode.
@@ -114,7 +120,7 @@ documents.onDidChangeContent((change) => {
     input: change.document.getText(),
     encoding: "utf-8",
     maxBuffer: 1024 * 1024 * 2,
-    cwd: baseDir,
+    cwd: cwDir,
     env: { ...process.env, D2_LSP_MODE: "1" },
   });
 
@@ -125,16 +131,14 @@ documents.onDidChangeContent((change) => {
     );
     return;
   }
-
-  const start = Date.now();
-
+  
   // Reset Document Data and Parse out the json from the D2 program
   astData = new AstReader(proc.stdout);
 
-  const end = Date.now();
+  const hrTime = performance.now() - startHr;
+
   // Debug
-  // astData.dump();
-  console.log(`\n\nAST Read Time: ${end - start} ms`);
+  console.log(`AST Read Time: ${hrTime.toFixed(4)} ms`);
 
   /**
    * Handle any errors.
@@ -149,15 +153,10 @@ documents.onDidChangeContent((change) => {
   }
 });
 
-
 /**
- *
+ * If a trigger character is pressed, this is called
  */
 connection.onCompletion((params: CompletionParams): CompletionList => {
-  console.log(
-    `onCompletion (${params.context?.triggerCharacter}): ` + JSON.stringify(params)
-  );
-
   switch (params.context?.triggerCharacter) {
     case "@":
       return CompletionHelper.doImport(cwd, params.textDocument.uri);
@@ -170,7 +169,6 @@ connection.onCompletion((params: CompletionParams): CompletionList => {
 
     case undefined:
       return CompletionHelper.doOpenSpace();
-
   }
 
   return CompletionList.create([], false);
@@ -180,8 +178,6 @@ connection.onCompletion((params: CompletionParams): CompletionList => {
  * May not need this
  */
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-  console.log("\nonCompletionResolve: " + JSON.stringify(item, null, 2) + "\n");
-
   return item;
 });
 
@@ -194,11 +190,13 @@ connection.onDocumentLinks((): DocumentLink[] => {
   for (const link of astData.LinksAndImports) {
     const docLink = DocumentLink.create(link.Range);
 
-    let docPath = link.strValue.replace(/['|"]/g, "");
+    let docPath = link.str.replace(/['|"]/g, "");
 
     // If '.d2' is there, get rid of it.
     docPath = path.basename(docPath, ".d2");
 
+    // Now put it back, this way 'foo' => 'foo.d2'
+    // and 'foo.d2' => 'foo.d2'
     docLink.target = path.join(cwd, docPath + ".d2");
 
     retLinks.push(docLink);
@@ -208,37 +206,32 @@ connection.onDocumentLinks((): DocumentLink[] => {
 });
 
 /**
- * 
+ * Goto Definition
  */
 connection.onDefinition((params: DefinitionParams): Location[] => {
-  console.log(`onDefinition: ${JSON.stringify(params)}`);
+  const locs: Location[] = [];
+
   const ref = astData.refAtPosition(params.position);
   if (ref) {
     const refs = astData.findAllMatchingReferences(ref);
-
-    const locs: Location[] = [];
 
     for (const r of refs) {
       if (!r.isRangeEqual(ref)) {
         locs.push(Location.create(params.textDocument.uri, r.Range));
       }
     }
-
-    return locs;
   }
 
-  return [];
+  return locs;
 });
 
 /**
  * Produce the edits needed to rename a node
  */
 connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
-  console.log(`Rename: ${JSON.stringify(params)}`);
-  const ref = astData.refAtPosition(params.position);
-  console.log(`  ref: ${JSON.stringify(ref)}`);
-
   const workspaceChanges: WorkspaceEdit = {};
+
+  const ref = astData.refAtPosition(params.position);
 
   if (ref) {
     const refs = astData.findAllMatchingReferences(ref);
@@ -264,44 +257,41 @@ connection.onRenameRequest((params: RenameParams): WorkspaceEdit => {
 });
 
 /**
- * Called before onRenameRequest to position the rename edit control
+ * Called before onRenameRequest to position
+ * the rename edit control
  */
 connection.onPrepareRename(
   (params: PrepareRenameParams): Range | { defaultBehavior: boolean } => {
-    console.log(`onPrepareRename: ${JSON.stringify(params)}`);
     const ref = astData.refAtPosition(params.position);
     if (ref) {
-    // This is where the edit control will be placed for
-    // the rename parameter.  It appears to only work when the
-    // symbol to be renamed is selected by this range.  A zero,
-    // "length" range will cause onRenameRequest to not be called.
+      // This is where the edit control will be placed for
+      // the rename parameter.  It appears to only work when the
+      // symbol to be renamed is selected by this range.  A zero,
+      // "length" range will cause onRenameRequest to not be called.
       return ref.Range;
     }
 
-    return { defaultBehavior: false }
+    return { defaultBehavior: false };
   }
 );
 
 /**
- * When, "show all references", is choosen, this returns all references
- * for the symbol under the caret
+ * When, "show all references", is choosen, this
+ * returns all references for the symbol under the caret
  */
 connection.onReferences((params: ReferenceParams): Location[] => {
-  // console.log(JSON.stringify(params, null, 2));
+  const locs: Location[] = [];
+
   const ref = astData.refAtPosition(params.position);
   if (ref) {
     const refs = astData.findAllMatchingReferences(ref);
 
-    const locs: Location[] = [];
-
     for (const r of refs) {
       locs.push(Location.create(params.textDocument.uri, r.Range));
     }
-
-    return locs;
   }
-  
-  return [];
+
+  return locs;
 });
 
 /**

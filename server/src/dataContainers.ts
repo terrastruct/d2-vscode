@@ -39,6 +39,7 @@ export class d2Range {
   endColumn = 0;
   endByte = 0;
 
+  // Are two ranges equal
   public isRangeEqual(r: d2Range | undefined): boolean {
     if (
       r &&
@@ -52,46 +53,35 @@ export class d2Range {
     return false;
   }
 
+  // Is the position withen the range
   public isPositionInRange(pos: Position): boolean {
-    if (pos.line >= this.startLine &&
+    if (
+      pos.line >= this.startLine &&
       pos.line <= this.endLine &&
       pos.character >= this.startColumn &&
-      pos.character <= this.endColumn) {
+      pos.character <= this.endColumn
+    ) {
       return true;
     }
     return false;
   }
-
-  public toString(): string {
-    return `${this.fileName} : (${this.startLine},${this.startColumn},${this.startByte}):(${this.endLine},${this.endColumn},${this.endByte})`;
-  }
-
+  
+  // Filename the range is describing
   get FileName(): string {
     return this.fileName;
   }
 
-  set FileName(s: string) {
-    this.fileName = s;
-  }
-
+  // Start Position of the Range
   get StartPosition(): Position {
     return Position.create(this.startLine, this.startColumn);
   }
 
-  set StartPosition(p: Position) {
-    this.startLine = p.line;
-    this.startColumn = p.character;
-  }
-
+  // End Position of the Range
   get EndPosition(): Position {
     return Position.create(this.endLine, this.endColumn);
   }
 
-  set EndPosition(p: Position) {
-    this.endLine = p.line;
-    this.endColumn = p.character;
-  }
-
+  // Convert from a D2 range to vscode range
   get Range(): Range {
     return Range.create(this.StartPosition, this.EndPosition);
   }
@@ -107,14 +97,20 @@ export class d2Error extends d2Range {
     const rg = new RegExp(/^(.*?):(\d+):(\d+):(\s+)(.*)$/g).exec(e.errmsg);
     this.msg = rg !== null ? rg[5] : "Unknown Error";
 
-    this.severity = DiagnosticSeverity.Error;
+    this.sev = DiagnosticSeverity.Error;
   }
 
-  msg: string;
-  severity: DiagnosticSeverity;
+  private msg: string;
+  private sev: DiagnosticSeverity;
 
-  public toString(): string {
-    return `Err: ${this.msg} - ${super.toString()}`;
+  // Error message
+  get message() {
+    return this.msg;
+  }
+
+  // Error severity
+  get severity() {
+    return this.sev;
   }
 }
 
@@ -127,16 +123,16 @@ export class d2StringAndRange extends d2Range {
     this.strValue = s || "";
   }
 
-  strValue: string;
+  private strValue: string;
 
-  public toString(): string {
-    return `${this.strValue.toString()} : ${super.toString()}`;
+  // String value
+  get str() {
+    return this.strValue;
   }
 }
 
-
 /**
- * 
+ * Complete path of a node
  */
 export class d2Path {
   constructor(paths: LSPAny[]) {
@@ -147,14 +143,17 @@ export class d2Path {
 
   private pathList: d2Value[] = [];
 
+  // returns the complete path
   get list(): d2Value[] {
     return this.pathList;
   }
 
+  // Is this only a node, with an empty path
   get isNodeOnly(): boolean {
     return this.pathList.length === 1;
   }
 
+  // First item in the list, could be called 'node'
   get first(): d2Value | undefined {
     const l = this.pathList.length;
     if (l > 0) {
@@ -164,6 +163,7 @@ export class d2Path {
     return undefined;
   }
 
+  // last path item
   get last(): d2Value | undefined {
     const l = this.pathList.length;
     if (l > 0) {
@@ -172,18 +172,10 @@ export class d2Path {
 
     return undefined;
   }
-
-  public toString(): string {
-    const s: string[] = [];
-    for (const path of this.pathList) {
-      s.push(path.value?.strValue || "-");
-    }
-    return `${s.join(".")}`;
-  }
 }
 
 /**
- * 
+ * Primary value (used for some nodes)
  */
 export class d2Primary {
   constructor(p: LSPAny) {
@@ -198,14 +190,10 @@ export class d2Primary {
     }
     return false;
   }
-
-  public toString(): string {
-    return `${this.primary}`;
-  }
 }
 
 /**
- * 
+ * Key in a node
  */
 export class d2Key extends d2Range {
   constructor(k: LSPAny) {
@@ -215,28 +203,26 @@ export class d2Key extends d2Range {
 
   public readonly path: d2Path;
 
+  get key(): d2StringAndRange | undefined {
+    return this.path.first?.value;
+  }
+
+  // Is this key a link?
   get isLink(): boolean {
-    if (this.path.last?.value?.strValue === 'link') {
+    if (this.path.last?.value?.str === "link") {
       return true;
     }
     return false;
   }
 
+  // Does this key have a path
   get hasPath(): boolean {
     return Boolean(this.path.first);
-  }
-
-  get key(): d2StringAndRange | undefined {
-    return this.path.first?.value;
-  }
-
-  public toString(): string {
-    return `${this.path.toString()} : ${super.toString()}`;
   }
 }
 
 /**
- * 
+ * Describes a nodes value
  */
 export class d2Value extends d2Range {
   constructor(v: LSPAny) {
@@ -246,6 +232,7 @@ export class d2Value extends d2Range {
 
   private val: d2StringAndRange | undefined;
 
+  // Get the value
   get value(): d2StringAndRange | undefined {
     return this.val;
   }
@@ -259,7 +246,6 @@ export class d2Value extends d2Range {
      */
     // if (typeof value === "string" || value?.block_string) {
     //     const strAndR: d2StringAndRange = this.getStringAndRange(value);
-    //     console.log(`SB      -> ${strAndR}`);
     // }
 
     let valRet;
@@ -289,36 +275,29 @@ export class d2Value extends d2Range {
 
     return valRet;
   }
-
-  public toString(): string {
-    return `${this.val} : ${super.toString()}`;
-  }
 }
 
 /**
- * 
+ * Nodes within a node
  */
 export class d2NodeValue extends d2Range {
   constructor(nv: LSPAny) {
     super(nv.range);
     for (const node of nv.nodes) {
-      this.nodes.push(new d2Node(node));
+      this.nodeValues.push(new d2Node(node));
     }
   }
 
-  nodes: d2Node[] = [];
+  private nodeValues: d2Node[] = [];
 
-  public toString(): string {
-    let strRet = "";
-    for (const n of this.nodes) {
-      strRet += n.toString() + "\n";
-    }
-    return `${strRet} : ${super.toString()}`;
+  get nodes() {
+    return this.nodeValues;
   }
+
 }
 
 /**
- * 
+ * A D2 Import, which is like a node, but isn't
  */
 export class d2Import extends d2Range {
   constructor(i: LSPAny) {
@@ -327,14 +306,10 @@ export class d2Import extends d2Range {
   }
 
   path: d2Path;
-
-  public toString(): string {
-    return `${this.path} : ${super.toString()}`;
-  }
 }
 
 /**
- * 
+ * An edge endpoint (eg. a -> b, 'a' and 'b' are both endpoints)
  */
 export class d2EdgeEndpoint extends d2Range {
   constructor(ep: LSPAny) {
@@ -347,14 +322,10 @@ export class d2EdgeEndpoint extends d2Range {
   get edgeNode(): d2StringAndRange | undefined {
     return this.path.first?.value;
   }
-
-  public toString(): string {
-    return `${this.path} : ${super.toString()}`;
-  }
 }
 
 /**
- * 
+ * Describes a D2 edge, which is two edge endpoints
  */
 export class d2Edge extends d2Range {
   constructor(edge: LSPAny) {
@@ -379,15 +350,10 @@ export class d2Edge extends d2Range {
   get dst(): d2EdgeEndpoint {
     return this.dstEndPt;
   }
-
-  public toString(): string {
-    return `${this.srcEndPt} ${this.srcArrow}-${this.dstArrow} ${this.dstEndPt
-      } : ${super.toString()}`;
-  }
 }
 
 /**
- * 
+ * A D2 node
  */
 export class d2Node extends d2Range {
   constructor(n: LSPAny) {
@@ -413,7 +379,7 @@ export class d2Node extends d2Range {
   }
 
   /**
-   * 
+   * Node values to keep track of
    */
   private key: d2Key | undefined;
   private primary: d2Primary | undefined;
@@ -434,26 +400,32 @@ export class d2Node extends d2Range {
     return undefined;
   }
 
+  // Node has edges
   get hasEdges(): boolean {
     return Boolean(this.edges.length > 0);
   }
 
+  // List of edges
   get Edges(): d2Edge[] {
     return this.edges;
   }
 
+  // Node has a key
   get hasKey(): boolean {
     return Boolean(this.key);
   }
 
+  // The nodes key
   get Key(): d2Key | undefined {
     return this.key;
   }
 
+  // Node has a primary
   get hasPrimary(): boolean {
     return Boolean(this.primary?.hasValue);
   }
 
+  // Node has a value
   get hasValue(): boolean {
     if (!this.value) {
       return false;
@@ -474,30 +446,19 @@ export class d2Node extends d2Range {
     return false;
   }
 
+  // Is the node an Import
   get isImport(): boolean {
     return this.value instanceof d2Import;
   }
 
+  // Is the node a Link
   get isLink(): boolean {
     return Boolean(this.key?.isLink);
   }
-
-  public toString(): string {
-    let strRet = `\nNODE: ${super.toString()}\n----\n`;
-
-    if (this.hasKey) {
-      strRet += `${this.key?.toString()}`;
-    } else if (this.hasEdges) {
-      let s = `\nEdges\n-----\n`;
-      for (const edge of this.edges) {
-        s += `${edge.toString()}\n`;
-      }
-      strRet += s + "\n";
-    }
-
-    strRet += this.hasPrimary ? `Primary: ${this.primary?.toString()}\n` : "";
-    strRet += this.hasValue ? `Value: ${this.value?.toString()}\n` : "\n";
-    strRet += "\n";
-    return strRet;
-  }
 }
+
+/**
+ ***********************
+ * END OF FILE
+ ***********************
+ */

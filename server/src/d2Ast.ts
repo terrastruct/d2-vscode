@@ -1,6 +1,10 @@
 /**
- * 
+ * Used to take the ast JSON that is produced by the D2
+ * command line tool and form it into something the 
+ * autocompletion and definition/reference/rename 
+ * capabilities can use.
  */
+
 import {
   Diagnostic,
   DiagnosticSeverity,
@@ -8,31 +12,36 @@ import {
   PublishDiagnosticsParams,
 } from "vscode-languageserver";
 
-import {
-  d2Node,
-  d2Range,
-  d2StringAndRange
-} from "./dataContainers";
+import { d2Node, d2Range, d2StringAndRange } from "./dataContainers";
 import { Position } from "vscode-languageserver-textdocument";
 
 /**
- * 
+ * AstReader class.  Takes the returned json text and
+ * forms usable data for the language server
  */
 export class AstReader {
   constructor(astStr: string) {
     this.d2Info = JSON.parse(astStr);
     this.range = this.d2Info.Ast.range;
-    // console.log(JSON.stringify(this.d2Info, null, 2));
+
     this.doNodes(this.d2Info.Ast.nodes);
   }
 
   /**
-   * 
+   * Storage for class data
    */
-  private range: d2Range;
+  private range: d2Range; 
   private d2Info: LSPAny;
   private nodes: d2Node[] = [];
+  private references: d2StringAndRange[] | undefined;
 
+  /**
+   * Returns errors for the 'problems' window from any
+   * errors produced during AST creation. This leaves a 
+   * blind spot for errors that are created during IR,
+   * since that phase isn't used by the language server
+   * to save compute time.
+   */
   get Errors(): PublishDiagnosticsParams | undefined {
     const diags: Diagnostic[] = [];
 
@@ -44,11 +53,7 @@ export class AstReader {
         const msg = rg !== null ? rg[5] : "Unknown Error";
 
         diags.push(
-          Diagnostic.create(
-            new d2Range(e.range).Range,
-            msg,
-            DiagnosticSeverity.Error
-          )
+          Diagnostic.create(new d2Range(e.range).Range, msg, DiagnosticSeverity.Error)
         );
       }
     }
@@ -56,7 +61,8 @@ export class AstReader {
   }
 
   /**
-   * 
+   * Returns the list of links and imports to they can
+   * be rendered in the editor
    */
   get LinksAndImports(): d2StringAndRange[] {
     const rngRet: d2StringAndRange[] = [];
@@ -72,17 +78,17 @@ export class AstReader {
     return rngRet;
   }
 
-  private references: d2StringAndRange[] | undefined;
-
   /**
-   * 
+   * Find all references, which is the sum of nodes and
+   * edges.  Since this may be used in multiple contexts,
+   * the values are cached so this loop doesn't have to run
+   * multiple times.
    */
   get References(): d2StringAndRange[] {
     if (!this.references) {
       this.references = [];
 
       for (const node of this.nodes) {
-
         // Edges
         //
         if (node.hasEdges) {
@@ -108,20 +114,20 @@ export class AstReader {
   }
 
   /**
-   * 
+   * Given a reference, return all references that are the same
    */
-  public findAllMatchingReferences(ref: d2StringAndRange) : d2StringAndRange[] {
+  public findAllMatchingReferences(ref: d2StringAndRange): d2StringAndRange[] {
     const retArray: d2StringAndRange[] = [];
     for (const r of this.References) {
-      if (r.strValue === ref.strValue) {
+      if (r.str === ref.str) {
         retArray.push(r);
       }
     }
     return retArray;
   }
-  
+
   /**
-   * 
+   * Of all the references, which one is at the given position
    */
   public refAtPosition(pos: Position): d2StringAndRange | undefined {
     for (const r of this.References) {
@@ -133,7 +139,7 @@ export class AstReader {
   }
 
   /**
-   * 
+   * Get's the node that is at the given position
    */
   public nodeAtPosition(pos: Position): d2Node | undefined {
     for (const n of this.nodes) {
@@ -143,25 +149,21 @@ export class AstReader {
     }
     return undefined;
   }
-  
+
   /**
-   * 
+   * Go through all the ast's node objects and break them
+   * apart to be used by the language server
    */
   private doNodes(nodes: LSPAny[]) {
     for (const node of nodes || []) {
-      // console.log("---------------------------------")
-      // console.log(JSON.stringify(node, null, 2));
-      // console.log("---------------------------------")
       const n = new d2Node(node);
       this.nodes.push(n);
     }
   }
-
-  dump(): void {
-    console.log(`\n---------\nASTREADER: ${this.range.toString()}\n---------\n`);
-
-    for (const n of this.nodes) {
-      console.log(n.toString());
-    }
-  }
 }
+
+/**
+ ***********************
+ * END OF FILE
+ ***********************
+ */

@@ -1,6 +1,15 @@
+/**
+ * Utility functions for the language server
+ *
+ */
+
 import { readdirSync, statSync } from "fs";
 import path = require("path");
 
+/**
+ * Given a directory, finds all d2 files in that directory
+ * and all sub-directorys
+ */
 export function getD2Files(dir: string, files: string[] = []): string[] {
   // Get an array of all files and directories in the passed directory using fs.readdirSync
   const fileList = readdirSync(dir);
@@ -12,6 +21,7 @@ export function getD2Files(dir: string, files: string[] = []): string[] {
       // If it is a directory, recursively call the getFiles function with the directory path and the files array
       getD2Files(name, files);
     } else {
+      // Don't show any non-d2 files
       const ext: string = path.extname(name);
       if (ext.toLowerCase() !== ".d2") {
         continue;
@@ -23,3 +33,9 @@ export function getD2Files(dir: string, files: string[] = []): string[] {
   }
   return files;
 }
+
+/**
+ ***********************
+ * END OF FILE
+ ***********************
+ */

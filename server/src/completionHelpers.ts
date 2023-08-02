@@ -1,5 +1,5 @@
 /**
- *
+ * Helper class for code completion
  */
 
 import {
@@ -8,7 +8,7 @@ import {
   CompletionList,
   InsertTextFormat,
   InsertTextMode,
-  Position
+  Position,
 } from "vscode-languageserver";
 
 import path = require("path");
@@ -24,17 +24,11 @@ import { ItemTree } from "./completionTree";
  */
 export class CompletionHelper {
   /**
-   * 
-   * @param dir 
-   * @param currentFile 
-   * @returns 
+   *
    */
   static doImport(dir: string, currentFile: string): CompletionList {
-    console.log("Current File : " + currentFile);
     const dirToScan = URI.parse(dir).fsPath;
     const curFileShort = path.parse(URI.parse(currentFile).fsPath).name;
-    console.log(`Ignore       : ${curFileShort}`);
-    console.log(`DirToScan    : ${dirToScan}`);
     const files = getD2Files(dirToScan);
     const compFiles: CompletionItem[] = [];
 
@@ -51,7 +45,7 @@ export class CompletionHelper {
       const ci = CompletionItem.create(file);
       ci.kind = CompletionItemKind.File;
       ci.commitCharacters = ["\t"];
-      ci.labelDetails = { description: `${fiSize}  ${fiDate}` }
+      ci.labelDetails = { description: `${fiSize}  ${fiDate}` };
 
       compFiles.push(ci);
     }
@@ -60,7 +54,7 @@ export class CompletionHelper {
   }
 
   /**
-   * 
+   *
    */
   static doAttribute(astData: AstReader, pos: Position): CompletionList {
     // Move position back one character to get node *before* trigger character
@@ -74,13 +68,13 @@ export class CompletionHelper {
     // eslint-disable-next-line no-template-curly-in-string
     ci.insertText = " {\n\t${0}\n}";
     ci.kind = CompletionItemKind.Snippet;
-    ci.insertTextFormat = InsertTextFormat.Snippet
+    ci.insertTextFormat = InsertTextFormat.Snippet;
     ci.insertTextMode = InsertTextMode.adjustIndentation;
     ci.commitCharacters = ["\t"];
     cis.push(ci);
 
     const vals = ItemTree.getValueFromPath(node?.Key?.path);
-    
+
     for (const v of vals) {
       const item = CompletionItem.create(v);
       item.kind = CompletionItemKind.Property;
@@ -93,7 +87,7 @@ export class CompletionHelper {
   }
 
   /**
-   * 
+   *
    */
   static doDot(astData: AstReader, pos: Position): CompletionList {
     const compItems: CompletionItem[] = [];
@@ -118,7 +112,7 @@ export class CompletionHelper {
 
   /**
    *
-   * 
+   *
    */
   static doOpenSpace(): CompletionList {
     const compItems: CompletionItem[] = [];
@@ -130,3 +124,9 @@ export class CompletionHelper {
     return CompletionList.create(compItems, false);
   }
 }
+
+/**
+ ***********************
+ * END OF FILE
+ ***********************
+ */
