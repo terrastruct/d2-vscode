@@ -146,7 +146,7 @@
           "default": "default",
           "enum": [
             "default",
-            "Neutral grey",
+            "Neutral gray",
             "Flagship Terrastruct",
             "Cool classics",
             "Mixed berry blue",
