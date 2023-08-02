@@ -10,13 +10,13 @@
       "include": "#semicolon"
     },
     {
-      "include": "#key_value"
-    },
-    {
       "include": "#spread_substitution"
     },
     {
       "include": "#spread_import"
+    },
+    {
+      "include": "#key_value"
     },
     {
       "include": "#key"
@@ -356,8 +356,8 @@
           "name": "keyword.operator.substitution.d2"
         }
       },
-      "begin": "\\$",
-      "end": "(?=\\s*[\\n#;\\[\\]{}|$])",
+      "begin": "\\$\\{",
+      "end": "}(?=\\s*[\\n#;\\[\\]{}|$])",
       "patterns": [
         {
           "include": "#key"
@@ -386,8 +386,8 @@
           "name": "keyword.operator.substitution.d2"
         }
       },
-      "begin": "\\.\\.\\.\\$",
-      "end": "(?=\\s*[\\n#;\\[\\]{}|$])",
+      "begin": "\\.\\.\\.\\$\\{",
+      "end": "}(?=\\s*[\\n#;\\[\\]{}|$])",
       "patterns": [
         {
           "include": "#key"
@@ -424,6 +424,9 @@
         },
         {
           "include": "#semicolon"
+        },
+        {
+          "include": "#substitution"
         },
         {
           "include": "#import"
