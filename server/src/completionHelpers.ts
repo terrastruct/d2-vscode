@@ -60,8 +60,6 @@ export class CompletionHelper {
     // Move position back one character to get node *before* trigger character
     const charPos = Math.max(0, pos.character - 1);
 
-    const node = astData.nodeAtPosition({ line: pos.line, character: charPos });
-
     const cis: CompletionItem[] = [];
 
     const ci = CompletionItem.create("{}");
@@ -73,14 +71,17 @@ export class CompletionHelper {
     ci.commitCharacters = ["\t"];
     cis.push(ci);
 
-    const vals = ItemTree.getValueFromPath(node?.Key?.path);
+    const node = astData.nodeAtPosition({ line: pos.line, character: charPos });
+    if (node) {
+      const vals = ItemTree.getValueFromPath(node);
 
-    for (const v of vals) {
-      const item = CompletionItem.create(v);
-      item.kind = CompletionItemKind.Property;
-      item.insertText = ` ${v}`;
-      item.commitCharacters = ["\t"];
-      cis.push(item);
+      for (const v of vals) {
+        const item = CompletionItem.create(v);
+        item.kind = CompletionItemKind.Property;
+        item.insertText = `${v}`;
+        item.commitCharacters = ["\t"];
+        cis.push(item);
+      }
     }
 
     return CompletionList.create(cis, false);
@@ -98,7 +99,7 @@ export class CompletionHelper {
     const node = astData.nodeAtPosition({ line: pos.line, character: charPos });
 
     if (node) {
-      const list: string[] = ItemTree.getListFromPath(node.Key?.path);
+      const list: string[] = ItemTree.getListFromPath(node);
 
       for (const i of list) {
         const ci = CompletionItem.create(i);

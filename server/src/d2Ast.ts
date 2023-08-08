@@ -1,7 +1,7 @@
 /**
  * Used to take the ast JSON that is produced by the D2
- * command line tool and form it into something the 
- * autocompletion and definition/reference/rename 
+ * command line tool and form it into something the
+ * autocompletion and definition/reference/rename
  * capabilities can use.
  */
 
@@ -30,14 +30,14 @@ export class AstReader {
   /**
    * Storage for class data
    */
-  private range: d2Range; 
+  private range: d2Range;
   private d2Info: LSPAny;
   private nodes: d2Node[] = [];
   private references: d2StringAndRange[] | undefined;
 
   /**
    * Returns errors for the 'problems' window from any
-   * errors produced during AST creation. This leaves a 
+   * errors produced during AST creation. This leaves a
    * blind spot for errors that are created during IR,
    * since that phase isn't used by the language server
    * to save compute time.

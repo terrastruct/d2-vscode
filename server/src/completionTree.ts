@@ -1,11 +1,11 @@
 /**
  * Classes that help autocompletion
- * 
+ *
  * Note: Any change in the d2 language will require
  * work here (e.g. new keywords)
  */
 
-import { d2Path } from "./dataContainers";
+import { d2Node } from "./dataContainers";
 
 /**
  * Class to describe the static data below
@@ -21,11 +21,10 @@ class TreeItem {
 }
 
 /**
- * Represents the tree of keywords and values that 
+ * Represents the tree of keywords and values that
  * are possible in d2
  */
 export class ItemTree {
-
   // Root of the ItemTree
   public static get Root(): TreeItem[] {
     return this.optRoot;
@@ -40,11 +39,19 @@ export class ItemTree {
   }
 
   // get the next possible values for a given path
-  public static getValueFromPath(path: d2Path | undefined): string[] {
+  public static getValueFromPath(node: d2Node): string[] {
+    let path = node.Key?.path;
+    let pathOffset = 1;
+
+    if (node.hasNodeValues) {
+      path = node.nodeValueNodes[0].Key?.path;
+      pathOffset = 0;
+    }
+
     const retList: string[] = [];
     if (path) {
       let arr: TreeItem[] = this.Root;
-      for (const p of path.list.slice(1)) {
+      for (const p of path.list.slice(pathOffset)) {
         if (arr) {
           const x: TreeItem | undefined = arr.find(
             (el: TreeItem) => el.item === p.value?.str
@@ -67,18 +74,26 @@ export class ItemTree {
   /**
    * Gets list of keywords based on given path
    */
-  public static getListFromPath(path: d2Path | undefined): string[] {
+  public static getListFromPath(node: d2Node): string[] {
+    let path = node.Key?.path;
+    let pathOffset = 1;
+
+    if (node.hasNodeValues) {
+      path = node.nodeValueNodes[0].Key?.path;
+      pathOffset = 0;
+    }
+
     const retList: string[] = [];
 
     if (path) {
-      if (path.isNodeOnly) {
+      if (path.isNodeOnly && !node.hasNodeValues) {
         for (const i of this.Root) {
           retList.push(i.item);
         }
       } else {
         let arr: TreeItem[] = this.Root;
         // First path item is the node name, skip
-        for (const p of path.list.slice(1)) {
+        for (const p of path.list.slice(pathOffset)) {
           if (arr) {
             const x: TreeItem | undefined = arr.find(
               (el: TreeItem) => el.item === p.value?.str
@@ -326,27 +341,29 @@ export class ItemTree {
     new TreeItem("right"),
   ];
 
+  private static readonly styles: TreeItem[] = [
+    new TreeItem("opacity"),
+    new TreeItem("stroke"),
+    new TreeItem("fill", this.colorList),
+    new TreeItem("fill-pattern", this.fillPattern),
+    new TreeItem("stroke-width"),
+    new TreeItem("stroke-dash"),
+    new TreeItem("border-radius"),
+    new TreeItem("shadow", this.trueFalse),
+    new TreeItem("3D", this.trueFalse),
+    new TreeItem("multiple", this.trueFalse),
+    new TreeItem("double-border", this.trueFalse),
+    new TreeItem("font"),
+    new TreeItem("font-size"),
+    new TreeItem("font-color", this.colorList),
+    new TreeItem("bold", this.trueFalse),
+    new TreeItem("italic", this.trueFalse),
+    new TreeItem("underline", this.trueFalse),
+    new TreeItem("text-transform", this.textTransform),
+  ];
+
   private static readonly optRoot: TreeItem[] = [
-    new TreeItem("style", [
-      new TreeItem("opacity"),
-      new TreeItem("stroke"),
-      new TreeItem("fill", this.colorList),
-      new TreeItem("fill-pattern", this.fillPattern),
-      new TreeItem("stroke-width"),
-      new TreeItem("stroke-dash"),
-      new TreeItem("border-radius"),
-      new TreeItem("shadow", this.trueFalse),
-      new TreeItem("3D", this.trueFalse),
-      new TreeItem("multiple", this.trueFalse),
-      new TreeItem("double-border", this.trueFalse),
-      new TreeItem("font"),
-      new TreeItem("font-size"),
-      new TreeItem("font-color", this.colorList),
-      new TreeItem("bold", this.trueFalse),
-      new TreeItem("italic", this.trueFalse),
-      new TreeItem("underline", this.trueFalse),
-      new TreeItem("text-transform", this.textTransform),
-    ]),
+    new TreeItem("style", this.styles),
     new TreeItem("shape", this.shapeTypes),
     new TreeItem("label"),
     new TreeItem("desc"),

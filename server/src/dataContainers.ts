@@ -53,19 +53,34 @@ export class d2Range {
     return false;
   }
 
-  // Is the position withen the range
-  public isPositionInRange(pos: Position): boolean {
-    if (
-      pos.line >= this.startLine &&
-      pos.line <= this.endLine &&
-      pos.character >= this.startColumn &&
-      pos.character <= this.endColumn
-    ) {
+  private isPositionAfter(pos: Position): boolean {
+    if (pos.line > this.startLine) {
+      return true;
+    }
+    if (pos.line === this.startLine && pos.character >= this.startColumn) {
       return true;
     }
     return false;
   }
-  
+
+  private isPositionBefore(pos: Position): boolean {
+    if (pos.line < this.endLine) {
+      return true;
+    }
+    if (pos.line === this.endLine && pos.character <= this.endColumn) {
+      return true;
+    }
+    return false;
+  }
+
+  // Is the position withen the range
+  public isPositionInRange(pos: Position): boolean {
+    if (this.isPositionAfter(pos) && this.isPositionBefore(pos)) {
+      return true;
+    }
+    return false;
+  }
+
   // Filename the range is describing
   get FileName(): string {
     return this.fileName;
@@ -293,7 +308,6 @@ export class d2NodeValue extends d2Range {
   get nodes() {
     return this.nodeValues;
   }
-
 }
 
 /**
@@ -444,6 +458,16 @@ export class d2Node extends d2Range {
     }
 
     return false;
+  }
+
+  // NodeValue means 'x:{...}'
+  // where key is 'x' and node value is '...'
+  get hasNodeValues(): boolean {
+    return this.value instanceof d2NodeValue;
+  }
+
+  get nodeValueNodes(): d2Node[] {
+    return (this.value as d2NodeValue).nodes;
   }
 
   // Is the node an Import

@@ -23,6 +23,7 @@ import {
   CompletionItem,
   TextEdit,
   DefinitionParams,
+  TextDocumentChangeEvent,
 } from "vscode-languageserver/node";
 
 import URI from "vscode-uri";
@@ -73,7 +74,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
         resolveProvider: false,
       },
       completionProvider: {
-        triggerCharacters: [".", ":", "@"],
+        triggerCharacters: [".", " ", "@"],
         resolveProvider: true,
       },
       definitionProvider: true,
@@ -101,7 +102,7 @@ connection.onDidChangeConfiguration((change): void => {
  * The content of a text document has changed. This event is emitted
  * when the text document first opened or when its content has changed.
  */
-documents.onDidChangeContent((change): void => {
+documents.onDidChangeContent((change: TextDocumentChangeEvent<TextDocument>): void => {
   // Save the current working directory, which is where
   // the D2 document is
   cwd = path.dirname(change.document.uri);
@@ -110,8 +111,6 @@ documents.onDidChangeContent((change): void => {
   // Run D2 in the stdin/stdout mode
   //
   const args: string[] = ["-"];
-
-  const startHr = performance.now();
 
   /**
    * Run D2 in the special "D2_LSP_MODE" mode.
@@ -131,14 +130,9 @@ documents.onDidChangeContent((change): void => {
     );
     return;
   }
-  
+
   // Reset Document Data and Parse out the json from the D2 program
   astData = new AstReader(proc.stdout);
-
-  const hrTime = performance.now() - startHr;
-
-  // Debug
-  console.log(`AST Read Time: ${hrTime.toFixed(4)} ms`);
 
   /**
    * Handle any errors.
@@ -164,8 +158,16 @@ connection.onCompletion((params: CompletionParams): CompletionList => {
     case ".":
       return CompletionHelper.doDot(astData, params.position);
 
-    case ":":
-      return CompletionHelper.doAttribute(astData, params.position);
+    case " ": {
+      const doc = documents.get(params.textDocument.uri);
+      const x = doc?.offsetAt(params.position);
+      const c = doc?.getText().at((x || 2) - 2);
+
+      if (c === ":") {
+        return CompletionHelper.doAttribute(astData, params.position);
+      }
+      break;
+    }
 
     case undefined:
       return CompletionHelper.doOpenSpace();
