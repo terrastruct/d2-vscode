@@ -8,6 +8,7 @@
     "sourceMap": true,
     "outDir": "dist",
     "rootDir": "src",
+    "declaration": true,
   },
   "include": ["src"],
   "exclude": ["node_modules"]

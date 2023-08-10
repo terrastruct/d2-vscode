@@ -19,5 +19,6 @@ runjob fmt ./ci/sub/bin/fmt.sh &
 if <"$CHANGED_FILES" grep -q '\.\(ts\|tsx\|scss\|css\)$'; then
   runjob lint &
 fi
+runjob buildinit 'yarn installdep'
 runjob build 'yarn package'
 ci_waitjobs
