@@ -3,7 +3,7 @@
   "displayName": "D2",
   "publisher": "Terrastruct",
   "description": "Support for .d2 files.",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "license": "BSD-3-Clause",
   "contributors": [
     "Barry Nolte <barry@barrynolte.com>"
@@ -146,7 +146,7 @@
           "default": "default",
           "enum": [
             "default",
-            "Neutral grey",
+            "Neutral gray",
             "Flagship Terrastruct",
             "Cool classics",
             "Mixed berry blue",
@@ -159,6 +159,10 @@
             "Earth tones",
             "Everglade green",
             "Buttered toast",
+            "Terminal",
+            "Terminal Grayscale",
+            "Origami",
+            "Dark Flagship Terrastruct",
             "Dark mauve"
           ],
           "description": "Theme used for preview."
@@ -187,6 +191,11 @@
           "type": "string",
           "default": "d2",
           "description": "Path to d2 executable if not on current PATH"
+        },
+        "D2.checkForInstallAtStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check for required D2 command line tools on startup."
         }
       }
     },
@@ -286,7 +295,7 @@
     "watch": "webpack --watch --devtool source-map",
     "package": "webpack --mode production --devtool hidden-source-map",
     "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
-    "gen": "yq --output-format json syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
+    "gen": "yq -o=json . syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
     "pkg": "vsce package --out d2.vsix"
   },
   "devDependencies": {
