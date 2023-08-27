@@ -187,7 +187,7 @@ repository:
     name: meta.operator.substitution.d2
     captures: { 0: { name: keyword.operator.substitution.d2 } }
     begin: '\$\{'
-    end: '}(?=\s*[\n#;\[\]{}|$])'
+    end: '\}'
     patterns:
       - include: "#key"
   import:
@@ -201,7 +201,7 @@ repository:
     name: meta.operator.substitution.d2
     captures: { 0: { name: keyword.operator.substitution.d2 } }
     begin: '\.\.\.\$\{'
-    end: '}(?=\s*[\n#;\[\]{}|$])'
+    end: '\}'
     patterns:
       - include: "#key"
   spread_import:
