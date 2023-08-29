@@ -30,9 +30,9 @@ patterns:
   # - include: '#debug'
   - include: "#comment"
   - include: "#semicolon"
-  - include: "#key_value"
   - include: "#spread_substitution"
   - include: "#spread_import"
+  - include: "#key_value"
   - include: "#key"
   - include: "#error"
 repository:
@@ -186,8 +186,8 @@ repository:
   substitution:
     name: meta.operator.substitution.d2
     captures: { 0: { name: keyword.operator.substitution.d2 } }
-    begin: '\$'
-    end: '(?=\s*[\n#;\[\]{}|$])'
+    begin: '\$\{'
+    end: '\}'
     patterns:
       - include: "#key"
   import:
@@ -200,8 +200,8 @@ repository:
   spread_substitution:
     name: meta.operator.substitution.d2
     captures: { 0: { name: keyword.operator.substitution.d2 } }
-    begin: '\.\.\.\$'
-    end: '(?=\s*[\n#;\[\]{}|$])'
+    begin: '\.\.\.\$\{'
+    end: '\}'
     patterns:
       - include: "#key"
   spread_import:
@@ -219,6 +219,7 @@ repository:
     patterns:
       - include: "#comment"
       - include: "#semicolon"
+      - include: "#substitution"
       - include: "#import"
       - include: "#spread_substitution"
       - include: "#spread_import"
