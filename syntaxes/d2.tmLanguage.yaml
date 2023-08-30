@@ -154,6 +154,8 @@ repository:
         match: '\*\*'
       - name: keyword.operator.ampersand.d2
         match: "&"
+      - name: keyword.operator.not_ampersand.d2
+        match: "!&"
       - name: entity.name.tag.unquoted.d2
         begin: '(?=[^[:space:]\n#;\[\]{}|$''":.<>*&()])(?!-+-)(?!-+>)(?!-+\*)'
         end: '(?=\s*[\n#;\[\]{}|$:.<>*&()]|-+-|-+>|-+\*)'
