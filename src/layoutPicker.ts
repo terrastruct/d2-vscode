@@ -7,25 +7,45 @@ import { util } from "./utility";
 class LayoutItem implements QuickPickItem {
   label: string;
   description: string;
+  value: number;
 
-  constructor(l: string, d: string) {
+  constructor(l: string, v: number, d: string) {
     this.label = l;
     this.description = d;
+    this.value = v;
   }
 }
 
 /**
  * List of Layouts
  */
-const layouts: QuickPickItem[] = [
-  new LayoutItem("dagre", "The directed graph layout library Dagre"),
-  new LayoutItem("elk", "Eclipse Layout Kernel (ELK) with the Layered algorithm"),
+const layouts: LayoutItem[] = [
+  new LayoutItem("default", -1, "As directored by the d2 file"),
+  new LayoutItem("dagre", 0, "The directed graph layout library Dagre"),
+  new LayoutItem("elk", 1, "Eclipse Layout Kernel (ELK) with the Layered algorithm"),
 ];
 
-const layoutTala = new LayoutItem("tala", "Terrastruct's AutoLayout Approach");
+const layoutTala = new LayoutItem("tala", 2, "Terrastruct's AutoLayout Approach");
 
 const talaPluginName: string =
   process.platform === "win32" ? "d2plugin-tala.exe" : "d2plugin-tala";
+
+const LayoutSwitch = "--layout=";
+
+export function GetLayoutSwitch(layout: string): string {
+  let layoutVal = 0;
+  for (const l in layouts) {
+    if (layouts[l].label === layout) {
+      layoutVal = layouts[l].value;
+    }
+  }
+
+  if (layoutVal === -1) {
+    return "";
+  }
+
+  return LayoutSwitch + layout;
+}
 
 /**
  * layouPicker - This will show the quick pick list in

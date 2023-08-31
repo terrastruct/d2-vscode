@@ -17,7 +17,7 @@ class ThemeItem implements QuickPickItem {
  * List of themes with their numeric values
  */
 const themes: ThemeItem[] = [
-  new ThemeItem("default", 0),
+  new ThemeItem("default", -1),
   new ThemeItem("Neutral gray", 1),
   new ThemeItem("Flagship Terrastruct", 3),
   new ThemeItem("Cool classics", 4),
@@ -38,11 +38,23 @@ const themes: ThemeItem[] = [
   new ThemeItem("Origami", 302),
 ];
 
+const ThemeSwitch = "--theme=";
+
+export function GetThemeSwitch(theme: string): string {
+  const tn = NameToThemeNumber(theme);
+
+  if (tn === -1) {
+    return "";
+  }
+
+  return ThemeSwitch + tn;
+}
+
 /**
  * NameToThemeNumber - Given a theme name, return the numeric
  * value that is used on the D2 commandline
  */
-export function NameToThemeNumber(theme: string): number {
+function NameToThemeNumber(theme: string): number {
   for (const t in themes) {
     if (themes[t].label === theme) {
       return themes[t].value;
