@@ -68,6 +68,9 @@
       },
       {
         "id": "markdown.d2"
+      },
+      {
+        "id": "d2-markdown-injection"
       }
     ],
     "grammars": [
@@ -84,6 +87,17 @@
         "language": "markdown.d2",
         "scopeName": "text.html.markdown.d2",
         "path": "./syntaxes/markdown.tmLanguage.json"
+      },
+      {
+        "language": "d2-markdown-injection",
+        "scopeName": "markdown.d2.codeblock",
+        "path": "./syntaxes/d2-markdown-injection.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.d2": "d2"
+        }
       }
     ],
     "markdown.markdownItPlugins": true,
