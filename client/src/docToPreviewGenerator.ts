@@ -90,6 +90,10 @@ export class DocToPreviewGenerator {
         let list = "";
         arr.forEach((s) => {
           if (s.length > 0) {
+            /*
+              Matches: "error:0:0: message" or
+                       "warning:100:20:explaination"
+            */
             const rg = new RegExp(/^(.*?):(\d+):(\d+):(\s+)(.*)$/g).exec(s);
             const msg = rg !== null ? rg[5] : "Unknown Error";
             const line = rg ? rg[2] || "0" : "0";
