@@ -20,8 +20,8 @@
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "name": "Launch Extension",
       "outFiles": [
-        "${workspaceFolder}/dist/**/*.js",
-        "${workspaceFolder}/langsrv/dist/**/*.js"
+        "${workspaceFolder}/client/dist/**/*.js",
+        "${workspaceFolder}/server/dist/**/*.js"
       ],
       "request": "launch",
       "type": "extensionHost"

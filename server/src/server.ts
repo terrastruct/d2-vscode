@@ -26,7 +26,7 @@ import {
   TextDocumentChangeEvent,
 } from "vscode-languageserver/node";
 
-import URI from "vscode-uri";
+import { URI } from "vscode-uri";
 import path = require("path");
 
 import { TextDocument } from "vscode-languageserver-textdocument";

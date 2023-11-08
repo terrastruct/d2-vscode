@@ -12,7 +12,7 @@ import {
 } from "vscode-languageserver";
 
 import path = require("path");
-import URI from "vscode-uri";
+import { URI } from "vscode-uri";
 
 import { getD2Files } from "./utility";
 import { statSync } from "fs";

@@ -95,7 +95,7 @@ export class DocToPreviewGenerator {
                        "warning:100:20:explaination"
             */
             const rg = new RegExp(/^(.*?):(\d+):(\d+):(\s+)(.*)$/g).exec(s);
-            const msg = rg !== null ? rg[5] : "Unknown Error";
+            const msg = rg !== null ? rg[5] : s;
             const line = rg ? rg[2] || "0" : "0";
             const col = rg ? rg[3] || "0" : "0";
             list += `<li>${msg}  (${line}:${col})</li>`;
