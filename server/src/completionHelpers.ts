@@ -145,6 +145,8 @@ export class CompletionHelper {
   static doOpenSpace(astData: AstReader, pos: Position): CompletionList {
     const compItems: CompletionItem[] = [];
 
+    // THIS NEEDS SOME MORE WORK TO} DETECT WHAT COMPLETION HELPER SHOULD BE CALLED
+
     const node = astData.nodeAtPosition({ line: pos.line, character: pos.character });
     console.log(`Open Space: ${node}`);
 

@@ -146,9 +146,7 @@ documents.onDidChangeContent((change: TextDocumentChangeEvent<TextDocument>): vo
   }
 
   if (proc.status !== 42) {
-    connection.window.showErrorMessage(
-      "Version mismatch between extenstion and language-server."
-    );
+    connection.window.showErrorMessage(`Error (${proc.status}) from d2:\n${proc.stderr}\n`);
   }
 
   // Reset Document Data and Parse out the json from the D2 program
