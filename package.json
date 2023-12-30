@@ -84,6 +84,16 @@
         "language": "markdown.d2",
         "scopeName": "text.html.markdown.d2",
         "path": "./syntaxes/markdown.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.d2.codeblock",
+        "path": "./syntaxes/d2.markdown.injection.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.d2": "d2"
+        }
       }
     ],
     "markdown.markdownItPlugins": true,

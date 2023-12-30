@@ -14,10 +14,11 @@ import {
 import path = require("path");
 import { URI } from "vscode-uri";
 
-import { getD2Files } from "./utility";
+import { getD2FilesFromPaths } from "./utility";
 import { statSync } from "fs";
 import { AstReader } from "./d2Ast";
 import { ItemTree } from "./completionTree";
+import { workspaceFolders } from "./server";
 
 /**
  *
@@ -26,31 +27,54 @@ export class CompletionHelper {
   /**
    *
    */
-  static doImport(dir: string, currentFile: string): CompletionList {
-    const dirToScan = URI.parse(dir).fsPath;
-    const curFileShort = path.parse(URI.parse(currentFile).fsPath).name;
-    const files = getD2Files(dirToScan);
-    const compFiles: CompletionItem[] = [];
+  static doImport(currentFile: string): CompletionList {
+    const retFiles: CompletionItem[] = [];
 
-    for (let file of files) {
-      const fst = statSync(file);
-      file = file.replace(dirToScan + "/", "").replace(".d2", "");
-      if (file === curFileShort) {
+    const curFileFS = URI.parse(currentFile).fsPath;
+    const curFileDirFS = path.parse(URI.parse(currentFile).fsPath).dir;
+    const pathsToScan: string[] = [];
+
+    // No workspace, use the documents directory
+    if (workspaceFolders.length === 0) {
+      pathsToScan.push(curFileDirFS);
+    } else {
+      for (const wdir of workspaceFolders) {
+        pathsToScan.push(URI.parse(wdir.uri).fsPath);
+      }
+    }
+
+    const files = getD2FilesFromPaths(pathsToScan);
+
+    for (const file of files) {
+      // Don't allow import of the current file
+      if (file === curFileFS) {
         continue;
       }
 
-      const fiDate = fst.atime.toLocaleDateString();
-      const fiSize = fst.size.toString() + " bytes";
+      const fst = statSync(file);
+      const fiDate = fst.atime.toLocaleDateString(undefined, {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+      const fiSize = `${fst.size} bytes`;
 
-      const ci = CompletionItem.create(file);
+      // The file name that gets insterted needs to be
+      // a path relative to the document that it is
+      // being inserted.
+      const relFile = path.relative(curFileDirFS, file);
+      const pp = path.parse(relFile);
+
+      const ci = CompletionItem.create(relFile);
       ci.kind = CompletionItemKind.File;
+      ci.insertText = path.join(pp.dir, pp.name);
       ci.commitCharacters = ["\t"];
       ci.labelDetails = { description: `${fiSize}  ${fiDate}` };
 
-      compFiles.push(ci);
+      retFiles.push(ci);
     }
 
-    return CompletionList.create(compFiles);
+    return CompletionList.create(retFiles);
   }
 
   /**
@@ -78,7 +102,7 @@ export class CompletionHelper {
       for (const v of vals) {
         const item = CompletionItem.create(v);
         item.kind = CompletionItemKind.Property;
-        item.insertText = `${v}`;
+        item.insertText = ` ${v}`;
         item.commitCharacters = ["\t"];
         cis.push(item);
       }
@@ -98,12 +122,15 @@ export class CompletionHelper {
 
     const node = astData.nodeAtPosition({ line: pos.line, character: charPos });
 
+    // console.info(`Node: ${charPos} -> \n${JSON.stringify(node, null, 2)}\n\n`);
+
     if (node) {
       const list: string[] = ItemTree.getListFromPath(node);
 
       for (const i of list) {
         const ci = CompletionItem.create(i);
-        ci.kind = CompletionItemKind.Constant;
+        ci.kind = CompletionItemKind.Class;
+        ci.commitCharacters = ["\t"];
         compItems.push(ci);
       }
     }
@@ -115,8 +142,11 @@ export class CompletionHelper {
    *
    *
    */
-  static doOpenSpace(): CompletionList {
+  static doOpenSpace(astData: AstReader, pos: Position): CompletionList {
     const compItems: CompletionItem[] = [];
+
+    const node = astData.nodeAtPosition({ line: pos.line, character: pos.character });
+    console.log(`Open Space: ${node}`);
 
     for (const tItem of ItemTree.Root) {
       compItems.push(CompletionItem.create(tItem.item));

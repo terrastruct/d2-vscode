@@ -19,7 +19,6 @@ import {
 
 import { DocToPreviewGenerator } from "./docToPreviewGenerator";
 import { D2OutputChannel } from "./outputChannel";
-import * as mdItContainer from "markdown-it-container";
 import { layoutPicker } from "./layoutPicker";
 import { themePicker } from "./themePicker";
 import { TaskRunner } from "./taskRunner";
@@ -27,6 +26,7 @@ import { d2Tasks } from "./tasks";
 import { util } from "./utility";
 import path = require("path");
 import { TextEncoder } from "util";
+import markdownContainer = require("markdown-it-container");
 import {
   LanguageClient,
   LanguageClientOptions,
@@ -47,7 +47,9 @@ export const taskRunner: TaskRunner = new TaskRunner();
 export let extContext: ExtensionContext;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function activate(context: ExtensionContext): any {
+export type ExtAny = any;
+
+export function activate(context: ExtensionContext): ExtAny {
   extContext = context;
 
   context.subscriptions.push(
@@ -249,9 +251,9 @@ export function activate(context: ExtensionContext): any {
   // Return our markdown renderer
   return {
     // Sets up our ability to render for markdown files
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extendMarkdownIt(md: any) {
-      return extendMarkdownItWithD2(md);
+    extendMarkdownIt(md: markdownit) {
+      extendMarkdownItWithD2(md);
+      return md;
     },
   };
 }
@@ -316,23 +318,27 @@ export function isLanguageServerRunning(): boolean {
  * This function will be asked by the Markdown system to render
  * a d2 snippit in a markdown file
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function extendMarkdownItWithD2(md: any): unknown {
-  md.use(mdItContainer, pluginKeyword, {});
+export function extendMarkdownItWithD2(md: ExtAny) {
+  md.use(markdownContainer, pluginKeyword, {
+    anyClass: true,
+    validate: (info: string) => {
+      return info.trim() === pluginKeyword;
+    }
+  });
 
-  const highlight = md.options.highlight;
+  const nextHighlighter = md.options.highlight;
   md.options.highlight = (code: string, lang: string) => {
     if (lang === d2Lang) {
       const activeEditor = path.parse(
-        window.activeTextEditor?.document.fileName ?? ""
-      ).dir;
+        window.activeTextEditor?.document.fileName ?? "").dir;
 
-      return d2Tasks.compile(code, activeEditor, (msg) => {
+      const retText = d2Tasks.compile(code, activeEditor, (msg) => {
         outputChannel.appendInfo(msg);
       });
-    }
-    return highlight(code, lang);
-  };
 
+      return `<pre><div>${retText}</div></pre>`;
+    }
+    return nextHighlighter(code, lang);
+  }
   return md;
 }

@@ -40,26 +40,16 @@ export class ItemTree {
 
   // get the next possible values for a given path
   public static getValueFromPath(node: d2Node): string[] {
-    let path = node.Key?.path;
-    let pathOffset = 1;
-
-    if (node.hasNodeValues) {
-      path = node.nodeValueNodes[0].Key?.path;
-      pathOffset = 0;
-    }
-
+    const path = node.Key?.path;
     const retList: string[] = [];
+
     if (path) {
       let arr: TreeItem[] = this.Root;
-      for (const p of path.list.slice(pathOffset)) {
-        if (arr) {
-          const x: TreeItem | undefined = arr.find(
-            (el: TreeItem) => el.item === p.value?.str
-          );
-          if (x) {
-            arr = x.value || [];
-          }
-        }
+      for (const p of path.list) {
+        const x: TreeItem | undefined = arr.find(
+          (el: TreeItem) => el.item === p.value?.str
+        );
+        arr = x?.value ?? this.Root;
       }
 
       if (ItemTree.isValueArray(arr)) {
@@ -75,42 +65,53 @@ export class ItemTree {
    * Gets list of keywords based on given path
    */
   public static getListFromPath(node: d2Node): string[] {
-    let path = node.Key?.path;
-    let pathOffset = 1;
-
-    if (node.hasNodeValues) {
-      path = node.nodeValueNodes[0].Key?.path;
-      pathOffset = 0;
-    }
-
+    const path = node.Key?.path;
     const retList: string[] = [];
 
     if (path) {
-      if (path.isNodeOnly && !node.hasNodeValues) {
-        for (const i of this.Root) {
-          retList.push(i.item);
-        }
-      } else {
-        let arr: TreeItem[] = this.Root;
-        // First path item is the node name, skip
-        for (const p of path.list.slice(pathOffset)) {
-          if (arr) {
-            const x: TreeItem | undefined = arr.find(
-              (el: TreeItem) => el.item === p.value?.str
-            );
-            if (x) {
-              arr = x.value || [];
-            }
-          }
-        }
+      let arr: TreeItem[] = this.Root;
 
-        for (const i of arr) {
-          retList.push(i.item);
-        }
+      // First path item is the node name, skip
+      for (const p of path.list) {
+        const x: TreeItem | undefined = arr.find(
+          (el: TreeItem) => el.item === p.value?.str
+        );
+
+        arr = x?.value ?? this.Root;
+      }
+
+      for (const i of arr) {
+        retList.push(i.item);
       }
     }
 
     return retList;
+  }
+
+  /**
+   *
+   */
+  private static NumberRange(start: number, end: number): TreeItem[] {
+    const tis: TreeItem[] = [];
+
+    for (let i = start; i <= end; i++) {
+      tis.push(new TreeItem(i.toString()));
+    }
+
+    return tis;
+  }
+
+  /**
+   *
+   */
+  private static NumberRangeFloat(start: number, end: number, step: number): TreeItem[] {
+    const tis: TreeItem[] = [];
+
+    for (let i = start; i <= end; i += step) {
+      tis.push(new TreeItem(i.toFixed(1).toString()));
+    }
+
+    return tis;
   }
 
   /**
@@ -341,20 +342,22 @@ export class ItemTree {
     new TreeItem("right"),
   ];
 
+  private static readonly fonts: TreeItem[] = [new TreeItem("mono")];
+
   private static readonly styles: TreeItem[] = [
-    new TreeItem("opacity"),
-    new TreeItem("stroke"),
+    new TreeItem("opacity", this.NumberRangeFloat(0, 1, 0.1)),
+    new TreeItem("stroke", this.colorList),
     new TreeItem("fill", this.colorList),
     new TreeItem("fill-pattern", this.fillPattern),
-    new TreeItem("stroke-width"),
-    new TreeItem("stroke-dash"),
-    new TreeItem("border-radius"),
+    new TreeItem("stroke-width", this.NumberRange(1, 15)),
+    new TreeItem("stroke-dash", this.NumberRange(0, 10)),
+    new TreeItem("border-radius", this.NumberRange(0, 20)),
     new TreeItem("shadow", this.trueFalse),
     new TreeItem("3D", this.trueFalse),
     new TreeItem("multiple", this.trueFalse),
     new TreeItem("double-border", this.trueFalse),
-    new TreeItem("font"),
-    new TreeItem("font-size"),
+    new TreeItem("font", this.fonts),
+    new TreeItem("font-size", this.NumberRange(8, 100)),
     new TreeItem("font-color", this.colorList),
     new TreeItem("bold", this.trueFalse),
     new TreeItem("italic", this.trueFalse),

@@ -12,8 +12,9 @@ import {
   PublishDiagnosticsParams,
 } from "vscode-languageserver";
 
-import { d2Node, d2Range, d2StringAndRange } from "./dataContainers";
+import { d2ExternalLink, d2Node, d2Range, d2StringAndRange } from "./dataContainers";
 import { Position } from "vscode-languageserver-textdocument";
+import { connection } from "./server";
 
 /**
  * AstReader class.  Takes the returned json text and
@@ -21,10 +22,18 @@ import { Position } from "vscode-languageserver-textdocument";
  */
 export class AstReader {
   constructor(astStr: string) {
-    this.d2Info = JSON.parse(astStr);
-    this.range = this.d2Info.Ast.range;
+    try {
+      this.d2Info = JSON.parse(astStr);
+    } catch (err) {
+      connection.console.error("Possilble D2/VsCode version missmatch.");
+      connection.console.error(astStr);
+    }
 
-    this.doNodes(this.d2Info.Ast.nodes);
+    this.range = this.d2Info?.Ast.range;
+
+    this.doNodes(this.d2Info?.Ast.nodes);
+
+    // console.info(JSON.stringify(this.d2Info, null, 2));
   }
 
   /**
@@ -64,14 +73,12 @@ export class AstReader {
    * Returns the list of links and imports to they can
    * be rendered in the editor
    */
-  get LinksAndImports(): d2StringAndRange[] {
-    const rngRet: d2StringAndRange[] = [];
+  get LinksAndImports(): d2ExternalLink[] {
+    const rngRet: d2ExternalLink[] = [];
 
     for (const n of this.nodes) {
       if (n.isLink || n.isImport) {
-        if (n.propValue) {
-          rngRet.push(n.propValue);
-        }
+        rngRet.push(new d2ExternalLink(n));
       }
     }
 
@@ -131,7 +138,9 @@ export class AstReader {
    */
   public refAtPosition(pos: Position): d2StringAndRange | undefined {
     for (const r of this.References) {
-      if (r.isPositionInRange(pos)) {
+      // TODO: Does this need to be more specific like nodeAtPosition?
+      const [isNode] = r.isPositionInRange(pos);
+      if (isNode) {
         return r;
       }
     }
@@ -139,15 +148,21 @@ export class AstReader {
   }
 
   /**
-   * Get's the node that is at the given position
+   * Get's the inner most node that is at the given position
    */
   public nodeAtPosition(pos: Position): d2Node | undefined {
+    let topScore = Number.MAX_SAFE_INTEGER;
+    let nRet;
+
     for (const n of this.nodes) {
-      if (n.isPositionInRange(pos)) {
-        return n;
+      const [isNode, score] = n.isPositionInRange(pos);
+
+      if (isNode && score < topScore) {
+        topScore = score;
+        nRet = n;
       }
     }
-    return undefined;
+    return nRet;
   }
 
   /**
@@ -155,9 +170,27 @@ export class AstReader {
    * apart to be used by the language server
    */
   private doNodes(nodes: LSPAny[]) {
-    for (const node of nodes || []) {
+    for (const node of nodes ?? []) {
+      // console.log("---------------------------------");
+      // console.log(JSON.stringify(node, null, 2));
+      // console.log("---------------------------------");
       const n = new d2Node(node);
       this.nodes.push(n);
+
+      // NodeValues are nodes too!
+      if (n.hasNodeValues) {
+        for (const nv of n.nodeValueNodes) {
+          this.nodes.push(nv);
+        }
+      }
+    }
+  }
+
+  dump(): void {
+    console.log(`\n---------\nASTREADER: ${this.range.toString()}\n---------\n`);
+
+    for (const n of this.nodes) {
+      console.log(n.toString());
     }
   }
 }

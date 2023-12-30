@@ -2,7 +2,9 @@
  * Various data holder classes, conversions and coercion
  */
 
+import pathUtil = require("path");
 import { DiagnosticSeverity, LSPAny, Position, Range } from "vscode-languageserver/node";
+import { d2Extension } from "./server";
 
 /**
  * Represents a document range as converted from D2
@@ -18,7 +20,7 @@ export class d2Range {
       return;
     }
 
-    this.fileName = rg[1] || "";
+    this.fileName = rg[1] ?? "";
 
     this.startLine = parseInt(rg[2], 10);
     this.startColumn = parseInt(rg[3], 10);
@@ -29,7 +31,7 @@ export class d2Range {
     this.endByte = parseInt(rg[7], 10);
   }
 
-  fileName = "";
+  fileName = "-";
 
   startLine = 0;
   startColumn = 0;
@@ -74,11 +76,11 @@ export class d2Range {
   }
 
   // Is the position withen the range
-  public isPositionInRange(pos: Position): boolean {
+  public isPositionInRange(pos: Position): [inRange: boolean, posScore: number] {
     if (this.isPositionAfter(pos) && this.isPositionBefore(pos)) {
-      return true;
+      return [true, this.endByte - this.startByte];
     }
-    return false;
+    return [false, -1];
   }
 
   // Filename the range is describing
@@ -99,6 +101,23 @@ export class d2Range {
   // Convert from a D2 range to vscode range
   get Range(): Range {
     return Range.create(this.StartPosition, this.EndPosition);
+  }
+
+  public set(range: d2Range | undefined): void {
+    this.startByte = range?.startByte ?? 0;
+    this.startLine = range?.startLine ?? 0;
+    this.startColumn = range?.startColumn ?? 0;
+    this.endByte = range?.endByte ?? 0;
+    this.endLine = range?.endLine ?? 0;
+    this.endColumn = range?.endColumn ?? 0;
+    this.fileName = range?.fileName ?? "-";
+  }
+
+  public toString(): string {
+    if (this.startByte === 0 && this.endByte === 0) {
+      debugger;
+    }
+    return `Range: ${this.fileName} : (${this.startLine},${this.startColumn},[${this.startByte}]):(${this.endLine},${this.endColumn},[${this.endByte}])\n`;
   }
 }
 
@@ -127,6 +146,10 @@ export class d2Error extends d2Range {
   get severity() {
     return this.sev;
   }
+
+  public toString(): string {
+    return `Err: ${super.toString()}\n  ${this.msg}  `;
+  }
 }
 
 /**
@@ -135,7 +158,7 @@ export class d2Error extends d2Range {
 export class d2StringAndRange extends d2Range {
   constructor(r: string | null, s: string) {
     super(r);
-    this.strValue = s || "";
+    this.strValue = s ?? "";
   }
 
   private strValue: string;
@@ -144,6 +167,10 @@ export class d2StringAndRange extends d2Range {
   get str() {
     return this.strValue;
   }
+
+  public toString(): string {
+    return `String: ${this.strValue.toString()}  ${super.toString()}`;
+  }
 }
 
 /**
@@ -151,7 +178,7 @@ export class d2StringAndRange extends d2Range {
  */
 export class d2Path {
   constructor(paths: LSPAny[]) {
-    for (const path of paths || []) {
+    for (const path of paths ?? []) {
       this.pathList.push(new d2Value(path));
     }
   }
@@ -187,6 +214,14 @@ export class d2Path {
 
     return undefined;
   }
+
+  public toString(): string {
+    const s: string[] = [];
+    for (const path of this.pathList) {
+      s.push(path.value?.str ?? "-");
+    }
+    return `Path: ${s.join(".")}`;
+  }
 }
 
 /**
@@ -204,6 +239,10 @@ export class d2Primary {
       return true;
     }
     return false;
+  }
+
+  public toString(): string {
+    return `  Primary: ${this.primary}\n`;
   }
 }
 
@@ -234,14 +273,17 @@ export class d2Key extends d2Range {
   get hasPath(): boolean {
     return Boolean(this.path.first);
   }
+
+  public toString(): string {
+    return `Key: ${super.toString()}  ${this.path.toString()}\n`;
+  }
 }
 
 /**
  * Describes a nodes value
  */
-export class d2Value extends d2Range {
+export class d2Value {
   constructor(v: LSPAny) {
-    super(v?.range || null);
     this.val = this.doValue(v);
   }
 
@@ -259,7 +301,7 @@ export class d2Value extends d2Range {
     /**
      * This will get a string_block, not needed now
      */
-    // if (typeof value === "string" || value?.block_string) {
+    // if (typeof value === "string" ?? value?.block_string) {
     //     const strAndR: d2StringAndRange = this.getStringAndRange(value);
     // }
 
@@ -283,12 +325,21 @@ export class d2Value extends d2Range {
         value.single_quoted_string.value[0].string
       );
     }
-
+    if (value?.double_quoted_string) {
+      valRet = new d2StringAndRange(
+        value.double_quoted_string.range,
+        value.double_quoted_string.value[0].string
+      );
+    }
     if (value?.import) {
       valRet = new d2StringAndRange(value.import.range, value.import.value);
     }
 
     return valRet;
+  }
+
+  public toString(): string {
+    return `  Value: ${this.val}\n`;
   }
 }
 
@@ -308,6 +359,64 @@ export class d2NodeValue extends d2Range {
   get nodes() {
     return this.nodeValues;
   }
+
+  public toString(): string {
+    let strRet = "\n  ";
+    for (const n of this.nodes) {
+      strRet += "  " + n.toString() + "\n";
+    }
+    return `\n===========\nNode Value:  ${super.toString()}  ${strRet}===========\n`;
+  }
+}
+
+export class d2ExternalLink {
+  constructor(node: LSPAny) {
+    this.range = new d2Range("");
+    this.node = node;
+    this.target = "";
+    this.tooltip = "";
+  }
+
+  private range: d2Range;
+  private node: d2Node;
+  private target: string;
+  private tooltip: string;
+
+  public resolvePath(pathStr: string): void {
+    console.log(`CWD: ${pathStr}`);
+
+    if (this.node.isImport) {
+      this.range.set(this.node.propValue);
+      const pv = this.node.propValue;
+      if (pv instanceof d2Import) {
+        const pp = pathUtil.parse(pv.impFile);
+        const newPath = pathUtil.join(pathStr, pv.preStr, pv.impFile + (pp.ext === d2Extension ? "" : d2Extension));
+
+        this.target = newPath;
+        this.tooltip = `${newPath}`;
+      }
+    } else if (this.node.isLink) {
+      this.range.set(this.node.propValue);
+      const pv = this.node.propValue;
+      if (pv instanceof d2StringAndRange){
+        this.target = pv.str;
+        this.tooltip = `${pv.str}`;
+      }
+    
+    }
+  }
+
+  get linkRange(): d2Range {
+    return this.range;
+  }
+
+  get linkTarget(): string {
+    return this.target;
+  }
+
+  get linkTooltip(): string {
+    return this.tooltip;
+  }
 }
 
 /**
@@ -316,10 +425,28 @@ export class d2NodeValue extends d2Range {
 export class d2Import extends d2Range {
   constructor(i: LSPAny) {
     super(i.range);
+    this.pre = i?.pre;
     this.path = new d2Path(i.path);
   }
 
-  path: d2Path;
+  get preStr(): string {
+    return this.pre;
+  }
+
+  get impFile(): string {
+    return this.path.last?.value?.str ?? "";
+  }
+
+  get hasPathValue(): boolean {
+    return Boolean(this.path);
+  }
+
+  private pre: string;
+  private path: d2Path;
+
+  public toString(): string {
+    return `Import: ${super.toString()} | Pre: ${this.pre} | ${this.path}\n`;
+  }
 }
 
 /**
@@ -335,6 +462,10 @@ export class d2EdgeEndpoint extends d2Range {
 
   get edgeNode(): d2StringAndRange | undefined {
     return this.path.first?.value;
+  }
+
+  public toString(): string {
+    return `EndPoint: ${super.toString()}  ${this.path}\n`;
   }
 }
 
@@ -363,6 +494,11 @@ export class d2Edge extends d2Range {
 
   get dst(): d2EdgeEndpoint {
     return this.dstEndPt;
+  }
+
+  public toString(): string {
+    return `Edge: ${super.toString()}  ${this.srcEndPt}\n  ${this.srcArrow}-${this.dstArrow
+      }\n  ${this.dstEndPt}\n`;
   }
 }
 
@@ -404,9 +540,9 @@ export class d2Node extends d2Range {
   /**
    * Properties
    */
-  public get propValue(): d2StringAndRange | undefined {
+  public get propValue(): d2StringAndRange | d2Import | undefined {
     if (this.isImport) {
-      return (this.value as d2Import).path.last?.value;
+      return this.value as d2Import;
     }
     if (this.isLink) {
       return (this.value as d2Value).value;
@@ -446,7 +582,7 @@ export class d2Node extends d2Range {
     }
 
     if ("path" in this.value) {
-      return Boolean(this.value.path);
+      return Boolean(this.value.hasPathValue);
     }
 
     if ("nodes" in this.value) {
@@ -478,6 +614,25 @@ export class d2Node extends d2Range {
   // Is the node a Link
   get isLink(): boolean {
     return Boolean(this.key?.isLink);
+  }
+
+  public toString(): string {
+    let strRet = `\nNODE: ${super.toString()}----\n`;
+
+    if (this.hasKey) {
+      strRet += `${this.key?.toString()}`;
+    } else if (this.hasEdges) {
+      let s = `\nEdges\n-----\n`;
+      for (const edge of this.edges) {
+        s += `${edge.toString()}`;
+      }
+      strRet += s + "\n";
+    }
+
+    strRet += this.hasPrimary ? `${this.primary?.toString()}` : "";
+    strRet += this.hasValue ? `${this.value?.toString()}` : "";
+    strRet += "\n";
+    return strRet;
   }
 }
 

@@ -77,7 +77,7 @@ export class DocToPreviewGenerator {
     trkObj.outputDoc.showBusy();
 
     taskRunner.genTask(trkObj.inputDoc?.fileName, fileText, (data, error) => {
-      const p = path.parse(trkObj.inputDoc?.fileName || "");
+      const p = path.parse(trkObj.inputDoc?.fileName ?? "");
 
       if (data.length > 0) {
         trkObj.outputDoc?.setSvg(data);
@@ -96,8 +96,8 @@ export class DocToPreviewGenerator {
             */
             const rg = new RegExp(/^(.*?):(\d+):(\d+):(\s+)(.*)$/g).exec(s);
             const msg = rg !== null ? rg[5] : s;
-            const line = rg ? rg[2] || "0" : "0";
-            const col = rg ? rg[3] || "0" : "0";
+            const line = rg ? rg[2] ?? "0" : "0";
+            const col = rg ? rg[3] ?? "0" : "0";
             list += `<li>${msg}  (${line}:${col})</li>`;
           }
         });

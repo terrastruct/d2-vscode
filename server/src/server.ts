@@ -24,6 +24,8 @@ import {
   TextEdit,
   DefinitionParams,
   TextDocumentChangeEvent,
+  WorkspaceFolder,
+  DocumentLinkParams,
 } from "vscode-languageserver/node";
 
 import { URI } from "vscode-uri";
@@ -38,14 +40,14 @@ import { CompletionHelper } from "./completionHelpers";
 //
 let astData: AstReader;
 
-// Current Working Directory
-let cwd: string;
+export let workspaceFolders: WorkspaceFolder[] = [];
 
 export let d2ExePath = "d2";
+export const d2Extension = ".d2";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
-const connection = createConnection(ProposedFeatures.all);
+export const connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -74,14 +76,19 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
         resolveProvider: false,
       },
       completionProvider: {
-        triggerCharacters: [".", " ", "@"],
+        triggerCharacters: [".", ":", "@"],
         resolveProvider: true,
+      },
+      workspace: {
+        workspaceFolders: {
+          supported: true,
+        },
       },
       definitionProvider: true,
     },
     serverInfo: {
       name: "D2 Language Server",
-      version: "0.6",
+      version: "0.7",
     },
   };
 
@@ -95,7 +102,7 @@ connection.onDidChangeConfiguration((change): void => {
   // We'll use the path to D2 so we don't get divergent
   // functionality using two different d2 binaries.
   d2ExePath = change.settings.D2.execPath;
-  connection.console.info(`Language Server D2 path: ${d2ExePath}`);
+  connection.console.log(`Language Server D2 path: ${d2ExePath}`);
 });
 
 /**
@@ -103,10 +110,17 @@ connection.onDidChangeConfiguration((change): void => {
  * when the text document first opened or when its content has changed.
  */
 documents.onDidChangeContent((change: TextDocumentChangeEvent<TextDocument>): void => {
-  // Save the current working directory, which is where
-  // the D2 document is
-  cwd = path.dirname(change.document.uri);
-  const cwDir = URI.parse(cwd).fsPath;
+  // This is where the D2 document is and is where d2 should assume
+  // everthing is relative to
+  const cwDir = URI.parse(path.dirname(change.document.uri)).fsPath;
+
+  // Get the workspace folders on a regular basis, because of async
+  connection.workspace.getWorkspaceFolders().then((folders: WorkspaceFolder[] | null) => {
+    workspaceFolders = [];
+    if (folders) {
+      workspaceFolders = folders;
+    }
+  });
 
   // Run D2 in the stdin/stdout mode
   //
@@ -131,8 +145,15 @@ documents.onDidChangeContent((change: TextDocumentChangeEvent<TextDocument>): vo
     return;
   }
 
+  if (proc.status !== 42) {
+    connection.window.showErrorMessage(
+      "Version mismatch between extenstion and language-server."
+    );
+  }
+
   // Reset Document Data and Parse out the json from the D2 program
   astData = new AstReader(proc.stdout);
+  // astData.dump();
 
   /**
    * Handle any errors.
@@ -153,24 +174,16 @@ documents.onDidChangeContent((change: TextDocumentChangeEvent<TextDocument>): vo
 connection.onCompletion((params: CompletionParams): CompletionList => {
   switch (params.context?.triggerCharacter) {
     case "@":
-      return CompletionHelper.doImport(cwd, params.textDocument.uri);
+      return CompletionHelper.doImport(params.textDocument.uri);
 
     case ".":
       return CompletionHelper.doDot(astData, params.position);
 
-    case " ": {
-      const doc = documents.get(params.textDocument.uri);
-      const x = doc?.offsetAt(params.position);
-      const c = doc?.getText().at((x || 2) - 2);
-
-      if (c === ":") {
-        return CompletionHelper.doAttribute(astData, params.position);
-      }
-      break;
-    }
+    case ":":
+      return CompletionHelper.doAttribute(astData, params.position);
 
     case undefined:
-      return CompletionHelper.doOpenSpace();
+      return CompletionHelper.doOpenSpace(astData, params.position);
   }
 
   return CompletionList.create([], false);
@@ -186,21 +199,17 @@ connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
 /**
  * Request for all document links
  */
-connection.onDocumentLinks((): DocumentLink[] => {
+connection.onDocumentLinks((params: DocumentLinkParams): DocumentLink[] => {
   const retLinks: DocumentLink[] = [];
+  const cwDir = URI.parse(path.dirname(params.textDocument.uri)).fsPath;
 
   for (const link of astData.LinksAndImports) {
-    const docLink = DocumentLink.create(link.Range);
+    link.resolvePath(cwDir);
 
-    let docPath = link.str.replace(/['|"]/g, "");
-
-    // If '.d2' is there, get rid of it.
-    docPath = path.basename(docPath, ".d2");
-
-    // Now put it back, this way 'foo' => 'foo.d2'
-    // and 'foo.d2' => 'foo.d2'
-    docLink.target = path.join(cwd, docPath + ".d2");
-
+    const docLink = DocumentLink.create(link.linkRange.Range);
+    docLink.target = link.linkTarget;
+    docLink.tooltip = link.linkTooltip;  
+    
     retLinks.push(docLink);
   }
 

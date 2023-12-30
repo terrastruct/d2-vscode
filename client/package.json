@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
-    "@types/markdown-it-container": "^2.0.8",
+    "@types/markdown-it-container": "^2.0.9",
     "@types/mocha": "^10.0.3",
     "@types/node": "^20.8.10",
     "@types/vscode": "^1.84.0",
@@ -34,7 +34,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "markdown-it-container": "^3.0.0",
+    "markdown-it-container": "^4.0.0",
     "path": "^0.12.7",
     "vscode-languageclient": "^9.0.1"
   },
