@@ -383,8 +383,6 @@ export class d2ExternalLink {
   private tooltip: string;
 
   public resolvePath(pathStr: string): void {
-    console.log(`CWD: ${pathStr}`);
-
     if (this.node.isImport) {
       this.range.set(this.node.propValue);
       const pv = this.node.propValue;
@@ -398,11 +396,10 @@ export class d2ExternalLink {
     } else if (this.node.isLink) {
       this.range.set(this.node.propValue);
       const pv = this.node.propValue;
-      if (pv instanceof d2StringAndRange){
-        this.target = pv.str;
+      if (pv instanceof d2StringAndRange) {
+        this.target = pathUtil.join(pathStr, pv.str);;
         this.tooltip = `${pv.str}`;
       }
-    
     }
   }
 
