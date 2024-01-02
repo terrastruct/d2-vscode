@@ -154,6 +154,8 @@ repository:
         match: '\*\*'
       - name: keyword.operator.ampersand.d2
         match: "&"
+      - name: keyword.operator.not_ampersand.d2
+        match: "!&"
       - name: entity.name.tag.unquoted.d2
         begin: '(?=[^[:space:]\n#;\[\]{}|$''":.<>*&()])(?!-+-)(?!-+>)(?!-+\*)'
         end: '(?=\s*[\n#;\[\]{}|$:.<>*&()]|-+-|-+>|-+\*)'
@@ -187,7 +189,7 @@ repository:
     name: meta.operator.substitution.d2
     captures: { 0: { name: keyword.operator.substitution.d2 } }
     begin: '\$\{'
-    end: '}(?=\s*[\n#;\[\]{}|$])'
+    end: '\}'
     patterns:
       - include: "#key"
   import:
@@ -201,7 +203,7 @@ repository:
     name: meta.operator.substitution.d2
     captures: { 0: { name: keyword.operator.substitution.d2 } }
     begin: '\.\.\.\$\{'
-    end: '}(?=\s*[\n#;\[\]{}|$])'
+    end: '\}'
     patterns:
       - include: "#key"
   spread_import:
