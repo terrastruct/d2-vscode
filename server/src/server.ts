@@ -146,7 +146,9 @@ documents.onDidChangeContent((change: TextDocumentChangeEvent<TextDocument>): vo
   }
 
   if (proc.status !== 42) {
-    connection.window.showErrorMessage(`Error (${proc.status}) from d2:\n${proc.stderr}\n`);
+    connection.window.showErrorMessage(
+      `Error (${proc.status}) from d2:\n${proc.stderr}\n`
+    );
   }
 
   // Reset Document Data and Parse out the json from the D2 program
@@ -206,8 +208,8 @@ connection.onDocumentLinks((params: DocumentLinkParams): DocumentLink[] => {
 
     const docLink = DocumentLink.create(link.linkRange.Range);
     docLink.target = link.linkTarget;
-    docLink.tooltip = link.linkTooltip;  
-    
+    docLink.tooltip = link.linkTooltip;
+
     retLinks.push(docLink);
   }
 

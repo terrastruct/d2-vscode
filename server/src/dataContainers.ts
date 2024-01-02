@@ -388,7 +388,11 @@ export class d2ExternalLink {
       const pv = this.node.propValue;
       if (pv instanceof d2Import) {
         const pp = pathUtil.parse(pv.impFile);
-        const newPath = pathUtil.join(pathStr, pv.preStr, pv.impFile + (pp.ext === d2Extension ? "" : d2Extension));
+        const newPath = pathUtil.join(
+          pathStr,
+          pv.preStr,
+          pv.impFile + (pp.ext === d2Extension ? "" : d2Extension)
+        );
 
         this.target = newPath;
         this.tooltip = `${newPath}`;
@@ -397,7 +401,7 @@ export class d2ExternalLink {
       this.range.set(this.node.propValue);
       const pv = this.node.propValue;
       if (pv instanceof d2StringAndRange) {
-        this.target = pathUtil.join(pathStr, pv.str);;
+        this.target = pathUtil.join(pathStr, pv.str);
         this.tooltip = `${pv.str}`;
       }
     }
@@ -494,8 +498,9 @@ export class d2Edge extends d2Range {
   }
 
   public toString(): string {
-    return `Edge: ${super.toString()}  ${this.srcEndPt}\n  ${this.srcArrow}-${this.dstArrow
-      }\n  ${this.dstEndPt}\n`;
+    return `Edge: ${super.toString()}  ${this.srcEndPt}\n  ${this.srcArrow}-${
+      this.dstArrow
+    }\n  ${this.dstEndPt}\n`;
   }
 }
 

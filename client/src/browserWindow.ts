@@ -37,7 +37,9 @@ export class BrowserWindow {
         localResourceRoots: [Uri.file(path.join(extContext.extensionPath, "pages"))],
       }
     );
-    this.webViewPanel.iconPath = Uri.file(path.join(extContext.extensionPath, "d2-icon-small.png"));
+    this.webViewPanel.iconPath = Uri.file(
+      path.join(extContext.extensionPath, "d2-icon-small.png")
+    );
     this.webView = this.webViewPanel.webview;
 
     const onDiskPath = path.join(extContext.extensionPath, "pages/previewPage.html");

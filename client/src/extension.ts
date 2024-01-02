@@ -323,14 +323,15 @@ export function extendMarkdownItWithD2(md: ExtAny) {
     anyClass: true,
     validate: (info: string) => {
       return info.trim() === pluginKeyword;
-    }
+    },
   });
 
   const nextHighlighter = md.options.highlight;
   md.options.highlight = (code: string, lang: string) => {
     if (lang === d2Lang) {
       const activeEditor = path.parse(
-        window.activeTextEditor?.document.fileName ?? "").dir;
+        window.activeTextEditor?.document.fileName ?? ""
+      ).dir;
 
       const retText = d2Tasks.compile(code, activeEditor, (msg) => {
         outputChannel.appendInfo(msg);
@@ -339,6 +340,6 @@ export function extendMarkdownItWithD2(md: ExtAny) {
       return `<pre><div>${retText}</div></pre>`;
     }
     return nextHighlighter(code, lang);
-  }
+  };
   return md;
 }
