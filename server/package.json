@@ -15,7 +15,7 @@
     "url": "https://github.com/terrastruct/d2-vscode"
   },
   "devDependencies": {
-    "eslint": "^8.36.0",
+    "eslint": "8.36.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-formatter-pretty": "^4.1.0",
     "eslint-webpack-plugin": "^4.0.1",
