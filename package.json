@@ -310,7 +310,7 @@
     "pretty": "npx prettier@2.8.1 --loglevel=warn --print-width=90 --write **/*.ts",
     "package_client": "webpack --config ./client/webpack.config.js --mode production --devtool hidden-source-map",
     "package_server": "webpack --config ./server/webpack.config.js --mode production --devtool hidden-source-map",
-    "package": "yarn run package_client && yarn run package_server",
+    "package": "yarn run compile && yarn run package_client && yarn run package_server",
     "installdep": "yarn install && cd client && yarn install && cd ../server && yarn install && cd ..",
     "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
     "gen": "yq -o=json . syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
