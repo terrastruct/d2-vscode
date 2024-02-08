@@ -25,15 +25,13 @@ export class AstReader {
     try {
       this.d2Info = JSON.parse(astStr);
     } catch (err) {
-      connection.console.error("Possilble D2/VsCode version missmatch.");
+      connection.console.error("Possilble D2/VsCode version mismatch.");
       connection.console.error(astStr);
     }
 
     this.range = this.d2Info?.Ast.range;
 
-    this.doNodes(this.d2Info?.Ast.nodes);
-
-    // console.info(JSON.stringify(this.d2Info, null, 2));
+    this.processNodes(this.d2Info?.Ast.nodes);
   }
 
   /**
@@ -70,7 +68,7 @@ export class AstReader {
   }
 
   /**
-   * Returns the list of links and imports to they can
+   * Returns the list of links and imports so they can
    * be rendered in the editor
    */
   get LinksAndImports(): d2ExternalLink[] {
@@ -97,7 +95,6 @@ export class AstReader {
 
       for (const node of this.nodes) {
         // Edges
-        //
         if (node.hasEdges) {
           for (const edge of node.Edges) {
             if (edge.src.edgeNode) {
@@ -169,11 +166,8 @@ export class AstReader {
    * Go through all the ast's node objects and break them
    * apart to be used by the language server
    */
-  private doNodes(nodes: LSPAny[]) {
+  private processNodes(nodes: LSPAny[]) {
     for (const node of nodes ?? []) {
-      // console.log("---------------------------------");
-      // console.log(JSON.stringify(node, null, 2));
-      // console.log("---------------------------------");
       const n = new d2Node(node);
       this.nodes.push(n);
 
@@ -195,8 +189,3 @@ export class AstReader {
   }
 }
 
-/**
- ***********************
- * END OF FILE
- ***********************
- */
