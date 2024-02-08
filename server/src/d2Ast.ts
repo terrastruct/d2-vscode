@@ -188,4 +188,3 @@ export class AstReader {
     }
   }
 }
-
