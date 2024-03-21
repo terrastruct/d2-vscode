@@ -50,6 +50,7 @@ To package and install the extension locally, run:
 
 ```sh
 npm install -g @vscode/vsce
+yarn installdep
 npm run dev
 ```
 

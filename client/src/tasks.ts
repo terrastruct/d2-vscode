@@ -42,6 +42,9 @@ class D2Tasks {
       filePath = undefined;
     }
 
+    // Note: if env: is not specified, then process.env
+    // is the default, if anything is specified for env:,
+    // then process.env is not included (good bye path).
     const proc = spawnSync(d2Path, args, {
       cwd: filePath,
       input: text,

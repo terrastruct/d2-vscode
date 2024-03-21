@@ -1,13 +1,28 @@
 {
   "version": "0.2.0",
+
+  "compounds": [
+    {
+      "name": "1 Debug All",
+      "configurations": ["Extension Launch", "Server Attach"],
+      "stopAll": true
+    }
+  ],
   "configurations": [
     {
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}"
-      ],
-      "name": "Launch Extension",
+      "name": "Server Attach",
+      "port": 6009,
+      "timeout": 10000,
+      "request": "attach",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
+      "name": "Extension Launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
+        "${workspaceFolder}/client/dist/**/*.js",
+        "${workspaceFolder}/server/dist/**/*.js"
       ],
       "request": "launch",
       "type": "extensionHost"
