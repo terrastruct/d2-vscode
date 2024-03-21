@@ -453,56 +453,56 @@ export class d2Import extends d2Range {
 /**
  * An edge endpoint (eg. a -> b, 'a' and 'b' are both endpoints)
  */
-export class d2EdgeEndpoint extends d2Range {
-  constructor(ep: LSPAny) {
-    super(ep?.range);
-    this.path = new d2Path(ep?.path);
-  }
+// export class d2EdgeEndpoint extends d2Range {
+//   constructor(ep: LSPAny) {
+//     super(ep?.range);
+//     this.path = new d2Path(ep?.path);
+//   }
 
-  private path: d2Path;
+//   private path: d2Path;
 
-  get edgeNode(): d2StringAndRange | undefined {
-    return this.path.first?.value;
-  }
+//   get edgeNode(): d2StringAndRange | undefined {
+//     return this.path.first?.value;
+//   }
 
-  public toString(): string {
-    return `EndPoint: ${super.toString()}  ${this.path}\n`;
-  }
-}
+//   public toString(): string {
+//     return `EndPoint: ${super.toString()}  ${this.path}\n`;
+//   }
+// }
 
 /**
  * Describes a D2 edge, which is two edge endpoints
  */
-export class d2Edge extends d2Range {
-  constructor(edge: LSPAny) {
-    super(edge?.range);
-    this.srcArrow = edge.src_arrow;
-    this.dstArrow = edge.dst_arrow;
+// export class d2Edge extends d2Range {
+//   constructor(edge: LSPAny) {
+//     super(edge?.range);
+//     this.srcArrow = edge.src_arrow;
+//     this.dstArrow = edge.dst_arrow;
 
-    this.srcEndPt = new d2EdgeEndpoint(edge.src);
-    this.dstEndPt = new d2EdgeEndpoint(edge.dst);
-  }
+//     this.srcEndPt = new d2EdgeEndpoint(edge.src);
+//     this.dstEndPt = new d2EdgeEndpoint(edge.dst);
+//   }
 
-  private srcArrow: string;
-  private dstArrow: string;
+//   private srcArrow: string;
+//   private dstArrow: string;
 
-  private srcEndPt: d2EdgeEndpoint;
-  private dstEndPt: d2EdgeEndpoint;
+//   private srcEndPt: d2EdgeEndpoint;
+//   private dstEndPt: d2EdgeEndpoint;
 
-  get src(): d2EdgeEndpoint {
-    return this.srcEndPt;
-  }
+//   get src(): d2EdgeEndpoint {
+//     return this.srcEndPt;
+//   }
 
-  get dst(): d2EdgeEndpoint {
-    return this.dstEndPt;
-  }
+//   get dst(): d2EdgeEndpoint {
+//     return this.dstEndPt;
+//   }
 
-  public toString(): string {
-    return `Edge: ${super.toString()}  ${this.srcEndPt}\n  ${this.srcArrow}-${
-      this.dstArrow
-    }\n  ${this.dstEndPt}\n`;
-  }
-}
+//   public toString(): string {
+//     return `Edge: ${super.toString()}  ${this.srcEndPt}\n  ${this.srcArrow}-${
+//       this.dstArrow
+//     }\n  ${this.dstEndPt}\n`;
+//   }
+// }
 
 /**
  * A D2 node
@@ -513,11 +513,13 @@ export class d2Node extends d2Range {
 
     if (n.map_key.key) {
       this.key = new d2Key(n.map_key.key);
-    } else if (n.map_key.edges) {
-      for (const edge of n.map_key.edges) {
-        this.edges.push(new d2Edge(edge));
-      }
     }
+
+    // else if (n.map_key.edges) {
+    //   for (const edge of n.map_key.edges) {
+    //     this.edges.push(new d2Edge(edge));
+    //   }
+    // }
 
     this.primary = new d2Primary(n.map_key.primary);
 
@@ -537,7 +539,7 @@ export class d2Node extends d2Range {
   private primary: d2Primary | undefined;
   private value: d2NodeValue | d2Value | d2Import | undefined;
 
-  private edges: d2Edge[] = [];
+  // private edges: d2Edge[] = [];
 
   /**
    * Properties
@@ -553,14 +555,14 @@ export class d2Node extends d2Range {
   }
 
   // Node has edges
-  get hasEdges(): boolean {
-    return Boolean(this.edges.length > 0);
-  }
+  // get hasEdges(): boolean {
+  //   return Boolean(this.edges.length > 0);
+  // }
 
   // List of edges
-  get Edges(): d2Edge[] {
-    return this.edges;
-  }
+  // get Edges(): d2Edge[] {
+  //   return this.edges;
+  // }
 
   // Node has a key
   get hasKey(): boolean {
@@ -623,18 +625,121 @@ export class d2Node extends d2Range {
 
     if (this.hasKey) {
       strRet += `${this.key?.toString()}`;
-    } else if (this.hasEdges) {
-      let s = `\nEdges\n-----\n`;
-      for (const edge of this.edges) {
-        s += `${edge.toString()}`;
-      }
-      strRet += s + "\n";
     }
+    // else if (this.hasEdges) {
+    //   let s = `\nEdges\n-----\n`;
+    //   for (const edge of this.edges) {
+    //     s += `${edge.toString()}`;
+    //   }
+    //   strRet += s + "\n";
+    // }
 
     strRet += this.hasPrimary ? `${this.primary?.toString()}` : "";
     strRet += this.hasValue ? `${this.value?.toString()}` : "";
     strRet += "\n";
     return strRet;
+  }
+}
+
+export class d2IrField {
+  constructor(n: string) {
+    this.group = n;
+  }
+
+  public group: string;
+  public references: d2Range[] = [];
+
+  public toString(): string {
+    let s = `Group: ${this.group}\n`;
+    for (const ref of this.references) {
+      s += `  ${ref.toString()}\n`;
+    }
+    return s;
+  }
+}
+
+export class d2IrReference extends d2Range {
+  constructor(ref: LSPAny) {
+    super(ref.string.range);
+    this.value = ref.string.value[0].string;
+  }
+
+  public value: string;
+
+  public toString(): string {
+    return `  Ref: ${this.value} - ${super.toString()}`;
+  }
+}
+
+export class d2Ir {
+  constructor(f: LSPAny) {
+    console.log("=====================");
+    console.log(JSON.stringify(f, null, 2));
+    console.log("=====================");
+
+    this.fields = [];
+    for (const ref of f.references) {
+      const r = new d2IrReference(ref);
+      this.references.push(r);
+    }
+
+    if (f.composite !== undefined) {
+      this.processComposite(f);
+    } else {
+      this.processSingle(f);
+    }
+  }
+
+  public references: d2IrReference[] = [];
+  public fields: d2IrField[] = [];
+
+  processSingle(f: LSPAny) {
+    console.group();
+    console.log(`Single: ${f.name}`);
+    const irf = new d2IrField(f.name);
+
+    for (const ref of f.references) {
+      console.log(`  Ref: ${ref.string.range}`);
+      irf.references.push(ref.string.range);
+    }
+
+    this.fields.push(irf);
+
+    console.groupEnd();
+  }
+
+  processComposite(f: LSPAny) {
+    console.group();
+    console.log(`Comp: ${f.name} -- ${Boolean(f.composite != undefined)}`);
+    const irf = new d2IrField(f.name);
+
+    for (const ref of f.references) {
+      console.log(`  Ref: ${ref.string.range}`);
+      irf.references.push(ref.string.range);
+    }
+
+    this.fields.push(irf);
+
+    for (const fld of f.composite.fields ?? []) {
+      if (fld.composite !== undefined) {
+        this.processComposite(fld);
+      }
+    }
+    console.groupEnd();
+  }
+
+  public toString(): string {
+    let s = "References: \n";
+    for (const r of this.references) {
+      s += `  --> ${r}`;
+    }
+    s += "\nFields: \n";
+
+    for (const f of this.fields) {
+      s += f.toString();
+    }
+
+    return s;
   }
 }
 

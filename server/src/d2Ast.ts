@@ -12,7 +12,13 @@ import {
   PublishDiagnosticsParams,
 } from "vscode-languageserver";
 
-import { d2ExternalLink, d2Node, d2Range, d2StringAndRange } from "./dataContainers";
+import {
+  d2ExternalLink,
+  d2Ir,
+  d2Node,
+  d2Range,
+  d2StringAndRange,
+} from "./dataContainers";
 import { Position } from "vscode-languageserver-textdocument";
 import { connection } from "./server";
 
@@ -23,15 +29,19 @@ import { connection } from "./server";
 export class AstReader {
   constructor(astStr: string) {
     try {
+      // console.log(astStr);
       this.d2Info = JSON.parse(astStr);
     } catch (err) {
       connection.console.error("Possilble D2/VsCode version mismatch.");
       connection.console.error(astStr);
     }
 
+    // connection.sendNotification("foo", "bar");
+
     this.range = this.d2Info?.Ast.range;
 
     this.processNodes(this.d2Info?.Ast.nodes);
+    this.processIrFields(this.d2Info?.Ir.fields);
   }
 
   /**
@@ -40,6 +50,7 @@ export class AstReader {
   private range: d2Range;
   private d2Info: LSPAny;
   private nodes: d2Node[] = [];
+  private fields: d2Ir[] = [];
   private references: d2StringAndRange[] | undefined;
 
   /**
@@ -95,16 +106,16 @@ export class AstReader {
 
       for (const node of this.nodes) {
         // Edges
-        if (node.hasEdges) {
-          for (const edge of node.Edges) {
-            if (edge.src.edgeNode) {
-              this.references.push(edge.src.edgeNode);
-            }
-            if (edge.dst.edgeNode) {
-              this.references.push(edge.dst.edgeNode);
-            }
-          }
-        }
+        // if (node.hasEdges) {
+        //   for (const edge of node.Edges) {
+        //     if (edge.src.edgeNode) {
+        //       this.references.push(edge.src.edgeNode);
+        //     }
+        //     if (edge.dst.edgeNode) {
+        //       this.references.push(edge.dst.edgeNode);
+        //     }
+        //   }
+        // }
 
         if (node.hasKey) {
           if (node.Key?.key) {
@@ -168,6 +179,10 @@ export class AstReader {
    */
   private processNodes(nodes: LSPAny[]) {
     for (const node of nodes ?? []) {
+      // It's a Comment, it's not quite a node
+      if (node.map_key === undefined) {
+        continue;
+      }
       const n = new d2Node(node);
       this.nodes.push(n);
 
@@ -177,6 +192,22 @@ export class AstReader {
           this.nodes.push(nv);
         }
       }
+    }
+  }
+
+  /**
+   * Go through all the ir's field objects to get
+   * references.
+   */
+  processIrFields(fields: LSPAny[]) {
+    for (const field of fields ?? []) {
+      const f = new d2Ir(field);
+      this.fields.push(f);
+    }
+
+    console.log("\n---------\nIR\n----------\n");
+    for (const f of this.fields) {
+      console.log(f.toString());
     }
   }
 

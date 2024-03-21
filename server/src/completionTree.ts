@@ -91,7 +91,7 @@ export class ItemTree {
   /**
    *
    */
-  private static NumberRange(start: number, end: number): TreeItem[] {
+  private static NumberRangeInteger(start: number, end: number): TreeItem[] {
     const tis: TreeItem[] = [];
 
     for (let i = start; i <= end; i++) {
@@ -349,15 +349,15 @@ export class ItemTree {
     new TreeItem("stroke", this.colorList),
     new TreeItem("fill", this.colorList),
     new TreeItem("fill-pattern", this.fillPattern),
-    new TreeItem("stroke-width", this.NumberRange(1, 15)),
-    new TreeItem("stroke-dash", this.NumberRange(0, 10)),
-    new TreeItem("border-radius", this.NumberRange(0, 20)),
+    new TreeItem("stroke-width", this.NumberRangeInteger(1, 15)),
+    new TreeItem("stroke-dash", this.NumberRangeInteger(0, 10)),
+    new TreeItem("border-radius", this.NumberRangeInteger(0, 20)),
     new TreeItem("shadow", this.trueFalse),
     new TreeItem("3D", this.trueFalse),
     new TreeItem("multiple", this.trueFalse),
     new TreeItem("double-border", this.trueFalse),
     new TreeItem("font", this.fonts),
-    new TreeItem("font-size", this.NumberRange(8, 100)),
+    new TreeItem("font-size", this.NumberRangeInteger(8, 100)),
     new TreeItem("font-color", this.colorList),
     new TreeItem("bold", this.trueFalse),
     new TreeItem("italic", this.trueFalse),

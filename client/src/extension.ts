@@ -301,6 +301,9 @@ function startLanguageServer(): void {
   );
 
   langClient.start();
+  // langClient.onNotification("foo", (param: string) => {
+  //   console.log(`OnNotification: ${param}`)
+  // });
 }
 
 /**

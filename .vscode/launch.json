@@ -3,22 +3,23 @@
 
   "compounds": [
     {
-      "name": "Server/Client",
-      "configurations": ["Attach to Server", "Launch Extension"],
+      "name": "1 Debug All",
+      "configurations": ["Extension Launch", "Server Attach"],
       "stopAll": true
     }
   ],
   "configurations": [
     {
-      "name": "Attach to Server",
+      "name": "Server Attach",
       "port": 6009,
+      "timeout": 10000,
       "request": "attach",
       "skipFiles": ["<node_internals>/**"],
       "type": "node"
     },
     {
+      "name": "Extension Launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-      "name": "Launch Extension",
       "outFiles": [
         "${workspaceFolder}/client/dist/**/*.js",
         "${workspaceFolder}/server/dist/**/*.js"

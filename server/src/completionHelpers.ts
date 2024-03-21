@@ -122,8 +122,6 @@ export class CompletionHelper {
 
     const node = astData.nodeAtPosition({ line: pos.line, character: charPos });
 
-    // console.info(`Node: ${charPos} -> \n${JSON.stringify(node, null, 2)}\n\n`);
-
     if (node) {
       const list: string[] = ItemTree.getListFromPath(node);
 
@@ -145,14 +143,13 @@ export class CompletionHelper {
   static doOpenSpace(astData: AstReader, pos: Position): CompletionList {
     const compItems: CompletionItem[] = [];
 
-    // THIS NEEDS SOME MORE WORK TO} DETECT WHAT COMPLETION HELPER SHOULD BE CALLED
+    // THIS NEEDS SOME MORE WORK TO DETECT WHICH COMPLETION HELPER SHOULD BE CALLED
 
-    const node = astData.nodeAtPosition({ line: pos.line, character: pos.character });
-    console.log(`Open Space: ${node}`);
+    // const node = astData.nodeAtPosition({ line: pos.line, character: pos.character });
 
-    for (const tItem of ItemTree.Root) {
-      compItems.push(CompletionItem.create(tItem.item));
-    }
+    // for (const tItem of ItemTree.Root) {
+    //   compItems.push(CompletionItem.create(tItem.item));
+    // }
 
     return CompletionList.create(compItems, false);
   }

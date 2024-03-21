@@ -6,7 +6,7 @@
 import { R_OK } from "constants";
 import { accessSync, readdirSync, statSync } from "fs";
 import path = require("path");
-import { d2Extension } from "./server";
+import { connection, d2Extension } from "./server";
 
 /**
  * Given a directory, finds all d2 files in that directory
@@ -42,6 +42,14 @@ export function getD2FilesFromPaths(dirs: string[], files: string[] = []): strin
   }
 
   return files;
+}
+
+export function GetFullExePath(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    connection.workspace.getConfiguration("D2.execPath").then((result) => {
+      resolve(result);
+    });
+  });
 }
 
 /**

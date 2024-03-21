@@ -4,6 +4,9 @@
   "scopeName": "source.d2",
   "patterns": [
     {
+      "include": "#block_comment"
+    },
+    {
       "include": "#comment"
     },
     {
@@ -424,6 +427,9 @@
       "end": "\\]",
       "patterns": [
         {
+          "include": "#block_comment"
+        },
+        {
           "include": "#comment"
         },
         {
@@ -516,7 +522,26 @@
     },
     "comment": {
       "name": "comment.line.number-sign.d2",
-      "match": "#.*"
+      "match": "#.*$"
+    },
+    "block_comment": {
+      "patterns": [
+        {
+          "name": "comment.block.d2",
+          "begin": "\"\"\"",
+          "end": "\"\"\"",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.comment.start.d2"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.comment.end.d2"
+            }
+          }
+        }
+      ]
     },
     "debug": {
       "patterns": [

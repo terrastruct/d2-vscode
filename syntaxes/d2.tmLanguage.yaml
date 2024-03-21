@@ -28,6 +28,7 @@ name: d2
 scopeName: source.d2
 patterns:
   # - include: '#debug'
+  - include: "#block_comment"
   - include: "#comment"
   - include: "#semicolon"
   - include: "#spread_substitution"
@@ -219,6 +220,7 @@ repository:
     begin: '\['
     end: '\]'
     patterns:
+      - include: "#block_comment"
       - include: "#comment"
       - include: "#semicolon"
       - include: "#substitution"
@@ -257,8 +259,14 @@ repository:
     match: ";"
   comment:
     name: comment.line.number-sign.d2
-    match: "#.*"
-
+    match: "#.*$"
+  block_comment:
+    patterns: 
+      - name: comment.block.d2
+        begin: '"""'
+        end: '"""'
+        beginCaptures: { 0: { name: punctuation.comment.start.d2 }}
+        endCaptures: { 0: { name: punctuation.comment.end.d2 }}
   # See comment near top for debug's purpose.
   debug:
     patterns:
