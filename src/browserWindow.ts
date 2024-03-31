@@ -56,9 +56,7 @@ export class BrowserWindow {
       (message) => {
         switch (message.command) {
           case "refreshPage":
-            {
               previewGenerator.generateAll();
-            }
             break;
           case "clickOnTag_A": {
             const f = message.link.trim().toLowerCase();
