@@ -28,10 +28,9 @@ import { util } from "./utility";
 import path = require("path");
 import { TextEncoder } from "util";
 
-const d2Ext = "d2";
-const d2Lang = "d2";
-const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
-
+export const d2Ext = "d2";
+export const d2Lang = "d2";
+export const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 export const d2ConfigSection = "D2";
 export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
 export const outputChannel: D2OutputChannel = new D2OutputChannel();
@@ -239,9 +238,9 @@ export function activate(context: ExtensionContext): any {
   // Return our markdown renderer
   return {
     // Sets up our ability to render for markdown files
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extendMarkdownIt(md: any) {
-      return extendMarkdownItWithD2(md);
+    extendMarkdownIt(md: markdownit) {
+      extendMarkdownItWithD2(md);
+      return md;
     },
   };
 }
