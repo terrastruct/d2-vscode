@@ -50,6 +50,12 @@ export class DocToPreviewGenerator {
     return this.mapOfConnection.get(inDoc);
   }
 
+  generateAll(): void {
+    this.mapOfConnection.forEach((_: D2P, td: TextDocument) => {
+      this.generate(td);
+    });
+  }
+
   generate(inDoc: TextDocument): void {
     const trkObj = this.getTrackObject(inDoc);
     // if we can't find our tracking info, no sense doing anything
@@ -77,7 +83,7 @@ export class DocToPreviewGenerator {
     trkObj.outputDoc.showBusy();
 
     taskRunner.genTask(trkObj.inputDoc?.fileName, fileText, (data, error) => {
-      const p = path.parse(trkObj.inputDoc?.fileName || "");
+      const p = path.parse(trkObj.inputDoc?.fileName ?? "");
 
       if (data.length > 0) {
         trkObj.outputDoc?.setSvg(data);
@@ -89,7 +95,17 @@ export class DocToPreviewGenerator {
 
         let list = "";
         arr.forEach((s) => {
-          list += `<li>${s}</li>`;
+          if (s.length > 0) {
+            /*
+              Matches: "error:0:0: message" or
+                       "warning:100:20:explaination"
+            */
+            const rg = new RegExp(/^(.*?):(\d+):(\d+):(\s+)(.*)$/g).exec(s);
+            const msg = rg !== null ? rg[5] : s;
+            const line = rg ? rg[2] ?? "0" : "0";
+            const col = rg ? rg[3] ?? "0" : "0";
+            list += `<li>${msg}  (${line}:${col})</li>`;
+          }
         });
 
         trkObj.outputDoc?.setToastMsg("Errors");

@@ -19,7 +19,6 @@ import {
 
 import { DocToPreviewGenerator } from "./docToPreviewGenerator";
 import { D2OutputChannel } from "./outputChannel";
-import * as mdItContainer from "markdown-it-container";
 import { layoutPicker } from "./layoutPicker";
 import { themePicker } from "./themePicker";
 import { TaskRunner } from "./taskRunner";
@@ -27,11 +26,20 @@ import { d2Tasks } from "./tasks";
 import { util } from "./utility";
 import path = require("path");
 import { TextEncoder } from "util";
+import markdownContainer = require("markdown-it-container");
+import {
+  LanguageClient,
+  LanguageClientOptions,
+  ServerOptions,
+  TransportKind,
+} from "vscode-languageclient/node";
 
 const d2Ext = "d2";
 const d2Lang = "d2";
-const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
+const pluginKeyword = "d2";
+let langClient: LanguageClient;
 
+export const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 export const d2ConfigSection = "D2";
 export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
 export const outputChannel: D2OutputChannel = new D2OutputChannel();
@@ -39,7 +47,9 @@ export const taskRunner: TaskRunner = new TaskRunner();
 export let extContext: ExtensionContext;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function activate(context: ExtensionContext): any {
+export type ExtAny = any;
+
+export function activate(context: ExtensionContext): ExtAny {
   extContext = context;
 
   context.subscriptions.push(
@@ -236,40 +246,103 @@ export function activate(context: ExtensionContext): any {
     util.checkForD2Install();
   }
 
+  startLanguageServer();
+
   // Return our markdown renderer
   return {
     // Sets up our ability to render for markdown files
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extendMarkdownIt(md: any) {
-      return extendMarkdownItWithD2(md);
+    extendMarkdownIt(md: markdownit) {
+      extendMarkdownItWithD2(md);
+      return md;
     },
   };
 }
 
-const pluginKeyword = "d2";
+/**
+ * This starts the D2 Language Server
+ */
+function startLanguageServer(): void {
+  // The server is implemented in node
+  const serverModule = extContext.asAbsolutePath(
+    path.join("server", "dist", "server.js")
+  );
+  // The debug options for the server
+  // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
+  const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
+
+  // If the extension is launched in debug mode then the debug server options are used
+  // Otherwise the run options are used
+  const serverOptions: ServerOptions = {
+    run: {
+      module: serverModule,
+      transport: TransportKind.ipc,
+    },
+    debug: {
+      module: serverModule,
+      transport: TransportKind.ipc,
+      options: debugOptions,
+    },
+  };
+
+  const clientOptions: LanguageClientOptions = {
+    // Register the server for D2 documents
+    documentSelector: [{ scheme: "file", language: d2Lang }],
+    synchronize: {
+      configurationSection: d2ConfigSection,
+    },
+  };
+
+  // Create the language client and start the client.
+  langClient = new LanguageClient(
+    "D2LanguageServer",
+    "D2-Language Server",
+    serverOptions,
+    clientOptions
+  );
+
+  langClient.start();
+  // langClient.onNotification("foo", (param: string) => {
+  //   console.log(`OnNotification: ${param}`)
+  // });
+}
 
 /**
- *
+ * Checks to see if the language server is up and running
+ * so features can be turned on/off appropriately
+ */
+export function isLanguageServerRunning(): boolean {
+  if (langClient.initializeResult === undefined) {
+    return false;
+  }
+  return true;
+}
+
+/**
  * This function will be asked by the Markdown system to render
  * a d2 snippit in a markdown file
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function extendMarkdownItWithD2(md: any): unknown {
-  md.use(mdItContainer, pluginKeyword, {});
+export function extendMarkdownItWithD2(md: ExtAny) {
+  md.use(markdownContainer, pluginKeyword, {
+    anyClass: true,
+    validate: (info: string) => {
+      return info.trim() === pluginKeyword;
+    },
+  });
 
-  const highlight = md.options.highlight;
+  const nextHighlighter = md.options.highlight;
   md.options.highlight = (code: string, lang: string) => {
     if (lang === d2Lang) {
       const activeEditor = path.parse(
         window.activeTextEditor?.document.fileName ?? ""
       ).dir;
 
-      return d2Tasks.compile(code, activeEditor, (msg) => {
+      const retText = d2Tasks.compile(code, activeEditor, (msg) => {
         outputChannel.appendInfo(msg);
       });
-    }
-    return highlight(code, lang);
-  };
 
+      return `<pre><div>${retText}</div></pre>`;
+    }
+    return nextHighlighter(code, lang);
+  };
   return md;
 }

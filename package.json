@@ -28,7 +28,7 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./dist/extension.js",
+  "main": "./client/dist/extension.js",
   "contributes": {
     "taskDefinitions": [
       {
@@ -44,7 +44,7 @@
           "${cwd}"
         ],
         "pattern": {
-          "regexp": "^\\[(.*)\\] (err):([A-Za-z\\s]*)([\\:]*\\s)(\\d+):(\\d+):(.*)$",
+          "regexp": "^\\[(.*)\\] (err): ([A-Za-z\\s]*)([\\:]*\\s)-:(\\d+):(\\d+): (.*)$",
           "file": 1,
           "severity": 2,
           "code": 3,
@@ -89,9 +89,8 @@
         "path": "./syntaxes/markdown.tmLanguage.json"
       },
       {
-        "language": "d2-markdown-injection",
         "scopeName": "markdown.d2.codeblock",
-        "path": "./syntaxes/d2-markdown-injection.json",
+        "path": "./syntaxes/d2.markdown.injection.json",
         "injectTo": [
           "text.html.markdown"
         ],
@@ -292,37 +291,40 @@
     },
     "themes": [
       {
-        "label": "D2 Light",
-        "uiTheme": "vs",
-        "path": "./themes/light-color-theme.json"
-      },
-      {
         "label": "D2 Dark",
         "uiTheme": "vs-dark",
         "path": "./themes/dark-color-theme.json"
+      },
+      {
+        "label": "D2 Light",
+        "uiTheme": "vs",
+        "path": "./themes/light-color-theme.json"
       }
     ]
   },
   "scripts": {
     "vscode:prepublish": "yarn run package",
-    "compile": "webpack",
-    "watch": "webpack --watch --devtool source-map",
-    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
+    "pretty": "npx prettier@2.8.1 --loglevel=warn --print-width=90 --write **/*.ts",
+    "package_client": "webpack --config ./client/webpack.config.js --mode production --devtool hidden-source-map",
+    "package_server": "webpack --config ./server/webpack.config.js --mode production --devtool hidden-source-map",
+    "package": "yarn run compile && yarn run package_client && yarn run package_server",
+    "installdep": "yarn install && cd client && yarn install && cd ../server && yarn install && cd ..",
     "dev": "code --uninstall-extension terrastruct.d2; yarn gen && yarn pkg && code --install-extension d2.vsix",
     "gen": "yq -o=json . syntaxes/d2.tmLanguage.yaml > syntaxes/d2.tmLanguage.json",
     "pkg": "vsce package --out d2.vsix"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
-    "@types/markdown-it-container": "^2.0.5",
     "@types/mocha": "^10.0.0",
     "@types/node": "16.x",
-    "@types/vscode": "^1.73.0",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",
     "@vscode/test-electron": "^2.2.0",
     "@vscode/vsce": "^2.15.0",
-    "eslint": "^8.33.0",
+    "eslint": "8.36.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-formatter-pretty": "^4.1.0",
     "eslint-webpack-plugin": "^3.2.0",
@@ -333,9 +335,6 @@
     "typescript": "^4.9.4",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0"
-  },
-  "dependencies": {
-    "markdown-it-container": "^3.0.0"
   },
   "homepage": "https://d2lang.com",
   "icon": "d2-icon.png",
