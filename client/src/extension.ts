@@ -37,9 +37,9 @@ import {
 const d2Ext = "d2";
 const d2Lang = "d2";
 const pluginKeyword = "d2";
-const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 let langClient: LanguageClient;
 
+export const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 export const d2ConfigSection = "D2";
 export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
 export const outputChannel: D2OutputChannel = new D2OutputChannel();

@@ -50,6 +50,12 @@ export class DocToPreviewGenerator {
     return this.mapOfConnection.get(inDoc);
   }
 
+  generateAll(): void {
+    this.mapOfConnection.forEach((_: D2P, td: TextDocument) => {
+      this.generate(td);
+    });
+  }
+
   generate(inDoc: TextDocument): void {
     const trkObj = this.getTrackObject(inDoc);
     // if we can't find our tracking info, no sense doing anything
