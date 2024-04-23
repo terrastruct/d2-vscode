@@ -22,7 +22,7 @@ export class D2P {
  * DocToPreviewGenerator - Keeper of the map of D2P objects
  *  that allow for associating a document to it's preview
  *  information.
- * 
+ *
  * This object is/must be a Singleton.
  **/
 export class DocToPreviewGenerator {
@@ -91,16 +91,16 @@ export class DocToPreviewGenerator {
     );
 
     // Regenerate the browser view for all open d2 documents, since
-    // there are dependencies among all the documents, we have to 
+    // there are dependencies among all the documents, we have to
     // regenerate them one at a time.
     fileMap.forEach((_: D2P, td: TextDocument) => {
       this.mutex.acquire().then(() => {
         this.generate(td, false);
-      })
+      });
     });
   }
 
-  generate(inDoc: TextDocument, openPreview: boolean = true, cbFinished: any = undefined): void {
+  generate(inDoc: TextDocument, openPreview: boolean = true): void {
     const trkObj = this.getTrackObject(inDoc);
     // if we can't find our tracking info, no sense doing anything
     if (!trkObj) {

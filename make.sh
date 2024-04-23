@@ -10,7 +10,7 @@ PATH="$(cd -- "$(dirname "$0")" && pwd)/ci/sub/bin:$PATH"
 cd "$(dirname "$0")"
 
 lint() {
-  sh_c hide xargsd "'\.\(ts\|tsx\|scss\|css\)$'" npx eslint@8.36.0
+  sh_c hide xargsd "'\.\(ts\|tsx\|scss\|css\)$'" npx eslint@8.40.0
 }
 
 ensure_changed_files
