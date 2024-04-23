@@ -28,6 +28,7 @@ name: d2
 scopeName: source.d2
 patterns:
   # - include: '#debug'
+  - include: "#block_comment"
   - include: "#comment"
   - include: "#semicolon"
   - include: "#spread_substitution"
@@ -145,7 +146,7 @@ repository:
           - include: "#key"
           - include: "#error"
       - name: keyword.reserved.d2
-        match: '(?:grid\-gap|vertical\-gap|horizontal\-gap|classes|direction|grid\-columns|grid\-rows|text\-transform|shape|layers|steps|tooltip|font|bold|italic|underline|top|left|icon|constraint|near|opacity|stroke|fill\-pattern|fill|filled|stroke\-width|width|height|double\-border|border\-radius|source\-arrowhead|target\-arrowhead|link|stroke\-dash|font\-size|font\-color|shadow|multiple|3d|animated|class|label|style|import|vars|scenarios|on_click|src|dst)(?=\s*[\n#;\[\]{}|$''":.<>*&()]|-+-|-+>|-+\*)'
+        match: '(?:grid\-gap|vertical\-gap|horizontal\-gap|classes|direction|grid\-columns|grid\-rows|text\-transform|shape|layers|steps|tooltip|font|bold|italic|underline|top|left|icon|constraint|near|opacity|stroke|fill\-pattern|fill|filled|stroke\-width|width|height|double\-border|border\-radius|source\-arrowhead|target\-arrowhead|link|stroke\-dash|font\-size|font\-color|shadow|multiple|3d|animated|class|label|style|vars|scenarios|on_click|src|dst)(?=\s*[\n#;\[\]{}|$''":.<>*&()]|-+-|-+>|-+\*)'
       - name: punctuation.period.d2
         match: '\.'
       - name: keyword.operator.glob.d2
@@ -219,6 +220,7 @@ repository:
     begin: '\['
     end: '\]'
     patterns:
+      - include: "#block_comment"
       - include: "#comment"
       - include: "#semicolon"
       - include: "#substitution"
@@ -255,10 +257,18 @@ repository:
   semicolon:
     name: punctuation.semicolon.d2
     match: ";"
+  # Single line comment
   comment:
     name: comment.line.number-sign.d2
-    match: "#.*"
-
+    match: "#.*$"
+  # Multi line comment
+  block_comment:
+    patterns: 
+      - name: comment.block.d2
+        begin: '"""'
+        end: '"""'
+        beginCaptures: { 0: { name: punctuation.comment.start.d2 }}
+        endCaptures: { 0: { name: punctuation.comment.end.d2 }}
   # See comment near top for debug's purpose.
   debug:
     patterns:
