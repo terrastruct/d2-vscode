@@ -32,6 +32,7 @@ export const d2Ext = "d2";
 export const d2Lang = "d2";
 export const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 export const d2ConfigSection = "D2";
+export const d2TaskName = "D2 Task";
 export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
 export const outputChannel: D2OutputChannel = new D2OutputChannel();
 export const taskRunner: TaskRunner = new TaskRunner();
@@ -238,7 +239,7 @@ export function activate(context: ExtensionContext): any {
   // Return our markdown renderer
   return {
     // Sets up our ability to render for markdown files
-    extendMarkdownIt(md: markdownit) {
+    extendMarkdownIt(md: MarkdownIt) {
       extendMarkdownItWithD2(md);
       return md;
     },
