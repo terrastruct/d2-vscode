@@ -12,7 +12,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16.x'
+          node-version: '20.x'
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - run: COLOR=1 ./make.sh
