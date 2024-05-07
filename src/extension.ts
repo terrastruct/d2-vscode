@@ -38,10 +38,10 @@ export const outputChannel: D2OutputChannel = new D2OutputChannel();
 export const taskRunner: TaskRunner = new TaskRunner();
 export let extContext: ExtensionContext;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type VSCAny = any;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function activate(context: ExtensionContext): any {
+export function activate(context: ExtensionContext): VSCAny {
   extContext = context;
 
   context.subscriptions.push(
@@ -255,8 +255,7 @@ const pluginKeyword = "d2";
  * This function will be asked by the Markdown system to render
  * a d2 snippit in a markdown file
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function extendMarkdownItWithD2(md: any): unknown {
+export function extendMarkdownItWithD2(md: VSCAny): unknown {
   md.use(mdItContainer, pluginKeyword, {});
 
   const highlight = md.options.highlight;
