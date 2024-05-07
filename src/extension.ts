@@ -38,6 +38,8 @@ export const outputChannel: D2OutputChannel = new D2OutputChannel();
 export const taskRunner: TaskRunner = new TaskRunner();
 export let extContext: ExtensionContext;
 
+export type VSCAny = any;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function activate(context: ExtensionContext): any {
   extContext = context;
@@ -239,9 +241,9 @@ export function activate(context: ExtensionContext): any {
   // Return our markdown renderer
   return {
     // Sets up our ability to render for markdown files
-    extendMarkdownIt(md: any) {
-    extendMarkdownItWithD2(md);
-    return md;
+    extendMarkdownIt(md: VSCAny) {
+      extendMarkdownItWithD2(md);
+      return md;
     },
   };
 }
