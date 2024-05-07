@@ -239,9 +239,9 @@ export function activate(context: ExtensionContext): any {
   // Return our markdown renderer
   return {
     // Sets up our ability to render for markdown files
-    extendMarkdownIt(md: MarkdownIt) {
-      extendMarkdownItWithD2(md);
-      return md;
+    extendMarkdownIt(md: any) {
+    extendMarkdownItWithD2(md);
+    return md;
     },
   };
 }
