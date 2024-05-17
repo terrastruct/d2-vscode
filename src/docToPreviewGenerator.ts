@@ -1,8 +1,10 @@
 import * as path from "path";
-import { TextDocument } from "vscode";
+import { TaskEndEvent, tasks, TextDocument } from "vscode";
 import { BrowserWindow } from "./browserWindow";
-import { outputChannel, taskRunner } from "./extension";
+import { d2TaskName, outputChannel, taskRunner } from "./extension";
 import { RefreshTimer } from "./refreshTimer";
+import { statSync } from "fs";
+import { Mutex } from "async-mutex";
 
 /**
  *  D2P - Document to Preview.  This tracks the connection
@@ -13,15 +15,29 @@ export class D2P {
   inputDoc?: TextDocument;
   outputDoc?: BrowserWindow;
   timer?: RefreshTimer;
+  fileDateTime: number = 0;
 }
 
 /**
  * DocToPreviewGenerator - Keeper of the map of D2P objects
  *  that allow for associating a document to it's preview
  *  information.
+ *
+ * This object is/must be a Singleton.
  **/
 export class DocToPreviewGenerator {
+  mutex: Mutex = new Mutex();
   mapOfConnection: Map<TextDocument, D2P> = new Map<TextDocument, D2P>();
+
+  constructor() {
+    // Since this object is a singleton, we don't need to dispose
+    // this event each time the object is disposed.
+    tasks.onDidEndTask((e: TaskEndEvent) => {
+      if (e.execution.task.name === d2TaskName) {
+        this.mutex.release();
+      }
+    });
+  }
 
   createObjectToTrack(inDoc: TextDocument): D2P {
     const trk = new D2P();
@@ -50,7 +66,41 @@ export class DocToPreviewGenerator {
     return this.mapOfConnection.get(inDoc);
   }
 
-  generate(inDoc: TextDocument): void {
+  /**
+   * Get the last modified time of each document we are
+   * tracking.
+   **/
+  private getFileTimes(): void {
+    this.mapOfConnection.forEach((trk: D2P, td: TextDocument) => {
+      trk.fileDateTime = statSync(td.uri.fsPath).mtimeMs;
+    });
+  }
+
+  generateAll(): void {
+    this.getFileTimes();
+
+    // Sort the files oldest to newest.  This should catch most
+    // order of dependency problems witout resorting to dependency
+    // analysis.
+    const fileMap = new Map(
+      [...this.mapOfConnection.entries()].sort(
+        (a: [TextDocument, D2P], b: [TextDocument, D2P]): number => {
+          return b[1].fileDateTime - a[1].fileDateTime;
+        }
+      )
+    );
+
+    // Regenerate the browser view for all open d2 documents, since
+    // there are dependencies among all the documents, we have to
+    // regenerate them one at a time.
+    fileMap.forEach((_: D2P, td: TextDocument) => {
+      this.mutex.acquire().then(() => {
+        this.generate(td, false);
+      });
+    });
+  }
+
+  generate(inDoc: TextDocument, openPreview: boolean = true): void {
     const trkObj = this.getTrackObject(inDoc);
     // if we can't find our tracking info, no sense doing anything
     if (!trkObj) {
@@ -67,14 +117,14 @@ export class DocToPreviewGenerator {
       return;
     }
     // If we don't have a preview window already, create one
-    if (!trkObj.outputDoc) {
+    if (!trkObj.outputDoc && openPreview) {
       trkObj.outputDoc = new BrowserWindow(trkObj);
       trkObj.outputDoc.show();
       trkObj.outputDoc.showToast();
       trkObj.outputDoc.setToastMsg("Loading...");
     }
 
-    trkObj.outputDoc.showBusy();
+    trkObj.outputDoc?.showBusy();
 
     taskRunner.genTask(trkObj.inputDoc?.fileName, fileText, (data, error) => {
       const p = path.parse(trkObj.inputDoc?.fileName || "");

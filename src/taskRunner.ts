@@ -11,7 +11,7 @@ import {
   tasks,
   TaskScope,
 } from "vscode";
-import { outputChannel } from "./extension";
+import { d2TaskName, outputChannel } from "./extension";
 import { d2Tasks } from "./tasks";
 
 // eslint-disable-next-line no-unused-vars
@@ -25,7 +25,6 @@ export type TaskOutput = (text: string, flag?: boolean) => void;
  * when the task is finished.
  */
 export class TaskRunner {
-  public retVal = "";
   public genTask(filename: string, text: string, callback: TaskRunnerCallback): void {
     const pty = new CustomTaskTerminal(filename, text, callback);
     const ce = new CustomExecution(
@@ -38,7 +37,7 @@ export class TaskRunner {
     const task = new Task(
       { type: "D2" },
       TaskScope.Workspace,
-      "D2 Task",
+      d2TaskName,
       "D2 Extension",
       ce,
       ["$D2Matcher"]

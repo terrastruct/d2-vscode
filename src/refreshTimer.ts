@@ -13,7 +13,7 @@ import { ws } from "./extension";
 type TimerCallback = () => void;
 
 export class RefreshTimer {
-  timerId?: NodeJS.Timer;
+  timerId?: NodeJS.Timeout;
   callback: TimerCallback;
   interval = 0;
 
