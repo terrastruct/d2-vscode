@@ -378,7 +378,7 @@
   dependencies:
     undici-types "~5.26.4"
 
-"@types/vscode@^1.89.0":
+"@types/vscode@^1.73.0":
   version "1.89.0"
   resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.89.0.tgz#df0beb3f4ab9133ee8c5fcac8fc578e4623d8749"
   integrity sha512-TMfGKLSVxfGfoO8JfIE/neZqv7QLwS4nwPwL/NwMvxtAY2230H2I4Z5xx6836pmJvMAzqooRQ4pmLm7RUicP3A==
@@ -2878,6 +2878,7 @@ stoppable@^1.1.0:
   integrity sha512-KXDYZ9dszj6bzvnEMRYvxgeTHU74QBFL54XKtP3nyMuJ81CFYtABZ3bAzL2EdFUaEwJOBOgENyFj3R7oTzDyyw==
 
 "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0, string-width@^4.2.0:
+  name string-width-cjs
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -3233,6 +3234,7 @@ workerpool@6.2.1:
   integrity sha512-ILEIE97kDZvF9Wb9f6h5aXK4swSlKGUcOEGiIYb2OOu/IrDU9iwj0fD//SsA6E5ibwJxpEvhullJY4Sl4GcpAw==
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+  name wrap-ansi-cjs
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
