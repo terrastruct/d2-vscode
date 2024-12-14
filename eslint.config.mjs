@@ -37,7 +37,7 @@ export default [
 
         rules: {
             "@typescript-eslint/ban-ts-comment": "off",
-            "allowShortCircuit": true,
+            "allowShortCircuit": ["error", true],
             "accessor-pairs": "error",
             "array-bracket-newline": "off",
             "array-bracket-spacing": ["error", "never"],
