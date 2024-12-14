@@ -26,18 +26,18 @@ export default [
                 ...Object.fromEntries(Object.entries(globals.browser).map(([key]) => [key, "off"])),
             },
 
+            
             parser: tsParser,
             ecmaVersion: 12,
             sourceType: "module",
-
+            
             parserOptions: {
                 project: ["src/tsconfig.json"],
             },
         },
-
+        
         rules: {
             "@typescript-eslint/ban-ts-comment": "off",
-            "allowShortCircuit": ["error", true],
             "accessor-pairs": "error",
             "array-bracket-newline": "off",
             "array-bracket-spacing": ["error", "never"],
