@@ -328,6 +328,7 @@
     "eslint-formatter-pretty": "^6.0.1",
     "eslint-utils": "^3.0.0",
     "eslint-webpack-plugin": "^4.2.0",
+    "eslint-plugin": "^1.0.1",
     "glob": "^10.3.15",
     "globals": "^15.13.0",
     "mocha": "^10.4.0",
@@ -340,7 +341,6 @@
   "dependencies": {
     "async-mutex": "^0.5.0",
     "child_process": "^1.0.2",
-    "istanbul-lib-coverage": "^3.2.2",
     "markdown-it-container": "^4.0.0"
   },
   "homepage": "https://d2lang.com",

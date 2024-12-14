@@ -1331,6 +1331,13 @@ eslint-formatter-pretty@^6.0.1:
     string-width "^7.0.0"
     supports-hyperlinks "^3.0.0"
 
+eslint-plugin@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/eslint-plugin/-/eslint-plugin-1.0.1.tgz"
+  integrity sha512-ervp8C09On0fLA258TvE08AqAr/bhRYgHVZd3BrJjD4JfOA2JGANDLGs06j51oWqfPd7Feoo3OoqHD+fuI2sFQ==
+  dependencies:
+    requireindex "~1.1.0"
+
 eslint-rule-docs@^1.1.235:
   version "1.1.235"
   resolved "https://registry.npmjs.org/eslint-rule-docs/-/eslint-rule-docs-1.1.235.tgz"
@@ -2697,6 +2704,11 @@ require-from-string@^2.0.2:
   version "2.0.2"
   resolved "https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz"
   integrity sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==
+
+requireindex@~1.1.0:
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/requireindex/-/requireindex-1.1.0.tgz"
+  integrity sha512-LBnkqsDE7BZKvqylbmn7lTIVdpx4K/QCduRATpO5R+wtPmky/a8pN1bO2D6wXppn1497AJF9mNjqAXr6bdl9jg==
 
 resolve-cwd@^3.0.0:
   version "3.0.0"
