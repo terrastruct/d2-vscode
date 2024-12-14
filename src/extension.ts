@@ -25,7 +25,7 @@ import { themePicker } from "./themePicker";
 import { TaskRunner } from "./taskRunner";
 import { d2Tasks } from "./tasks";
 import { util } from "./utility";
-import path = require("path");
+import * as path from "path";
 import { TextEncoder } from "util";
 
 export const d2Ext = "d2";
