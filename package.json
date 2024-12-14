@@ -314,6 +314,8 @@
   },
   "devDependencies": {
     "@eslint-community/eslint-utils": "^4.4.1",
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.17.0",
     "@types/glob": "^8.0.0",
     "@types/markdown-it-container": "^2.0.10",
     "@types/mocha": "^10.0.0",
@@ -327,6 +329,7 @@
     "eslint-utils": "^3.0.0",
     "eslint-webpack-plugin": "^4.2.0",
     "glob": "^10.3.15",
+    "globals": "^15.13.0",
     "mocha": "^10.4.0",
     "prettier": "^3.2.5",
     "ts-loader": "^9.4.2",
