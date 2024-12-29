@@ -25,21 +25,23 @@ import { themePicker } from "./themePicker";
 import { TaskRunner } from "./taskRunner";
 import { d2Tasks } from "./tasks";
 import { util } from "./utility";
-import path = require("path");
+import * as path from "path";
 import { TextEncoder } from "util";
 
-const d2Ext = "d2";
-const d2Lang = "d2";
-const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
-
+export const d2Ext = "d2";
+export const d2Lang = "d2";
+export const previewGenerator: DocToPreviewGenerator = new DocToPreviewGenerator();
 export const d2ConfigSection = "D2";
+export const d2TaskName = "D2 Task";
 export let ws: WorkspaceConfiguration = workspace.getConfiguration(d2ConfigSection);
 export const outputChannel: D2OutputChannel = new D2OutputChannel();
 export const taskRunner: TaskRunner = new TaskRunner();
 export let extContext: ExtensionContext;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function activate(context: ExtensionContext): any {
+export type VSCAny = any;
+
+export function activate(context: ExtensionContext): VSCAny {
   extContext = context;
 
   context.subscriptions.push(
@@ -239,9 +241,9 @@ export function activate(context: ExtensionContext): any {
   // Return our markdown renderer
   return {
     // Sets up our ability to render for markdown files
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extendMarkdownIt(md: any) {
-      return extendMarkdownItWithD2(md);
+    extendMarkdownIt(md: VSCAny) {
+      extendMarkdownItWithD2(md);
+      return md;
     },
   };
 }
@@ -253,8 +255,7 @@ const pluginKeyword = "d2";
  * This function will be asked by the Markdown system to render
  * a d2 snippit in a markdown file
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function extendMarkdownItWithD2(md: any): unknown {
+export function extendMarkdownItWithD2(md: VSCAny): unknown {
   md.use(mdItContainer, pluginKeyword, {});
 
   const highlight = md.options.highlight;

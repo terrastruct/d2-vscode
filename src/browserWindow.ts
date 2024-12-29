@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "fs";
 import * as path from "path";
 import { Uri, ViewColumn, Webview, WebviewPanel, window, workspace } from "vscode";
 import { D2P } from "./docToPreviewGenerator";
-import { extContext } from "./extension";
+import { extContext, previewGenerator } from "./extension";
 import { util } from "./utility";
 
 /**
@@ -55,6 +55,9 @@ export class BrowserWindow {
     this.webViewPanel.webview.onDidReceiveMessage(
       (message) => {
         switch (message.command) {
+          case "refreshPage":
+            previewGenerator.generateAll();
+            break;
           case "clickOnTag_A": {
             const f = message.link.trim().toLowerCase();
             const isWeb: boolean = f.startsWith("http://") || f.startsWith("https://");
