@@ -123,8 +123,8 @@
         "category": "d2"
       },
       {
-        "command": "D2.ToggleSketch",
-        "title": "Toggle Preview Sketch Rendering",
+        "command": "D2.PickSketch",
+        "title": "Pick Preview Sketch Rendering",
         "category": "d2"
       }
     ],
@@ -185,11 +185,13 @@
           "type": "string",
           "default": "dagre",
           "enum": [
+            "default",
             "dagre",
             "elk",
             "tala"
           ],
           "enumDescriptions": [
+            "",
             "The directed graph layout library Dagre",
             "Eclipse Layout Kernel (ELK) with the Layered algorithm",
             "Terrastruct's AutoLayout Approach - available if installed"
@@ -197,8 +199,18 @@
           "description": "Layout used for preview."
         },
         "D2.previewSketch": {
-          "type": "boolean",
-          "default": false,
+          "type": "string",
+          "default": "none",
+          "enum": [
+            "default",
+            "true",
+            "false"
+          ],
+          "enumDescription": [
+            "",
+            "Use sketch rendering in preview.",
+            "Do Not use sketch rendering in preview."
+          ],
           "description": "Use sketch rendering in preview."
         },
         "D2.execPath": {
@@ -236,7 +248,7 @@
           "group": "d2"
         },
         {
-          "command": "D2.ToggleSketch",
+          "command": "D2.PickSketch",
           "when": "resourceLangId == d2",
           "group": "d2"
         }

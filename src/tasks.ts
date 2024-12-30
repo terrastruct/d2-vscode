@@ -3,8 +3,10 @@ import * as path from "path";
 import { Range, TextEditor } from "vscode";
 import { outputChannel, ws } from "./extension";
 import { TaskOutput } from "./taskRunner";
-import { NameToThemeNumber } from "./themePicker";
+import { GetThemeSwitch } from "./themePicker";
 import { util, VT } from "./utility";
+import { GetLayoutSwitch } from "./layoutPicker";
+import { GetSketchSwitch } from "./sketchPicker";
 
 /**
  * D2Tasks - static functions to be used in tasks.  Functions need
@@ -19,8 +21,7 @@ class D2Tasks {
   ): string {
     const layout: string = ws.get("previewLayout", "dagre");
     const theme: string = ws.get("previewTheme", "default");
-    const sketch: boolean = ws.get("previewSketch", false);
-    const themeNumber: number = NameToThemeNumber(theme);
+    const sketch: string = ws.get("previewSketch", "none");
     const d2Path: string = ws.get("execPath", "d2");
 
     terminal?.(`${VT.Green}Starting Compile...${VT.Reset}`);
@@ -30,12 +31,21 @@ class D2Tasks {
     terminal?.(`Current Working Directory: ${VT.Yellow}${filePath}${VT.Reset}`);
     terminal?.("");
 
-    const args: string[] = [
-      `--layout=${layout}`,
-      `--theme=${themeNumber}`,
-      `--sketch=${sketch}`,
-      "-",
-    ];
+    const lsw = GetLayoutSwitch(layout);
+    const tsw = GetThemeSwitch(theme);
+    const ssw = GetSketchSwitch(sketch);
+
+    const args: string[] = [];
+    if (lsw.length > 0) {
+      args.push(lsw);
+    }
+    if (tsw.length > 0) {
+      args.push(tsw);
+    }
+    if (ssw.length > 0) {
+      args.push(ssw);
+    }
+    args.push("-");
 
     // spawnSync doesn't like blank working directories
     if (filePath === "") {

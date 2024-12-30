@@ -27,6 +27,7 @@ import { d2Tasks } from "./tasks";
 import { util } from "./utility";
 import * as path from "path";
 import { TextEncoder } from "util";
+import { sketchPicker } from "./sketchPicker";
 
 export const d2Ext = "d2";
 export const d2Lang = "d2";
@@ -211,12 +212,16 @@ export function activate(context: ExtensionContext): VSCAny {
   );
 
   context.subscriptions.push(
-    commands.registerCommand("D2.ToggleSketch", () => {
+    commands.registerCommand("D2.PickSketch", () => {
       const activeEditor = window.activeTextEditor;
 
       if (activeEditor?.document.languageId === d2Ext) {
-        const current: boolean = ws.get("previewSketch", false);
-        ws.update("previewSketch", !current, true);
+        const sketchPick = new sketchPicker();
+        sketchPick.showPicker().then((sketch) => {
+          if (sketch) {
+            ws.update("previewSketch", sketch.label, true);
+          }
+        });
       }
     })
   );
